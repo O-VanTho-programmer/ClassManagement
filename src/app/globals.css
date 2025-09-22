@@ -24,3 +24,14 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+
+.container {
+  padding-inline: 20px;
+}
+
+@media (width >=48rem) {
+  .container {
+    padding-inline: 30px;
+  }
+}

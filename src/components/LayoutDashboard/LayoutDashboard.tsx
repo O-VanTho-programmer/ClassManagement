@@ -1,0 +1,51 @@
+'use client';
+
+import { useEffect, useState } from "react";
+import SideNavigation from "../SideNavigation/SideNavigation"
+import { MenuIcon } from "lucide-react";
+import { usePathname } from "next/navigation";
+import HeaderDashboard from "../HeaderDashboard/HeaderDashboard";
+
+export default function LayoutDashboard({ children }: { children: React.ReactNode }) {
+    const [isNavOpen, setIsNavOpen] = useState(false);
+    const [isNavShrunk, setIsNavShrunk] = useState(false);
+    const pathname = usePathname();
+    const [currentPage, setCurrentPage] = useState('');
+
+
+    useEffect(() => {
+        setCurrentPage(pathname);
+        console.log(pathname);
+    }, [pathname]);
+
+    const toggleNav = () => {
+        setIsNavOpen(!isNavOpen);
+    };
+
+    const toggleShrink = () => {
+        setIsNavShrunk(!isNavShrunk);
+    };
+
+    const navigateTo = (page: string) => {
+        window.location.href = page;
+    };
+
+    return (
+        <div className="min-h-screen bg-gray-100 font-sans text-gray-900">
+            <div className="flex h-screen">
+                {/* Mobile menu button */}
+                <div className="fixed top-4 left-4 z-50 md:hidden">
+                    <button onClick={toggleNav} className="p-2 rounded-full bg-slate-800 text-white shadow-lg focus:outline-none focus:ring-2 focus:ring-slate-400">
+                        <MenuIcon className="h-6 w-6" />
+                    </button>
+                </div>
+
+                <SideNavigation isOpen={isNavOpen} toggleNav={toggleNav} navigateTo={navigateTo} activePage={currentPage} isShrunk={isNavShrunk} toggleShrink={toggleShrink} />
+                <main className={`flex-1 overflow-y-auto overflow-x-hidden transition-all duration-300 md:pt-0}`}>
+                    <HeaderDashboard/>
+                    {children}
+                </main>
+            </div>
+        </div>
+    );
+}

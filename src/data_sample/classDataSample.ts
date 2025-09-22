@@ -1,0 +1,26 @@
+export const classData: ClassData[] = [
+    {
+        id: 1,
+        name: 'Anh 6.1',
+        schedule: 'Thứ 4, CN - 2025',
+        count: 1,
+        teacher: 'O',
+        assistant: undefined,
+        subject: 'English',
+        tuition: 'Khóa học',
+        base: undefined,
+        status: 'Hoạt động',
+    },
+    {
+        id: 2,
+        name: 'Toán 7.2',
+        schedule: 'Thứ 3, T6 - 2025',
+        count: 25,
+        teacher: 'Anh',
+        assistant: 'Lan',
+        subject: 'Toán',
+        tuition: 'Hàng tháng',
+        base: 'Cơ sở 1',
+        status: 'Đã kết thúc',
+    },
+];
