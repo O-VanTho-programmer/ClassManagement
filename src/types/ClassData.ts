@@ -1,12 +1,15 @@
 interface ClassData {
     id: number;
     name: string;
-    schedule: string;
-    count: number;
+    schedule: { day: string; time: string; }[];
+    studentCount: number;
     teacher: string;
     assistant?: string;
     subject: string;
-    tuition: string;
+    tuition?: string;
+    tuitionType: "Monthly" | "Quarter" | "Course" | "Flexible",
     base?: string;
-    status: string;
+    status: 'active' | 'finished';
+    startDate: string;
+    endDate: string;
 }

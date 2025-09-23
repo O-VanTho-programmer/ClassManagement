@@ -33,6 +33,10 @@ const NotificationList = ({ title = "Thông báo", notificationsData, isOpen, on
         }
     }, [isOpen])
 
+    const ReadAll = () => {
+
+    }
+
     return (
         <div ref={ref} className="absolute min-w-3xs md:min-w-sm rounded-lg shadow-lg overflow-hidden bg-white right-0">
             <div className="flex justify-between items-center p-4 border-b border-gray-200">
@@ -64,7 +68,7 @@ const NotificationList = ({ title = "Thông báo", notificationsData, isOpen, on
             )}
 
             <div className="p-4 border-t border-gray-200 text-center">
-                <Button icon={ListChecks} title="Xem tất cả"/>
+                <Button onClick={ReadAll} color="blue" icon={ListChecks} title="Xem tất cả"/>
             </div>
         </div>
     );

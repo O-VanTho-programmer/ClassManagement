@@ -8,8 +8,9 @@ import { useState } from "react"
 import ToggleViewClassList from "../ToggleViewClassList/ToggleViewClassList";
 import Button from "../Button/Button";
 import { Search } from "lucide-react";
+import ViewCardClasses from "../ViewCardClasses/ViewCardClasses";
 
-const statusOptions = ["Active", "Completed"]
+const statusOptions = ["Active", "Finished"]
 const tuitionTypeOptions = ["Monthly", "Quarter", "Course", "Flexible"]
 
 export default function ViewClass() {
@@ -24,8 +25,8 @@ export default function ViewClass() {
 
     return (
         <div className="container mt-8">
-            <div className="bg-white rounded-lg shadow-lg">
-                <div className="pt-6 px-4 filter flex flex-wrap justify-between items-center">
+            <div className="bg-white rounded-lg shadow-lg py-6">
+                <div className="px-4 filter flex flex-wrap gap-2 justify-between items-center">
                     <div className="flex gap-2">
                         <SearchBar search_width_style="small" />
 
@@ -36,14 +37,20 @@ export default function ViewClass() {
 
                     </div>
                     <div className="flex gap-2">
-                        <Button onClick={handleFiler} icon={Search} title="Filter" />
+                        <Button color="blue" onClick={handleFiler} icon={Search} title="Filter" />
 
                         <ToggleViewClassList isTableView={isTableView} setIsTableView={setIsTableView} />
 
                     </div>
                 </div>
 
-                <TableClass datas={classData} />
+                {isTableView ? (
+                    <TableClass datas={classData} />
+
+                ) : (
+                    <ViewCardClasses datas={classData} />
+                )}
+
             </div>
         </div>
     )
