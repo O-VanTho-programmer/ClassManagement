@@ -1,5 +1,5 @@
 interface SearchBarProps {
-    search_width_style?: "header-dashboard" | "small"
+    search_width_style?: "header-dashboard" | "small" | "medium"
 }
 
 export default function SearchBar({ search_width_style }: SearchBarProps) {
@@ -9,7 +9,9 @@ export default function SearchBar({ search_width_style }: SearchBarProps) {
         case "header-dashboard":
             width_style = "w-sm md:w-md";
             break;
-
+        case "medium":
+            width_style = "w-[250px]";
+            break;
         case "small":
             width_style = "w-[150px]";
             break;

@@ -24,7 +24,7 @@ export default function ViewClass() {
     }
 
     return (
-        <div className="container mt-8">
+        <div className="mt-8">
             <div className="bg-white rounded-lg shadow-lg py-6">
                 <div className="px-4 filter flex flex-wrap gap-2 justify-between items-center">
                     <div className="flex gap-2">

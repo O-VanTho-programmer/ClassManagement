@@ -31,7 +31,7 @@ const cards: CardClass[] = [
 
 export default function ClassesCard() {
     return (
-        <div className="container">
+        <div className="">
             <div className="py-3 lg:py-6">
                 <h1 className="flex items-center text-lg font-semibold"><BookUser className="text-blue-500 mr-1"/> Classes Management</h1>
                 <ul className="flex flex-row items-center bg-transparent text-gray-400 font-semibold">

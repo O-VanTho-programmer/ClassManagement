@@ -7,9 +7,9 @@ import TableAttendance from "../TableAttendance/TableAttendance";
 
 export default function ViewAttendance() {
     return (
-        <div className="container mt-8">
+        <div className="mt-8">
             <div className="bg-white rounded-lg shadow-lg py-6">
-                <div className="px-4 flex flex-wrap gap-2 justify-between items-center">
+                <div className="px-4">
                     <SearchBar search_width_style="small" />
                 </div>
 

@@ -8,15 +8,14 @@ export default function HeaderDashboard() {
         return null;
     }
     return (
-        <div className="bg-white h-[75px] gap-2 justify-between flex items-center px-[20px] md:px-[30px]">
-            <div className="flex gap-1 items-center">
-                <Button color="blue" icon={School} onClick={onClick} title="Classes" />
-                <Button color="blue" icon={School} onClick={onClick} title="Classes" />
+        <div className="sticky top-0 z-30 border-b border-slate-200 bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60 h-[72px]">
+            <div className="container h-full flex items-center justify-between gap-3">
+                <div className="flex gap-2 items-center">
+                    <Button color="blue" icon={School} onClick={onClick} title="Classes" />
+                </div>
+                <div className="flex-1 max-w-[600px]"><SearchBar /></div>
+                <UserHeader/>
             </div>
-
-            <SearchBar />
-            <UserHeader/>
-
         </div>
     )
 }

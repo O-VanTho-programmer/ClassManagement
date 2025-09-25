@@ -1,4 +1,4 @@
-import { CalendarCheck, ChartArea, EllipsisVertical, GraduationCap, StarIcon, Users } from "lucide-react";
+import { CalendarCheck, ChartArea, EllipsisVertical, GraduationCap, ListCheck, StarIcon, Users } from "lucide-react";
 import Badge from "../Badge/Badge";
 import Button from "../Button/Button";
 
@@ -28,10 +28,10 @@ function TableClassRowForClasses({ data, index }: TableClassRowProps) {
             <td className="py-4 px-2 whitespace-nowrap text-gray-800 flex items-center space-x-2">
                 <span>{index}</span>
             </td>
-            <td className="py-4 px-2 whitespace-nowrap text-gray-800">
+            <td className="py-4 px-2 whitespace-nowrap text-gray-800 group cursor-pointer">
                 <div className="flex items-center space-x-2">
                     <GraduationCap className="w-5 h-5 text-gray-400" />
-                    <p className="font-medium text-gray-800">{data.name}</p>
+                    <p className="font-medium text-gray-800 group-hover:text-blue-600">{data.name}</p>
                 </div>
             </td>
             <td className="py-4 px-2 whitespace-nowrap text-gray-800">
@@ -89,6 +89,10 @@ function TableClassRowForAttendance({ data, index }: TableClassRowProps) {
 
     }
 
+    const DirectToAttendanceList = () => {
+
+    }
+
     return (
         <tr className="border-b border-gray-200 text-sm">
             <td className="py-4 px-2 whitespace-nowrap text-gray-800 flex items-center space-x-2">
@@ -117,6 +121,7 @@ function TableClassRowForAttendance({ data, index }: TableClassRowProps) {
             </td>
             <td className="py-4 px-2 whitespace-nowrap text-gray-800">
                 <div className="flex justify-end gap-1">
+                    <Button color="blue_off" onClick={DirectToAttendanceList} icon={ListCheck} title="Attendance List" />
                     <Button color="blue_off" onClick={TakeAttendance} icon={CalendarCheck} title="Take Attendance" />
                     <Button color="green_off" onClick={DirectToAttendanceReport} icon={ChartArea} title="Report" />
                 </div>

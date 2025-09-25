@@ -4,11 +4,14 @@ interface ButtonProps {
     title: string,
     icon: LucideIcon,
     onClick: () => void,
-    color: "blue" | "blue_off" | "green_off"
+    color: "orange" | "blue" | "green" | "blue_off" | "green_off" | "red_off"
 }
-const colorMap: { [key: string]: string} = {
+const colorMap: { [key: string]: string } = {
     blue: "text-white bg-blue-500 hover:bg-blue-600",
+    orange: "text-white bg-orange-500 hover:bg-orange-600",
+    green: "text-white bg-green-500 hover:bg-green-600",
     blue_off: "bg-white border border-blue-400 text-blue-500 hover:bg-blue-100",
+    red_off: "bg-white border border-red-400 text-red-500 hover:bg-red-100",
     green_off: "bg-white border border-green-400 text-green-500 hover:bg-green-100",
 }
 

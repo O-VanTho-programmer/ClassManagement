@@ -41,9 +41,11 @@ export default function LayoutDashboard({ children }: { children: React.ReactNod
                 </div>
 
                 <SideNavigation isOpen={isNavOpen} toggleNav={toggleNav} navigateTo={navigateTo} activePage={currentPage} isShrunk={isNavShrunk} toggleShrink={toggleShrink} />
-                <main className={`flex-1 overflow-y-auto overflow-x-hidden transition-all duration-300 md:pt-0}`}>
+                <main className={`flex-1 overflow-y-auto overflow-x-hidden transition-all duration-300 md:pt-0 bg-gray-50`}> 
                     <HeaderDashboard/>
-                    {children}
+                    <div className="container py-6">
+                        {children}
+                    </div>
                 </main>
             </div>
         </div>
