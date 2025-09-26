@@ -5,7 +5,7 @@ import AttendanceSummary from "@/components/AttendanceSummary/AttendanceSummary"
 import DatePicker from "@/components/DatePicker/DatePicker";
 import LayoutDashboard from "@/components/LayoutDashboard/LayoutDashboard";
 import { classData } from "@/data_sample/classDataSample"
-import { ArrowLeftIcon, CheckIcon, List } from "lucide-react";
+import { ArrowLeftIcon, CalendarDays, CheckIcon, List } from "lucide-react";
 
 export default function AttendancePage() {
 
@@ -36,8 +36,8 @@ export default function AttendancePage() {
             </div>
             {/*  */}
 
-            <div className="bg-white shadow-md rounded-xl p-6 mb-6">
-                <DatePicker onChange={onChangeDate} />
+            <div className="bg-white shadow-md rounded-xl pt-10 p-6 mb-6">
+                <DatePicker icon={CalendarDays} label="Chọn ngày điểm danh" onChange={onChangeDate} />
             </div>
 
             <AttendanceSummary />

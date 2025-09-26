@@ -1,19 +1,27 @@
 import { ChevronDownIcon } from "lucide-react";
 import { useState } from "react";
 
+export interface Option {
+    label: string;
+    value: string;
+}
+
 interface SelectionProps {
     placeholder: string,
-    options: string[],
+    options: Option[],
     onChange: (value: string) => void;
 }
 
-export default function Selection({ placeholder, onChange, options }: SelectionProps) {
+export default function Selection({ placeholder, onChange, options = [] }: SelectionProps) {
     const [isOpen, setIsOpen] = useState(false);
-    const [selectedOption, setSelectedOption] = useState<string | null>(null);
+    const [selectedValue, setSelectedValue] = useState<string | null>(null);
 
-    const handleOptionClick = (option: string) => {
-        setSelectedOption(option);
-        onChange(option);
+    // Safely find the selected option label, checking if options is defined.
+    const selectedOptionLabel = options.find(option => option.value === selectedValue)?.label;
+
+    const handleOptionClick = (option: Option) => {
+        setSelectedValue(option.value);
+        onChange(option.value);
         setIsOpen(false);
     };
 
@@ -25,9 +33,9 @@ export default function Selection({ placeholder, onChange, options }: SelectionP
                 onClick={() => setIsOpen(!isOpen)}
             >
                 <span className="truncate max-w-[100px] overflow-x-hidden">
-                    {selectedOption || placeholder}
+                    {selectedOptionLabel || placeholder}
                 </span>
-                <ChevronDownIcon className="-mr-1 ml-2 h-5 w-5" />
+                <ChevronDownIcon />
             </button>
 
             {isOpen && (
@@ -43,7 +51,7 @@ export default function Selection({ placeholder, onChange, options }: SelectionP
                                     handleOptionClick(option);
                                 }}
                             >
-                                {option}
+                                {option.label}
                             </a>
                         ))}
                     </div>

@@ -2,7 +2,7 @@
 
 import { classData } from "@/data_sample/classDataSample"
 import SearchBar from "../SearchBar/SearchBar"
-import Selection from "../Selection/Selection"
+import Selection, { Option } from "../Selection/Selection"
 import TableClass from "../TableClass/TableClass"
 import { useState } from "react"
 import ToggleViewClassList from "../ToggleViewClassList/ToggleViewClassList";
@@ -10,8 +10,34 @@ import Button from "../Button/Button";
 import { Search } from "lucide-react";
 import ViewCardClasses from "../ViewCardClasses/ViewCardClasses";
 
-const statusOptions = ["Active", "Finished"]
-const tuitionTypeOptions = ["Monthly", "Quarter", "Course", "Flexible"]
+const statusOptions: Option[] = [
+    {
+        label: "Active",
+        value: "Active"
+    },
+    {
+        label: "Finished",
+        value: "Finished"
+    }
+]
+const tuitionTypeOptions: Option[] = [
+    {
+        label: "Monthly",
+        value: "Monthly"
+    },
+    {
+        label: "Quarter",
+        value: "Quarter"
+    },
+    {
+        label: "Course",
+        value: "Course"
+    },
+    {
+        label: "Flexible",
+        value: "Flexible"
+    },
+]
 
 export default function ViewClass() {
 

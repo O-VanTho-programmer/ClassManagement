@@ -25,10 +25,10 @@ const AttendanceSummary = () => {
                     );
                 })}
             </div>
-            <p className="text-gray-700 text-sm">
+            {/* <p className="text-gray-700 text-sm">
                 Total: <span className="font-semibold">1 students</span>
                 <span className="float-right text-red-600 font-semibold">0%</span>
-            </p>
+            </p> */}
         </div>
     );
 };
