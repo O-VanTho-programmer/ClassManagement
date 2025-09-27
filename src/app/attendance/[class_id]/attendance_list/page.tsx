@@ -1,6 +1,8 @@
 'use client';
 
 import AttendanceListFilter from "@/components/AttendanceListFilter/AttendanceListFilter";
+import AttendanceListStudentTable from "@/components/AttendanceListStudentTable/AttendanceListStudentTable";
+import AttendanceListStudentTableRow from "@/components/AttendanceListStudentTableRow/AttendanceListStudentTableRow";
 import AttendanceSummary from "@/components/AttendanceSummary/AttendanceSummary";
 import LayoutDashboard from "@/components/LayoutDashboard/LayoutDashboard";
 import { classData } from "@/data_sample/classDataSample";
@@ -32,9 +34,8 @@ export default function AttendanceListPage() {
             {/*  */}
 
             <AttendanceListFilter />
-
             <AttendanceSummary />
-
+            <AttendanceListStudentTable/>
         </LayoutDashboard>
     )
 }

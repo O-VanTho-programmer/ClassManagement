@@ -1,9 +1,10 @@
 import { studentsAttendanceSample } from "@/data_sample/studentAttendanceSample";
 import AttendanceStudentTableRow from "../AttendanceStudentTableRow/AttendanceStudentTableRow";
 import { useState } from "react";
+import AttendanceListStudentTableRow from "../AttendanceListStudentTableRow/AttendanceListStudentTableRow";
 
 export default function AttendanceStudentTable() {
-    const [studentDatas, setStudentDatas] = useState(studentsAttendanceSample);
+    const [studentDatas, setStudentDatas] = useState<StudentAttendance[]>(studentsAttendanceSample);
 
     return (
         <div className="bg-white shadow-md rounded-xl p-4 flex justify-between items-center mb-6">
@@ -27,6 +28,6 @@ export default function AttendanceStudentTable() {
                     </tbody>
                 </table>
             </div>
-        </div>
+        </div >
     )
 }

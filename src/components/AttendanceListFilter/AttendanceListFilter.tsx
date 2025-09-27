@@ -36,7 +36,7 @@ export default function AttendanceListFilter() {
     }
 
     return (
-        <div className="bg-white shadow-md rounded-xl pt-10 p-6 flex items-center gap-2">
+        <div className="bg-white shadow-md rounded-xl pt-10 p-6 flex items-center gap-2 mb-6">
             <DatePicker size="smaller" label="Start date" onChange={onChangeStartDate} />
             <DatePicker size="smaller" label="End date" onChange={onChangeEndDate} />
 

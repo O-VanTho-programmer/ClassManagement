@@ -9,7 +9,7 @@ const AttendanceSummary = () => {
     ];
 
     return (
-        <div className="bg-white shadow-md rounded-xl p-6">
+        <div className="bg-white shadow-md rounded-xl p-6 mb-6">
             <div className="flex items-center text-blue-600 space-x-2 mb-4">
                 <UserPlusIcon />
                 <h2 className="text-lg font-semibold">Attendance Summary</h2>
