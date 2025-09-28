@@ -14,6 +14,7 @@ interface StudentAttendance{
     name: string,
     present: StudentAttendanceType,
     score: number,
-    is_finished_homework: boolean,
-    comment?: string
+    is_finished_homework?: boolean,
+    comment?: string,
+    date: string,
 }

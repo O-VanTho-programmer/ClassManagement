@@ -1,17 +1,25 @@
-import { Check, X } from "lucide-react"
+import { Check, EditIcon, X } from "lucide-react"
 import Badge from "../Badge/Badge"
 import HeaderAvatar from "../HeaderAvatar/HeaderAvatar"
+import SquareButton from "../SquareButton/SquareButton"
+import getDayNameFromDate from "@/utils/Format/getDateNameFromDate"
 
 interface AttendanceListStudentTableRowProps {
-    student: AttendanceListStudents
+    student: StudentAttendance
+    openModalEdit: (studentId: StudentAttendance) => void;
 }
 
-export default function AttendanceListStudentTableRow({ student }: AttendanceListStudentTableRowProps) {
+export default function AttendanceListStudentTableRow({ student, openModalEdit }: AttendanceListStudentTableRowProps) {
+    
+    const handleOpenModalEdit = () => {
+        openModalEdit(student);
+    }
+
     return (
         <tr className="border-b border-gray-200 text-sm">
             <td className="py-4 px-2 whitespace-nowrap text-gray-800">
                 <p className="text-base text-gray-500">{student.date}</p>
-                <p className="text-sm text-gray-400">{student.day}</p>
+                <p className="text-sm text-gray-400">{getDayNameFromDate(student.date)}</p>
             </td>
             <td className="py-4 px-2 whitespace-nowrap text-gray-800">
                 <div className="flex items-center space-x-4">
@@ -44,11 +52,22 @@ export default function AttendanceListStudentTableRow({ student }: AttendanceLis
                 <p>{student.comment ?? "No comment"}</p>
             </td>
             <td className="py-4 px-2 whitespace-nowrap">
-                {student.is_finished_homework ? (
-                    <span className="block w-fit bg-green-400 text-white rounded-full p-1"><Check /></span>
+                {student.is_finished_homework === undefined ? (
+                    <span className="inline-block w-6 text-gray-500 font-bold p-1">-</span>
                 ) : (
-                    <span className="block w-fit bg-red-400 text-white rounded-full p-1"><X /></span>
+                    student.is_finished_homework ? (
+                        <span className="inline-flex items-center justify-center w-6 h-6 bg-green-400 text-white rounded-full p-1 shadow-md">
+                            <Check className="w-3 h-3" />
+                        </span>
+                    ) : (
+                        <span className="inline-flex items-center justify-center w-6 h-6 bg-red-400 text-white rounded-full p-1 shadow-md">
+                            <X className="w-3 h-3" />
+                        </span>
+                    )
                 )}
+            </td>
+            <td className="py-4 px-2 whitespace-nowrap">
+                <SquareButton color="blue" icon={EditIcon} onClick={handleOpenModalEdit}/>
             </td>
         </tr>
     )
