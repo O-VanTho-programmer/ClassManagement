@@ -2,10 +2,10 @@ import { UserPlusIcon } from "lucide-react";
 
 const AttendanceSummary = () => {
     const stats = [
-        { title: 'Có mặt', value: 0, color: 'text-green-600', bgColor: 'bg-green-50' },
-        { title: 'Vắng', value: 0, color: 'text-red-600', bgColor: 'bg-red-50' },
-        { title: 'Muộn', value: 0, color: 'text-yellow-600', bgColor: 'bg-yellow-50'},
-        { title: 'Có phép', value: 0, color: 'text-blue-600', bgColor: 'bg-blue-50'},
+        { title: 'Present', value: 0, color: 'text-green-600', bgColor: 'bg-green-50' },
+        { title: 'Absent', value: 0, color: 'text-red-600', bgColor: 'bg-red-50' },
+        { title: 'Late', value: 0, color: 'text-yellow-600', bgColor: 'bg-yellow-50'},
+        { title: 'Excused', value: 0, color: 'text-blue-600', bgColor: 'bg-blue-50'},
     ];
 
     return (

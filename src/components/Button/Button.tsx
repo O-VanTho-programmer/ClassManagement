@@ -4,7 +4,7 @@ interface ButtonProps {
     title: string,
     icon: LucideIcon,
     onClick: () => void,
-    color: "orange" | "blue" | "green" | "blue_off" | "green_off" | "red_off"
+    color: "orange" | "blue" | "green" | "blue_off" | "green_off" | "red_off" | "gray"
 }
 const colorMap: { [key: string]: string } = {
     blue: "text-white bg-blue-500 hover:bg-blue-600",
@@ -13,6 +13,7 @@ const colorMap: { [key: string]: string } = {
     blue_off: "bg-white border border-blue-400 text-blue-500 hover:bg-blue-100",
     red_off: "bg-white border border-red-400 text-red-500 hover:bg-red-100",
     green_off: "bg-white border border-green-400 text-green-500 hover:bg-green-100",
+    gray: "bg-gray-200 text-gray-500 hover:bg-gray-300",
 }
 
 export default function Button({ title, icon, onClick, color }: ButtonProps) {

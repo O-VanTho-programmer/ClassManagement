@@ -6,16 +6,16 @@ import { MenuIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
 import HeaderDashboard from "../HeaderDashboard/HeaderDashboard";
 
+
 export default function LayoutDashboard({ children }: { children: React.ReactNode }) {
+
     const [isNavOpen, setIsNavOpen] = useState(false);
     const [isNavShrunk, setIsNavShrunk] = useState(false);
     const pathname = usePathname();
     const [currentPage, setCurrentPage] = useState('');
 
-
     useEffect(() => {
         setCurrentPage(pathname);
-        console.log(pathname);
     }, [pathname]);
 
     const toggleNav = () => {

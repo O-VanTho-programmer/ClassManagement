@@ -49,3 +49,7 @@ html, body {
   background-image: radial-gradient(rgba(0,0,0,0.04) 1px, transparent 1px);
   background-size: 16px 16px;
 }
+
+.overlay{
+  background: rgba(0,0,0,0.5);
+}

@@ -1,17 +1,22 @@
-'use client';
+'use client';   
 
-import AttendanceListFilter from "@/components/AttendanceListFilter/AttendanceListFilter";
-import AttendanceListStudentTable from "@/components/AttendanceListStudentTable/AttendanceListStudentTable";
-import AttendanceListStudentTableRow from "@/components/AttendanceListStudentTableRow/AttendanceListStudentTableRow";
+import AttendanceGridFilter from "@/components/AttendanceGridFilter/AttendanceGridFilter";
+import AttendanceGridStudentTable from "@/components/AttendanceGridStudentTable/AttendanceGridStudentTable";
 import AttendanceSummary from "@/components/AttendanceSummary/AttendanceSummary";
 import LayoutDashboard from "@/components/LayoutDashboard/LayoutDashboard";
 import { classData } from "@/data_sample/classDataSample";
 import calculateScheduledDays from "@/utils/calculateScheduledDays";
 import { Calendar, GraduationCap, Users } from "lucide-react";
+import { useState } from "react";
 
-export default function AttendanceListPage() {
-
+export default function AttendanceGridPage() {
     const classInfo = classData[0];
+
+    const [startDate, setStartDate] = useState<string>(classInfo.startDate);
+    const [endDate, setEndDate] = useState<string>(classInfo.endDate);
+
+
+    // Tong so buoi hoc
     const totalDays = calculateScheduledDays(classInfo.schedule, classInfo.startDate, classInfo.endDate);
 
     return (
@@ -33,9 +38,9 @@ export default function AttendanceListPage() {
             </div>
             {/*  */}
 
-            <AttendanceListFilter />
+            <AttendanceGridFilter startDate={startDate} endDate={endDate} />
             <AttendanceSummary />
-            <AttendanceListStudentTable/>
+            <AttendanceGridStudentTable schedule={classInfo.schedule} startDate={startDate} endDate={endDate} />
         </LayoutDashboard>
     )
 }

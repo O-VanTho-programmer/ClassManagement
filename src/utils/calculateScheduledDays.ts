@@ -3,15 +3,7 @@ export default function calculateScheduledDays(
   startDate: string,
   endDate: string
 ): number {
-  const dayMap: Record<string, number> = {
-    Sunday: 0,
-    Monday: 1,
-    Tuesday: 2,
-    Wednesday: 3,
-    Thursday: 4,
-    Friday: 5,
-    Saturday: 6,
-  };
+  dayMap
 
   const scheduledDays = schedule.map(item => dayMap[item.day]);
 
@@ -38,3 +30,13 @@ export default function calculateScheduledDays(
 
   return count;
 }
+
+export const dayMap: Record<string, number> = {
+  Sunday: 0,
+  Monday: 1,
+  Tuesday: 2,
+  Wednesday: 3,
+  Thursday: 4,
+  Friday: 5,
+  Saturday: 6,
+};

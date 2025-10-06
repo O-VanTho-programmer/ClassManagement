@@ -1,10 +1,11 @@
 
 interface HeaderAvatarProps{
+    name?: string,
     size?: 'smaller',
 
 }
 
-export default function HeaderAvatar({size}: HeaderAvatarProps) {
+export default function HeaderAvatar({name="K", size}: HeaderAvatarProps) {
 
     let styleSize = '';
 
@@ -21,7 +22,7 @@ export default function HeaderAvatar({size}: HeaderAvatarProps) {
     return (
         <div className="rounded-full overflow-hidden">
             <div className={` ${styleSize} bg-red-100 font-medium flex justify-center items-center`}>
-                K
+                {name}
             </div>
         </div>
 

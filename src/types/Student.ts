@@ -1,20 +1,28 @@
 type StudentStatus = 'Studying' | 'Finished'
 
-interface Student{
+interface Student {
+    id: string,
     name: string,
     birthday: string,
     enroll_date: string,
     status: StudentStatus,
 }
 
-type StudentAttendanceType = 'present' | 'late' | 'excused' | 'absent'
+type StudentAttendanceType = 'present' | 'late' | 'excused' | 'absent' | 'unchecked'
 
-interface StudentAttendance{
+type StudentAttendance = AttendanceRecord & {
     id: string,
     name: string,
+}
+
+interface AttendanceRecord {
     present: StudentAttendanceType,
-    score: number,
+    score?: number,
     is_finished_homework?: boolean,
     comment?: string,
     date: string,
+}
+
+type StudentWithAttendanceRecordList = Student & {
+    records: AttendanceRecord[]
 }

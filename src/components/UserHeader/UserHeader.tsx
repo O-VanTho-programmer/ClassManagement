@@ -1,3 +1,4 @@
+import { useUser } from "@/context/UserContext";
 import BirthdayNotification from "../BirthdayNotification/BirthdayNotification";
 import CurrentDate from "../CurrentDate/CurrentDate";
 import HeaderAvatar from "../HeaderAvatar/HeaderAvatar";
@@ -5,6 +6,8 @@ import SystemNotification from "../SystemNotification/SystemNotification";
 import UserNotification from "../UserNotification/UserNotification";
 
 export default function UserHeader() {
+    const user = useUser();
+
     return (
         <div className="flex items-center gap-2">
             <CurrentDate/>
@@ -15,7 +18,7 @@ export default function UserHeader() {
                 <li><UserNotification/></li>
             </ul>
 
-            <HeaderAvatar/>
+            <HeaderAvatar name={user?.name.charAt(0) || '?'}/>
         </div>
     )
 }

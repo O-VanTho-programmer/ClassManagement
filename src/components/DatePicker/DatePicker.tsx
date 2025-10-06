@@ -4,14 +4,16 @@ import {LucideIcon } from "lucide-react";
 import { useState } from "react";
 
 interface DatePickerProps{
+    date?: string,
     onChange: (date: string) => void,
     icon?: LucideIcon,
     label: string,
     size? : "smaller"
 }
 
-export default function DatePicker ({onChange, icon, label, size} : DatePickerProps) {
-    const [selectedDate, setSelectedDate] = useState('2025-09-25');
+export default function DatePicker ({date, onChange, icon, label, size} : DatePickerProps) {
+    console.log(date);
+    const [selectedDate, setSelectedDate] = useState(date ??'2025-09-25');
 
     const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setSelectedDate(event.target.value);

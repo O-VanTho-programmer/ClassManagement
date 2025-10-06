@@ -4,9 +4,9 @@ import ViewClass from "@/components/ViewClass/ViewClass";
 
 export default function ClassesPage() {
     return (
-        <LayoutDashboard>
+        <>
             <ClassesCard/>
             <ViewClass/>
-        </LayoutDashboard>
+        </>
     )
 }

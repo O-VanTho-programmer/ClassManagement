@@ -64,9 +64,8 @@ export function ModalEditAttendance({ student, isOpen, onClose, onSave }: ModalE
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 transition-opacity duration-300"
+            className="fixed overlay inset-0 z-50 flex items-center justify-center p-4 transition-opacity duration-300"
             onClick={onClose}
-            style={{backgroundColor: "rgba(0,0,0,0.5)"}}
         >
             <div
                 className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-100"
