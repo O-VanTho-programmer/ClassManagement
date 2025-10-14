@@ -40,7 +40,7 @@ export default function Login() {
           });
 
           showAlert(res.data.message, "success");
-          window.location.href = '/dashboard';
+          window.location.href = '/hub';
 
         } catch (error: any) {
           if (error.response) { 

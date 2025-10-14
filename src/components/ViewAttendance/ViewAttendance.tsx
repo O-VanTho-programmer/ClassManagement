@@ -6,6 +6,8 @@ import TableAttendance from "../TableAttendance/TableAttendance";
 
 
 export default function ViewAttendance() {
+
+    
     return (
         <div className="mt-8">
             <div className="bg-white rounded-lg shadow-lg py-6">

@@ -17,7 +17,7 @@ export default function AttendanceListPage() {
     const totalDays = calculateScheduledDays(classInfo.schedule, classInfo.startDate, classInfo.endDate);
 
     return (
-        <LayoutDashboard>
+        <>
             {/* Header */}
             <div className="bg-white shadow-md rounded-xl p-6 flex items-center mb-6">
                 <span className="bg-blue-50 text-blue-600 flex items-center justify-center w-[50px] h-[50px] ">
@@ -38,6 +38,6 @@ export default function AttendanceListPage() {
             <AttendanceListFilter />
             <AttendanceSummary />
             <AttendanceListStudentTable/>
-        </LayoutDashboard>
+        </>
     )
 }

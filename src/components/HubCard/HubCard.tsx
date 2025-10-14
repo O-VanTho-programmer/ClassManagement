@@ -1,11 +1,13 @@
+import { Hub } from "@/types/Hub";
+
 interface HubCardProps {
     hub: Hub;
+    isOwner: boolean;
     onClick: (hub: Hub) => void;
 }
 
-export default function HubCard({ hub, onClick }: HubCardProps) {
-    const isOwner = hub.Owner === 'Current User';
-
+export default function HubCard({ hub, isOwner, onClick }: HubCardProps) {
+    
     return (
         <div
             className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 transition-all duration-300 hover:shadow-md hover:border-gray-300 cursor-pointer group"
@@ -14,10 +16,10 @@ export default function HubCard({ hub, onClick }: HubCardProps) {
             {/* Header */}
             <div className="flex justify-between items-start mb-4">
                 <h3 className="text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
-                    {hub.Name}
+                    {hub.name}
                 </h3>
                 {isOwner && (
-                    <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                    <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-full">
                         Owner
                     </span>
                 )}
@@ -25,24 +27,24 @@ export default function HubCard({ hub, onClick }: HubCardProps) {
 
             {/* Description */}
             <p className="text-gray-600 mb-6 line-clamp-2">
-                {hub.Description}
+                {hub.description}
             </p>
 
             {/* Stats */}
             <div className="flex justify-between items-center mb-4">
                 <div className="text-center">
-                    <div className="text-2xl font-bold text-gray-900">{hub.NumberOfClasses}</div>
+                    <div className="text-2xl font-bold text-gray-900">{hub.numberOfClasses}</div>
                     <div className="text-sm text-gray-500">Classes</div>
                 </div>
                 <div className="text-center">
-                    <div className="text-2xl font-bold text-gray-900">{hub.NumberOfTeachers}</div>
+                    <div className="text-2xl font-bold text-gray-900">{hub.numberOfTeachers}</div>
                     <div className="text-sm text-gray-500">Teachers</div>
                 </div>
             </div>
 
             {/* Footer */}
             <div className="flex justify-between items-center pt-4 border-t border-gray-100">
-                <span className="text-sm text-gray-500">By {hub.Owner}</span>
+                <span className="text-sm text-gray-500">By {hub.owner}</span>
                 <div className="flex gap-2">
                     <button className="p-2 text-gray-400 hover:text-blue-600 transition-colors">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -60,4 +62,3 @@ export default function HubCard({ hub, onClick }: HubCardProps) {
         </div>
     );
 }
-

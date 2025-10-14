@@ -1,15 +1,15 @@
-interface Hub{
-    Id: number,
-    Name: string,
-    Description: string,
-    NumberOfClasses: number
-    NumberOfTeachers: number;
-    Owner: string,
+export interface Hub{
+    id: number,
+    name: string,
+    description: string,
+    numberOfClasses: number
+    numberOfTeachers: number;
+    owner: string,
 }
 
-interface HubAddDto{
-    Name: string,
-    Description: string,
-    IncludedTeachers: string[];
-    Owner: string,
+export interface HubAddDto{
+    name: string,
+    description: string,
+    includedTeachers: string[];
+    owner: string,
 }

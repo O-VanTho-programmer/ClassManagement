@@ -1,69 +1,106 @@
 'use client';
+import { useAlert } from "@/components/AlertProvider/AlertContext";
 import Button from "@/components/Button/Button";
 import CreateHubModal from "@/components/CreateHubModal/CreateHubModal";
 import HubCard from "@/components/HubCard/HubCard";
 import Statistics from "@/components/StatisticSummary/StatisticSummary";
 import { useUser } from "@/context/UserContext";
+import { useGetUserHubsQuery } from "@/hooks/useGetUserHubsQuery";
+import { newHubApi } from "@/lib/api/newHub";
 import getHubStatsSum from "@/utils/getHubStatsSum";
-import { Plus } from "lucide-react";
-import { useState } from "react";
-
-const mockHubs: Hub[] = [
-    {
-        Id: 1,
-        Name: "Mathematics Department",
-        Description: "Central hub for all mathematics classes and resources",
-        NumberOfClasses: 8,
-        NumberOfTeachers: 3,
-        Owner: "Dr. Smith"
-    },
-    {
-        Id: 2,
-        Name: "Science Center",
-        Description: "Collaborative space for science educators and students",
-        NumberOfClasses: 12,
-        NumberOfTeachers: 5,
-        Owner: "Prof. Johnson"
-    },
-    {
-        Id: 3,
-        Name: "Language Arts Hub",
-        Description: "Focus on literature, writing, and language studies",
-        NumberOfClasses: 6,
-        NumberOfTeachers: 2,
-        Owner: "Dr. Wilson"
-    }
-];
+import { Hub, HubAddDto } from "@/types/Hub";
+import { Plus, RefreshCw } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function HubPage() {
 
     const user = useUser();
+    const { showAlert } = useAlert();
+    const router = useRouter();
 
-    const [hubs, setHubs] = useState<Hub[]>(mockHubs);
+    const { data: hubsData, isLoading, isError, error } = useGetUserHubsQuery();
+    const [hubs, setHubs] = useState<Hub[]>([]);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-    // In real app, this would be an API call
-    const userHubs = hubs; // Filter by current user in real implementation
+    useEffect(() => {
+        if (hubsData) {
+            setHubs(hubsData);
+        }
+    }, [hubsData]);
 
-    const hubStats = getHubStatsSum(userHubs);
+    // API call
+    const userHubs = hubs; // Filter by current user
 
-    const handleCreateHub = (newHubData: HubAddDto) => {
+    const hubStats = getHubStatsSum(userHubs, user?.Name);
+
+    const handleOpenCreateModal = () => {
+        if (user) {
+            setIsCreateModalOpen(true)
+            return;
+        }
+
+        router.push('/auth');
+    }
+
+    const handleCreateHub = async (newHubData: HubAddDto) => {
+        const res = await newHubApi(newHubData);
+
+        if (res?.status === 200) {
+            showAlert("Hub created successfully", "success");
+        } else {
+            showAlert("Hub creation failed", "error");
+            return;
+        }
+
         const newHub: Hub = {
-            Name: newHubData.Name,
-            Description: newHubData.Description,
-            NumberOfClasses: 0,
-            NumberOfTeachers: newHubData.IncludedTeachers.length,
-            Owner: newHubData.Owner,
-            Id: Math.max(...hubs.map(h => h.Id)) + 1,
+            name: newHubData.name,
+            description: newHubData.description,
+            numberOfClasses: 0,
+            numberOfTeachers: newHubData.includedTeachers.length,
+            owner: newHubData.owner,
+            id: Math.max(...hubs.map(h => h.id)) + 1,
         };
         setHubs(prev => [newHub, ...prev]);
         setIsCreateModalOpen(false);
     };
 
     const handleHubClick = (hub: Hub) => {
-        console.log('Hub clicked:', hub);
-        // Navigate to hub details or classes in this hub
+        router.push(`/hub/${hub.id}/classes`);
     };
+
+    // Show loading state
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading your hubs...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Show error state
+    if (isError) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="text-center max-w-md">
+                    <div className="text-red-500 text-6xl mb-4">⚠️</div>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-4">Error Loading Hubs</h2>
+                    <p className="text-gray-600 mb-6">
+                        {error?.message || "Something went wrong while loading your hubs. Please try again."}
+                    </p>
+                    <Button 
+                        color="blue" 
+                        icon={RefreshCw}
+                        title="Retry" 
+                        onClick={() => window.location.reload()} 
+                    />
+                </div>
+            </div>
+        );
+    }
 
     if (userHubs.length === 0) {
         return (
@@ -83,8 +120,8 @@ export default function HubPage() {
 
                     {/* Big Create Hub Button */}
                     <button
-                        onClick={() => setIsCreateModalOpen(true)}
-                        className="inline-flex items-center gap-3 bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 rounded-2xl font-bold text-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+                        onClick={handleOpenCreateModal}
+                        className="cursor-pointer inline-flex items-center gap-3 bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 rounded-2xl font-bold text-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
                     >
                         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -150,22 +187,16 @@ export default function HubPage() {
                     </div>
 
                     <Button color="blue" icon={Plus} title="Create New Hub"
-                        onClick={() => {
-                            if (user) {
-                                setIsCreateModalOpen(true)
-                                return;
-                            }
-
-                            window.location.href = '/auth';
-                        }} />
+                        onClick={handleOpenCreateModal} />
                 </div>
 
                 {/* Hubs Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {userHubs.map((hub) => (
                         <HubCard
-                            key={hub.Id}
+                            key={hub.id}
                             hub={hub}
+                            isOwner={hub.owner.match(user?.Name) ? true : false}
                             onClick={handleHubClick}
                         />
                     ))}

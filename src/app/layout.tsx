@@ -3,6 +3,7 @@ import "./globals.css";
 import { AlertProvider } from "@/components/AlertProvider/AlertContext";
 import { getCurrentUser } from "@/lib/curentUser";
 import { UserProvider } from "@/context/UserContext";
+import ReactQueryProvider from "@/providers/ReactQueryProvider";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -15,22 +16,24 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const user = await getCurrentUser();
-  
-  if(user === null){
+
+  if (user === null) {
     // window.location.href = '/auth'
   }
 
   return (
-    
+
     <html lang="en">
       <body
         className={``}
       >
-        <UserProvider user={user}>
-          <AlertProvider>
-            {children}
-          </AlertProvider>
-        </UserProvider>
+        <ReactQueryProvider>
+          <UserProvider user={user}>
+            <AlertProvider>
+              {children}
+            </AlertProvider>
+          </UserProvider>
+        </ReactQueryProvider>
       </body>
     </html>
   );

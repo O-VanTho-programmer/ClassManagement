@@ -3,10 +3,11 @@ import getDayNameFromDate from "@/utils/Format/getDateNameFromDate";
 import generateDateRange from "@/utils/generateDateRange";
 import HeaderAvatar from "../HeaderAvatar/HeaderAvatar";
 import calculateScheduledDays from "@/utils/calculateScheduledDays";
-import { studentAttendanceRecordsDataSample } from "@/data_sample/studentWithAttendanceRecords";
 import AttendanceCell from "../AttendanceCell/AttendanceCell";
 import { useState } from "react";
 import { ModalEditAttendance } from "../ModalEditAttendance/ModalEditAttendance";
+import { useParams } from "next/navigation";
+import { useGetStudentAttendanceRecordsQuery } from "@/hooks/useGetStudentAttendanceRecordsQuery";
 
 interface AttendanceGridStudentTableProps {
     schedule: { day: string; time: string; }[];
@@ -16,7 +17,9 @@ interface AttendanceGridStudentTableProps {
 
 export default function AttendanceGridStudentTable({ schedule, startDate, endDate }: AttendanceGridStudentTableProps) {
 
-    const [students, setStudents] = useState<StudentWithAttendanceRecordList[]>(studentAttendanceRecordsDataSample);
+    const {class_id} = useParams();
+    const { data: fetchedStudents, isLoading, isError, error } = useGetStudentAttendanceRecordsQuery(class_id as string);
+    const [students, setStudents] = useState<StudentWithAttendanceRecordList[]>(fetchedStudents || []);
 
     const dateRange = generateDateRange(startDate, endDate, schedule);
 
@@ -102,12 +105,10 @@ export default function AttendanceGridStudentTable({ schedule, startDate, endDat
                             const totalCheckedSessions = student.records.length;
                             return(
                                     <tr key={student.id} className="hover:bg-gray-50 transition duration-150 relative">
-                                        {/* STT - FIXED */}
                                         <td className="py-4 px-2 text-center text-sm font-bold text-blue-600 border-r border-gray-200 sticky left-0 z-10 bg-white min-w-[50px]">
                                             {studentIndex + 1}
                                         </td>
 
-                                        {/* Student Name - FIXED */}
                                         <td className="py-4 px-2 text-sm text-gray-900 border-r border-gray-200 sticky left-[50px] z-10 bg-white min-w-[125px] shadow-[2px_0_2px_-2px_rgba(0,0,0,0.1)]">
                                             <div className="flex items-start space-x-3">
                                                 <HeaderAvatar name={student.name.charAt(0)} size="smaller" />
@@ -121,7 +122,6 @@ export default function AttendanceGridStudentTable({ schedule, startDate, endDat
                                             </div>
                                         </td>
 
-                                        {/* Số buổi - FIXED */}
                                         <td className="py-4 px-2 text-center text-sm font-semibold text-indigo-600 border-r border-gray-200 sticky left-[175px] z-10 bg-white min-w-[100px] shadow-[2px_0_2px_-2px_rgba(0,0,0,0.1)]">
                                             {totalCheckedSessions}
                                         </td>

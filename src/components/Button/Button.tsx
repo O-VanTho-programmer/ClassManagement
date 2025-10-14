@@ -21,7 +21,7 @@ export default function Button({ title, icon, onClick, color }: ButtonProps) {
     const Icon = icon;
 
     return (
-        <button onClick={onClick} className={`cursor-pointer py-2 px-4 rounded-lg ${styleClr} transition-colors duration-200`}>
+        <button type="button" onClick={onClick} className={`cursor-pointer py-2 px-4 rounded-lg ${styleClr} transition-colors duration-200`}>
             <span className="flex items-center gap-2">
                 <Icon size={20} />
                 {title}

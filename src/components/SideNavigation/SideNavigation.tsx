@@ -1,5 +1,7 @@
 import { BellElectricIcon, CalendarClock, CalendarDays, ChevronLeftIcon, ChevronRightIcon, GraduationCapIcon, HomeIcon, SettingsIcon, StarIcon, XIcon } from "lucide-react";
 import NavigationSection from "../NavigationSection/NavigationSection";
+import { useParams } from "next/navigation";
+
 
 const navigationSections = [
     {
@@ -22,14 +24,14 @@ const navigationSections = [
 type SideNavigationProps = {
     isOpen: boolean;
     toggleNav: () => void;
-    navigateTo: (page: string) => void;
     activePage: string;
     isShrunk: boolean;
     toggleShrink: () => void;
 }
 
-export default function SideNavigation({isOpen, toggleNav, navigateTo, activePage, isShrunk, toggleShrink }: SideNavigationProps) {
+export default function SideNavigation({isOpen, toggleNav, activePage, isShrunk, toggleShrink }: SideNavigationProps) {
 
+    const { hub_id } = useParams();
     return (
         <nav
             className={`fixed inset-y-0 left-0 z-40 bg-slate-800 text-white shadow-lg transform transition-all duration-300 ${isShrunk ? 'w-20' : 'w-64'} md:relative ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}
@@ -52,7 +54,7 @@ export default function SideNavigation({isOpen, toggleNav, navigateTo, activePag
                             key={index}
                             title={section.title}
                             items={section.items}
-                            navigateTo={navigateTo}
+                            hubId={hub_id as string}
                             activePage={activePage}
                             isShrunk={isShrunk}
                         />

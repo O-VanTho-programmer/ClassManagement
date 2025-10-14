@@ -34,7 +34,6 @@ export async function POST(req: Request) {
 
     const teacherId = teacherRows[0].UserId;
 
-    // ✅ Find assistant ID (if any)
     let assistantId = null;
     if (assistant) {
       const [assistantRows]: any = await pool.query(
@@ -44,7 +43,6 @@ export async function POST(req: Request) {
       if (assistantRows.length) assistantId = assistantRows[0].UserId;
     }
 
-    // ✅ Insert new class
     const [classResult]: any = await pool.query(
       `INSERT INTO class 
         (Name, StartDate, EndDate, Teacher, Assistant, Subject, Tuition, TuitionType, Base, Status)

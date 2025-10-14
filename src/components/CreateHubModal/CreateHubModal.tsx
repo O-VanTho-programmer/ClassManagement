@@ -1,6 +1,7 @@
 import { PlusSquare, X } from "lucide-react";
 import { useState } from "react";
 import Button from "../Button/Button";
+import { useUser } from "@/context/UserContext";
 
 interface CreateHubModalProps {
     isOpen: boolean;
@@ -9,11 +10,17 @@ interface CreateHubModalProps {
 }
 
 export default function CreateHubModal({ isOpen, onClose, onSubmit }: CreateHubModalProps) {
+    const user = useUser();
+
+    if(!user){
+        return null;
+    }
+
     const [formData, setFormData] = useState<HubAddDto>({
-        Name: '',
-        Description: '',
-        IncludedTeachers: [],
-        Owner: 'Current User'
+        name: '',
+        description: '',
+        includedTeachers: [],
+        owner: user.userId
     });
 
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -21,9 +28,8 @@ export default function CreateHubModal({ isOpen, onClose, onSubmit }: CreateHubM
     const validateForm = () => {
         const newErrors: Record<string, string> = {};
 
-        if (!formData.Name.trim()) newErrors.Name = 'Hub name is required';
-        if (!formData.Description.trim()) newErrors.Description = 'Description is required';
-        if (formData.Description.length < 10) newErrors.Description = 'Description should be at least 10 characters';
+        if (!formData.name.trim()) newErrors.Name = 'Hub name is required';
+        if (!formData.description.trim()) newErrors.Description = 'Description is required';
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -34,10 +40,10 @@ export default function CreateHubModal({ isOpen, onClose, onSubmit }: CreateHubM
         if (validateForm()) {
             onSubmit(formData);
             setFormData({
-                Name: '',
-                Description: '',
-                IncludedTeachers: [],
-                Owner: 'Current User'
+                name: '',
+                description: '',
+                includedTeachers: [],        
+                owner: user.userId
             });
         }
     };
@@ -70,8 +76,8 @@ export default function CreateHubModal({ isOpen, onClose, onSubmit }: CreateHubM
                         </label>
                         <input
                             type="text"
-                            value={formData.Name}
-                            onChange={(e) => setFormData(prev => ({ ...prev, Name: e.target.value }))}
+                            value={formData.name}
+                            onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                             className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.Name ? 'border-red-500' : 'border-gray-300'
                                 }`}
                             placeholder="Enter hub name"
@@ -84,8 +90,8 @@ export default function CreateHubModal({ isOpen, onClose, onSubmit }: CreateHubM
                             Description *
                         </label>
                         <textarea
-                            value={formData.Description}
-                            onChange={(e) => setFormData(prev => ({ ...prev, Description: e.target.value }))}
+                            value={formData.description}
+                            onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                             rows={3}
                             className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.Description ? 'border-red-500' : 'border-gray-300'
                                 }`}
@@ -95,16 +101,16 @@ export default function CreateHubModal({ isOpen, onClose, onSubmit }: CreateHubM
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Teachers
+                        <div className="flex items-center gap-2">
+                            <label className="block text-sm font-medium text-gray-700">
+                                Teachers (included you)
                             </label>
-                            <span className="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                                {formData.IncludedTeachers.length}
+                            <span className="">
+                                {formData.includedTeachers.length + 1}
                             </span>
                         </div>
 
-                        <Button color="blue" icon={PlusSquare} title="Add Teacher" onClick={handleAddTeacher} />
+                        <Button color="blue_off" icon={PlusSquare} title="Add Teacher" onClick={handleAddTeacher} />
                     </div>
 
                     {/* Actions */}
@@ -118,7 +124,7 @@ export default function CreateHubModal({ isOpen, onClose, onSubmit }: CreateHubM
                         </button>
                         <button
                             type="submit"
-                            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                            className="cursor-pointer px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
                         >
                             Create Hub
                         </button>

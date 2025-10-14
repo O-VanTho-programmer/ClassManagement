@@ -1,6 +1,9 @@
+'use client';
+
 import { CalendarCheck, ChartArea, EllipsisVertical, GraduationCap, ListCheck, StarIcon, Users } from "lucide-react";
 import Badge from "../Badge/Badge";
 import Button from "../Button/Button";
+import { useParams, useRouter } from "next/navigation";
 
 interface TableClassRowProps {
     data: ClassData;
@@ -81,16 +84,20 @@ function TableClassRowForClasses({ data, index }: TableClassRowProps) {
 
 
 function TableClassRowForAttendance({ data, index }: TableClassRowProps) {
-    const TakeAttendance = () => {
+    const router = useRouter();
+    const params = useParams();
+    const hub_id = params.hub_id;
 
+    const TakeAttendance = () => {
+        router.push(`/hub/${hub_id}/attendance/${data.id}/grid`);
     }
 
     const DirectToAttendanceReport = () => {
-
+        router.push(`/hub/${hub_id}/attendance/${data.id}/report`);
     }
 
     const DirectToAttendanceList = () => {
-
+        router.push(`/hub/${hub_id}/attendance/${data.id}/list`);
     }
 
     return (

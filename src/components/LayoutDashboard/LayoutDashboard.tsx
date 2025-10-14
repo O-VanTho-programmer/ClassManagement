@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import SideNavigation from "../SideNavigation/SideNavigation"
-import { MenuIcon } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { MenuIcon, XIcon } from "lucide-react";
 import HeaderDashboard from "../HeaderDashboard/HeaderDashboard";
+import { usePathname } from "next/navigation";
 
 
 export default function LayoutDashboard({ children }: { children: React.ReactNode }) {
+
 
     const [isNavOpen, setIsNavOpen] = useState(false);
     const [isNavShrunk, setIsNavShrunk] = useState(false);
@@ -26,10 +27,6 @@ export default function LayoutDashboard({ children }: { children: React.ReactNod
         setIsNavShrunk(!isNavShrunk);
     };
 
-    const navigateTo = (page: string) => {
-        window.location.href = page;
-    };
-
     return (
         <div className="min-h-screen bg-gray-100 font-sans text-gray-900">
             <div className="flex h-screen">
@@ -40,9 +37,14 @@ export default function LayoutDashboard({ children }: { children: React.ReactNod
                     </button>
                 </div>
 
-                <SideNavigation isOpen={isNavOpen} toggleNav={toggleNav} navigateTo={navigateTo} activePage={currentPage} isShrunk={isNavShrunk} toggleShrink={toggleShrink} />
-                <main className={`flex-1 overflow-y-auto overflow-x-hidden transition-all duration-300 md:pt-0 bg-gray-50`}> 
-                    <HeaderDashboard/>
+                <SideNavigation
+                    isOpen={isNavOpen}
+                    toggleNav={toggleNav}
+                    activePage={currentPage}
+                    isShrunk={isNavShrunk}
+                    toggleShrink={toggleShrink} />
+                <main className={`flex-1 overflow-y-auto overflow-x-hidden transition-all duration-300 md:pt-0 bg-gray-50`}>
+                    <HeaderDashboard />
                     <div className="container py-6">
                         {children}
                     </div>
