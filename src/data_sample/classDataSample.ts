@@ -1,6 +1,6 @@
 export const classData: ClassData[] = [
     {
-        id: 1,
+        id: "1",
         name: 'Anh 6.1',
         status: 'active',
         schedule: [{ day: 'Monday', time: '18:30:00 - 20:00:00' }, { day: 'Tuesday', time: '18:30:00 - 20:00:00' }],
@@ -13,7 +13,7 @@ export const classData: ClassData[] = [
         endDate: '2025-11-01'
     },
     {
-        id: 2,
+        id: "2",
         name: 'Anh 8.1',
         status: 'finished',
         schedule: [{ day: 'Saturday', time: '18:30:00 - 20:00:00' }, { day: 'Sunday', time: '18:30:00 - 20:00:00' }],

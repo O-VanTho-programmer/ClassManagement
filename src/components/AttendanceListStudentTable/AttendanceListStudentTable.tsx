@@ -2,10 +2,16 @@ import { useState } from "react";
 import AttendanceListStudentTableRow from "../AttendanceListStudentTableRow/AttendanceListStudentTableRow";
 import { studentsAttendanceSample } from "@/data_sample/studentAttendanceSample";
 import { ModalEditAttendance } from "../ModalEditAttendance/ModalEditAttendance";
+import { newAttendanceRecordsApi } from "@/lib/api/newAttendanceRecord";
+import { useAlert } from "../AlertProvider/AlertContext";
+import { useParams } from "next/navigation";
 
-export default function AttendanceListStudentTable() {
+export default function AttendanceListStudentTable({class_id}: {class_id: string}) {
+    
     const [studentDatas, setStudentDatas] = useState<StudentAttendance[]>(studentsAttendanceSample);
     const [editingStudent, setEditingStudent] = useState<StudentAttendance | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
+    const { showAlert } = useAlert();
     const isModalOpen = !!editingStudent;
 
     const openModalEdit = (student: StudentAttendance) => {
@@ -16,11 +22,29 @@ export default function AttendanceListStudentTable() {
         setEditingStudent(null);
     };
 
-    const handleSaveAttendance = (updatedStudent: StudentAttendance) => {
-        setStudentDatas(prevStudents =>
-            prevStudents.map(s => s.id === updatedStudent.id ? updatedStudent : s)
-        );
-        console.log("Attendance saved:", updatedStudent);
+    const handleSaveAttendance = async (updatedStudent: StudentAttendance) => {
+
+        setIsSaving(true);
+        try {
+            const res = await newAttendanceRecordsApi(updatedStudent, class_id);
+
+            console.log("Attendance saved:", updatedStudent);
+
+            if (res?.status === 200) {
+                setStudentDatas(prevStudents =>
+                    prevStudents.map(s => s.id === updatedStudent.id ? updatedStudent : s)
+                );
+                showAlert("Attendance saved successfully!", "success");
+                handleCloseModal();
+            } else {
+                showAlert("Failed to save attendance. Please try again.", "error");
+            }
+        } catch (error) {
+            console.error("Error saving attendance:", error);
+            showAlert("An unexpected error occurred. Please try again.", "error");
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     return (
@@ -55,6 +79,7 @@ export default function AttendanceListStudentTable() {
                     onClose={handleCloseModal}
                     student={editingStudent}
                     onSave={handleSaveAttendance}
+                    isSaving={isSaving}
                 />
             )}
         </>

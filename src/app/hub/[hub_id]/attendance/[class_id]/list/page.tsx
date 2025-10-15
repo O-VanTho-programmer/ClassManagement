@@ -37,7 +37,7 @@ export default function AttendanceListPage() {
 
             <AttendanceListFilter />
             <AttendanceSummary />
-            <AttendanceListStudentTable/>
+            <AttendanceListStudentTable class_id= {classInfo.id}/>
         </>
     )
 }

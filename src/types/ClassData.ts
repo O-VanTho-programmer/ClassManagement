@@ -1,5 +1,5 @@
 interface ClassData {
-    id: number;
+    id: string;
     name: string;
     schedule: { day: string; time: string; }[];
     studentCount: number;

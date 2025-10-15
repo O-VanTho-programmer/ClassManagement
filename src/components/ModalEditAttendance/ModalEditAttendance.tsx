@@ -7,11 +7,11 @@ interface ModalEditAttendanceProps {
     isOpen: boolean;
     onClose: () => void;
     onSave: (updatedStudent: StudentAttendance) => void;
+    isSaving?: boolean;
 }
 
-export function ModalEditAttendance({ student, isOpen, onClose, onSave }: ModalEditAttendanceProps) {
+export function ModalEditAttendance({ student, isOpen, onClose, onSave, isSaving }: ModalEditAttendanceProps) {
     const [editData, setEditData] = useState<StudentAttendance>(student);
-    const [isSaving, setIsSaving] = useState(false);
 
     // Reset local state when a new student is passed in or when modal opens
     useEffect(() => {
@@ -44,13 +44,7 @@ export function ModalEditAttendance({ student, isOpen, onClose, onSave }: ModalE
     };
 
     const handleSave = () => {
-        setIsSaving(true);
-
-        setTimeout(() => {
-            onSave(editData);
-            setIsSaving(false);
-            onClose();
-        }, 500);
+        onSave(editData)
     };
 
 

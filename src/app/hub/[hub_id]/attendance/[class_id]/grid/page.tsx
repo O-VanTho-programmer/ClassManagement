@@ -3,7 +3,6 @@
 import AttendanceGridFilter from "@/components/AttendanceGridFilter/AttendanceGridFilter";
 import AttendanceGridStudentTable from "@/components/AttendanceGridStudentTable/AttendanceGridStudentTable";
 import AttendanceSummary from "@/components/AttendanceSummary/AttendanceSummary";
-import LayoutDashboard from "@/components/LayoutDashboard/LayoutDashboard";
 import { classData } from "@/data_sample/classDataSample";
 import calculateScheduledDays from "@/utils/calculateScheduledDays";
 import { Calendar, GraduationCap, Users } from "lucide-react";
@@ -40,7 +39,7 @@ export default function AttendanceGridPage() {
 
             <AttendanceGridFilter startDate={startDate} endDate={endDate} />
             <AttendanceSummary />
-            <AttendanceGridStudentTable schedule={classInfo.schedule} startDate={startDate} endDate={endDate} />
+            <AttendanceGridStudentTable class_id={classInfo.id} schedule={classInfo.schedule} startDate={startDate} endDate={endDate} />
         </>
     )
 }

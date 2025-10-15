@@ -8,19 +8,23 @@ import { useState } from "react";
 import { ModalEditAttendance } from "../ModalEditAttendance/ModalEditAttendance";
 import { useParams } from "next/navigation";
 import { useGetStudentAttendanceRecordsQuery } from "@/hooks/useGetStudentAttendanceRecordsQuery";
+import { newAttendanceRecordsApi } from "@/lib/api/newAttendanceRecord";
+import { useAlert } from "../AlertProvider/AlertContext";
 
 interface AttendanceGridStudentTableProps {
+    class_id: string,
     schedule: { day: string; time: string; }[];
     startDate: string,
     endDate: string,
 }
 
-export default function AttendanceGridStudentTable({ schedule, startDate, endDate }: AttendanceGridStudentTableProps) {
+export default function AttendanceGridStudentTable({ class_id, schedule, startDate, endDate }: AttendanceGridStudentTableProps) {
 
-    const {class_id} = useParams();
-    const { data: fetchedStudents, isLoading, isError, error } = useGetStudentAttendanceRecordsQuery(class_id as string);
+    const { data: fetchedStudents, isLoading, isError, error } = useGetStudentAttendanceRecordsQuery(class_id);
     const [students, setStudents] = useState<StudentWithAttendanceRecordList[]>(fetchedStudents || []);
 
+    const [isSaving, setIsSaving] = useState(false);
+    const { showAlert } = useAlert();
     const dateRange = generateDateRange(startDate, endDate, schedule);
 
     const [editingRecord, setEditingRecord] = useState<StudentAttendance | null>(null);
@@ -42,34 +46,47 @@ export default function AttendanceGridStudentTable({ schedule, startDate, endDat
         setEditingRecord(null);
     };
 
-    const handleSaveAttendance = (updatedRecord: AttendanceRecord) => {
+    const handleSaveAttendance = async (updatedRecord: StudentAttendance) => {
         if (!editingRecord) return;
         const targetStudentId = editingRecord.id;
+        setIsSaving(true);
 
-        setStudents(prevStudents =>
-            prevStudents.map(student => {
-                if (student.id !== targetStudentId) {
-                    return student;
-                }
+        try {
+            const res = await newAttendanceRecordsApi(updatedRecord, class_id);
 
-                // Update the specific record
-                const newRecords = student.records.map(record =>
-                    record.date === updatedRecord.date ? updatedRecord : record
+            if (res?.status === 200) {
+                setStudents(prevStudents =>
+                    prevStudents.map(student => {
+                        if (student.id !== targetStudentId) {
+                            return student;
+                        }
+
+                        // Find if the record already exists to update it, otherwise add it.
+                        const recordExists = student.records.some(r => r.date === updatedRecord.date);
+                        const newRecords = recordExists
+                            ? student.records.map(r => r.date === updatedRecord.date ? updatedRecord : r)
+                            : [...student.records, updatedRecord];
+
+                        // Recalculate total sessions based on new records
+                        const newTotalSessions = newRecords.filter(r =>
+                            r.present === 'present' || r.present === 'late'
+                        ).length;
+
+                        return { ...student, total_sessions: newTotalSessions, records: newRecords };
+                    })
                 );
-
-                // Recalculate total sessions based on new records
-                const newTotalSessions = newRecords.filter(r =>
-                    r.present === 'present' || r.present === 'late'
-                ).length;
-
-                return {
-                    ...student,
-                    total_sessions: newTotalSessions,
-                    records: newRecords
-                };
-            })
-        );
-        console.log(`Record saved for ${editingRecord.name} on ${updatedRecord.date}:`, updatedRecord);
+                showAlert("Attendance saved successfully!", "success");
+                console.log(`Record saved for ${editingRecord.name} on ${updatedRecord.date}:`, updatedRecord);
+                handleCloseModal();
+            } else {
+                showAlert("Failed to save attendance. Please try again.", "error");
+            }
+        } catch (error) {
+            console.error("Error saving attendance:", error);
+            showAlert("An unexpected error occurred while saving.", "error");
+        } finally {
+            setIsSaving(false);
+        }
     };
     return (
         <div className="bg-white shadow-md rounded-xl p-4 flex justify-between items-center mb-6">
@@ -158,6 +175,7 @@ export default function AttendanceGridStudentTable({ schedule, startDate, endDat
                     isOpen={isModalOpen}
                     onClose={handleCloseModal}
                     onSave={handleSaveAttendance}
+                    isSaving={isSaving}
                 />
             )}
         </div>
