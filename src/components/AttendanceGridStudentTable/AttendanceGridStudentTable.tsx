@@ -2,18 +2,21 @@ import formatDisplayDate from "@/utils/Format/formatDisplayDate";
 import getDayNameFromDate from "@/utils/Format/getDateNameFromDate";
 import generateDateRange from "@/utils/generateDateRange";
 import HeaderAvatar from "../HeaderAvatar/HeaderAvatar";
-import calculateScheduledDays from "@/utils/calculateScheduledDays";
 import AttendanceCell from "../AttendanceCell/AttendanceCell";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ModalEditAttendance } from "../ModalEditAttendance/ModalEditAttendance";
-import { useParams } from "next/navigation";
 import { useGetStudentAttendanceRecordsQuery } from "@/hooks/useGetStudentAttendanceRecordsQuery";
 import { newAttendanceRecordsApi } from "@/lib/api/newAttendanceRecord";
 import { useAlert } from "../AlertProvider/AlertContext";
+import { Schedule } from "@/types/Schedule";
+import LoadingState from "../QueryState/LoadingState";
+import ErrorState from "../QueryState/ErrorState";
+import { useQueryClient } from "@tanstack/react-query";
+import formatDate from "@/utils/Format/formatDate";
 
 interface AttendanceGridStudentTableProps {
     class_id: string,
-    schedule: { day: string; time: string; }[];
+    schedule: Schedule[];
     startDate: string,
     endDate: string,
 }
@@ -21,11 +24,11 @@ interface AttendanceGridStudentTableProps {
 export default function AttendanceGridStudentTable({ class_id, schedule, startDate, endDate }: AttendanceGridStudentTableProps) {
 
     const { data: fetchedStudents, isLoading, isError, error } = useGetStudentAttendanceRecordsQuery(class_id);
-    const [students, setStudents] = useState<StudentWithAttendanceRecordList[]>(fetchedStudents || []);
+    const queryClient = useQueryClient();
 
     const [isSaving, setIsSaving] = useState(false);
     const { showAlert } = useAlert();
-    const dateRange = generateDateRange(startDate, endDate, schedule);
+    const dateRange = useMemo(() => generateDateRange(startDate, endDate, schedule), [startDate, endDate]);
 
     const [editingRecord, setEditingRecord] = useState<StudentAttendance | null>(null);
     const isModalOpen = !!editingRecord;
@@ -55,7 +58,7 @@ export default function AttendanceGridStudentTable({ class_id, schedule, startDa
             const res = await newAttendanceRecordsApi(updatedRecord, class_id);
 
             if (res?.status === 200) {
-                setStudents(prevStudents =>
+                queryClient.setQueryData<StudentWithAttendanceRecordList[]>(["studentAttendanceRecords", class_id], (prevStudents = []) =>
                     prevStudents.map(student => {
                         if (student.id !== targetStudentId) {
                             return student;
@@ -88,6 +91,21 @@ export default function AttendanceGridStudentTable({ class_id, schedule, startDa
             setIsSaving(false);
         }
     };
+
+    if (isLoading) return <LoadingState fullScreen message="Loading your students attendance records..." />;
+    if (isError) return (
+        <ErrorState
+            fullScreen
+            title="Error Loading Attendance Records"
+            message={error?.message || "Something went wrong while loading your attendance records. Please try again."}
+            onRetry={() => window.location.reload()}
+        />
+    );
+
+    if (fetchedStudents === undefined || fetchedStudents === null) {
+        return;
+    }
+
     return (
         <div className="bg-white shadow-md rounded-xl p-4 flex justify-between items-center mb-6">
             <div className="bg-white rounded-xl shadow-lg overflow-x-auto w-full">
@@ -118,50 +136,51 @@ export default function AttendanceGridStudentTable({ class_id, schedule, startDa
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                        {students.map((student, studentIndex) => {
+                        {fetchedStudents.map((student, studentIndex) => {
                             const totalCheckedSessions = student.records.length;
-                            return(
-                                    <tr key={student.id} className="hover:bg-gray-50 transition duration-150 relative">
-                                        <td className="py-4 px-2 text-center text-sm font-bold text-blue-600 border-r border-gray-200 sticky left-0 z-10 bg-white min-w-[50px]">
-                                            {studentIndex + 1}
-                                        </td>
+                            return (
+                                <tr key={student.id} className="hover:bg-gray-50 transition duration-150 relative">
+                                    <td className="py-4 px-2 text-center text-sm font-bold text-blue-600 border-r border-gray-200 sticky left-0 z-10 bg-white min-w-[50px]">
+                                        {studentIndex + 1}
+                                    </td>
 
-                                        <td className="py-4 px-2 text-sm text-gray-900 border-r border-gray-200 sticky left-[50px] z-10 bg-white min-w-[125px] shadow-[2px_0_2px_-2px_rgba(0,0,0,0.1)]">
-                                            <div className="flex items-start space-x-3">
-                                                <HeaderAvatar name={student.name.charAt(0)} size="smaller" />
-                                                <div className="flex flex-col">
-                                                    {student.name.split(' ').map((part, i) => (
-                                                        <p key={i} className={`font-semibold leading-tight ${i === 0 ? 'text-base' : 'text-sm'}`}>
-                                                            {part}
-                                                        </p>
-                                                    ))}
-                                                </div>
+                                    <td className="py-4 px-2 text-sm text-gray-900 border-r border-gray-200 sticky left-[50px] z-10 bg-white min-w-[125px] shadow-[2px_0_2px_-2px_rgba(0,0,0,0.1)]">
+                                        <div className="flex items-start space-x-3">
+                                            <HeaderAvatar name={student.name.charAt(0)} size="smaller" />
+                                            <div className="flex flex-col">
+                                                {student.name.split(' ').map((part, i) => (
+                                                    <p key={i} className={`font-semibold leading-tight ${i === 0 ? 'text-base' : 'text-sm'}`}>
+                                                        {part}
+                                                    </p>
+                                                ))}
                                             </div>
-                                        </td>
+                                        </div>
+                                    </td>
 
-                                        <td className="py-4 px-2 text-center text-sm font-semibold text-indigo-600 border-r border-gray-200 sticky left-[175px] z-10 bg-white min-w-[100px] shadow-[2px_0_2px_-2px_rgba(0,0,0,0.1)]">
-                                            {totalCheckedSessions}
-                                        </td>
+                                    <td className="py-4 px-2 text-center text-sm font-semibold text-indigo-600 border-r border-gray-200 sticky left-[175px] z-10 bg-white min-w-[100px] shadow-[2px_0_2px_-2px_rgba(0,0,0,0.1)]">
+                                        {totalCheckedSessions}
+                                    </td>
 
-                                        {/* Attendance Cells for each date - SCROLLABLE */}
-                                        {dateRange.map(dateString => {
-                                            // Find the record for the current date or use a pending default
-                                            const record = student.records.find(r => r.date === dateString) || {
-                                                present: 'pending',
-                                                score: null,
-                                                is_finished_homework: undefined,
-                                                comment: 'Not Checked Yet',
-                                                date: dateString
-                                            };
-                                            return (
-                                                <AttendanceCell
-                                                    key={dateString}
-                                                    record={record as AttendanceRecord & { present: StudentAttendanceType | 'pending' }} // Use the union type here
-                                                    onEdit={(rec) => handleEditClick(rec, student.id, student.name)}
-                                                />
-                                            );
-                                        })}
-                                    </tr>
+                                    {/* Attendance Cells for each date - SCROLLABLE */}
+                                    {dateRange.map(dateString => {
+                                        // Find the record for the current date or use a pending default
+                                        const record = student.records.find(r => new Date(r.date).setHours(0, 0, 0, 0) === new Date(dateString).setHours(0, 0, 0, 0)
+                                        ) || {
+                                            present: 'pending',
+                                            score: null,
+                                            is_finished_homework: undefined,
+                                            comment: 'Not Checked Yet',
+                                            date: dateString
+                                        };
+                                        return (
+                                            <AttendanceCell
+                                                key={dateString}
+                                                record={record as AttendanceRecord & { present: StudentAttendanceType | 'pending' }} // Use the union type here
+                                                onEdit={(rec) => handleEditClick(rec, student.id, student.name)}
+                                            />
+                                        );
+                                    })}
+                                </tr>
                             );
                         })}
                     </tbody>

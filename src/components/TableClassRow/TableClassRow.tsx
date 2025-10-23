@@ -4,6 +4,7 @@ import { CalendarCheck, ChartArea, EllipsisVertical, GraduationCap, ListCheck, S
 import Badge from "../Badge/Badge";
 import Button from "../Button/Button";
 import { useParams, useRouter } from "next/navigation";
+import { ClassData } from "@/types/ClassData";
 
 interface TableClassRowProps {
     data: ClassData;
@@ -12,22 +13,31 @@ interface TableClassRowProps {
 }
 
 export default function TableClassRow({ data, index, type }: TableClassRowProps) {
-    
-    if(type === 'attendance'){
-        return(
-            <TableClassRowForAttendance data={data} index={index}/>
+
+    if (type === 'attendance') {
+        return (
+            <TableClassRowForAttendance data={data} index={index} />
         )
     }
 
     return (
 
-        <TableClassRowForClasses data={data} index={index}/>
+        <TableClassRowForClasses data={data} index={index} />
     )
 }
 
 function TableClassRowForClasses({ data, index }: TableClassRowProps) {
+
+    const router = useRouter();
+    const params = useParams();
+    const hub_id = params.hub_id;
+
+    const directToClassDetail = (classId: string) => {
+        router.push(`/hub/${hub_id}/classes/${classId}`);
+    }
+
     return (
-        <tr className="border-b border-gray-200 text-sm">
+        <tr onClick={() => directToClassDetail(data.id)} className="border-b border-gray-200 text-sm">
             <td className="py-4 px-2 whitespace-nowrap text-gray-800 flex items-center space-x-2">
                 <span>{index}</span>
             </td>
@@ -87,7 +97,7 @@ function TableClassRowForAttendance({ data, index }: TableClassRowProps) {
     const router = useRouter();
     const params = useParams();
     const hub_id = params.hub_id;
-
+    
     const TakeAttendance = () => {
         router.push(`/hub/${hub_id}/attendance/${data.id}/grid`);
     }

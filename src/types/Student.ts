@@ -8,6 +8,12 @@ interface Student {
     status: StudentStatus,
 }
 
+interface StudentInputDto {
+    name: string,
+    birthday: string,
+    enroll_date: string,
+}
+
 type StudentAttendanceType = 'present' | 'late' | 'excused' | 'absent' | 'unchecked'
 
 type StudentAttendance = AttendanceRecord & {

@@ -1,27 +1,33 @@
 import { Filter, X } from "lucide-react"
 import Button from "../Button/Button"
 import DatePicker from "../DatePicker/DatePicker"
+import { useState } from "react";
 
-interface AttendanceGridFilterProps{
+interface AttendanceGridFilterProps {
     startDate?: string,
     endDate?: string,
+    onFilter: (selectedStartDate: any, selectedEndDate: any) => void,
+    onResetFilter: () => void,
 }
 
-export default function AttendanceGridFilter({startDate, endDate}: AttendanceGridFilterProps) {
-    const onChangeStartDate = () => {
+export default function AttendanceGridFilter({ startDate, endDate, onFilter, onResetFilter }: AttendanceGridFilterProps) {
+    const [selectedStartDate, setSelectedStartDate] = useState(startDate);
+    const [selectedEndDate, setSelectedEndDate] = useState(endDate);
 
+    const onChangeStartDate = (date: string) => {
+        setSelectedStartDate(date);
     }
 
-    const onChangeEndDate = () => {
-
+    const onChangeEndDate = (date: string) => {
+        setSelectedEndDate(date);
     }
 
     const handleFilter = () => {
-
+        onFilter(selectedStartDate, selectedEndDate);
     }
 
     const handleResetFilter = () => {
-
+        onResetFilter();
     }
 
     return (
@@ -30,7 +36,7 @@ export default function AttendanceGridFilter({startDate, endDate}: AttendanceGri
             <DatePicker size="smaller" label="End date" onChange={onChangeEndDate} date={endDate} />
 
             <div className="flex items-center gap-2">
-                <Button color="blue" icon={Filter} title="Filter" onClick={handleFilter} /> 
+                <Button color="blue" icon={Filter} title="Filter" onClick={handleFilter} />
                 <Button color="gray" icon={X} title="Reset" onClick={handleResetFilter} />
             </div>
         </div>

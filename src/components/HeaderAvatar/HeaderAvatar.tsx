@@ -22,7 +22,7 @@ export default function HeaderAvatar({name="K", size}: HeaderAvatarProps) {
     return (
         <div className="rounded-full overflow-hidden">
             <div className={` ${styleSize} bg-red-100 font-medium flex justify-center items-center`}>
-                {name}
+                {name.charAt(0).toUpperCase()}
             </div>
         </div>
 

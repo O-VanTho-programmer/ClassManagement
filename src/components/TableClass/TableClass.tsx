@@ -1,13 +1,17 @@
+import { ClassData } from "@/types/ClassData";
 import SearchBar from "../SearchBar/SearchBar";
 import Selection from "../Selection/Selection";
 import TableClassRow from "../TableClassRow/TableClassRow";
 
 export interface TableClassProps {
-    datas: ClassData[]
+    datas: ClassData[] | null | undefined
 }
 
 
 export default function TableClass({ datas }: TableClassProps) {
+
+    if(datas == null || datas == undefined) return ;
+
     return (
         <div className="mx-9 py-4 overflow-x-scroll">
             <table className="border-collapse">

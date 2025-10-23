@@ -4,13 +4,14 @@ import AttendanceStudentTable from "@/components/AttendanceStudentTable/Attendan
 import AttendanceSummary from "@/components/AttendanceSummary/AttendanceSummary";
 import DatePicker from "@/components/DatePicker/DatePicker";
 import LayoutDashboard from "@/components/LayoutDashboard/LayoutDashboard";
-import { classData } from "@/data_sample/classDataSample"
+import { useGetClassById } from "@/hooks/useGetClassById";
 import { ArrowLeftIcon, CalendarDays, CheckIcon, List } from "lucide-react";
+import { useParams } from "next/navigation";
 
 export default function AttendancePage() {
-
-    const classInfo = classData[0];
-
+    const { class_id } = useParams();
+    const { data: classData, isLoading: isLoadingClass, isError: isErrorClass, error: errorClass } = useGetClassById(class_id as string);    
+  
     const onChangeDate = () => {
 
     }

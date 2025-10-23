@@ -4,20 +4,27 @@ import TableStudentList from "../TableStudentList/TableStudentList";
 import Button from "../Button/Button";
 import { ListPlus, UserPlus } from "lucide-react";
 
-export default function ViewStudentList() {
-    const newStudent = () => {
+interface ViewStudentListProps {
+    studentDatas: Student[] | [] | undefined ;
+    isLoading: boolean;
+    isError: boolean;
+    error: any;
+    newStudent: () => void;
+    addStudentIntoClass: () => void;
+}
 
-    }
-
-    const addStudentIntoClass = () => {
-
-    }
-
+export default function ViewStudentList({
+    studentDatas=[], 
+    isLoading, isError, error, 
+    newStudent,
+    addStudentIntoClass, 
+}: ViewStudentListProps) {
+    
     return (
         <div className="mt-8">
             <div className="bg-white rounded-lg shadow-lg py-6">
                 <div className="px-4 flex flex-wrap items-center justify-between">
-                    <h3 className="font-semibold text-base">Students List ({studentsSample.length})</h3>
+                    <h3 className="font-semibold text-base">Students List ({studentDatas.length})</h3>
                     <div className="flex flex-wrap items-center gap-1">
                         <SearchBar search_width_style="medium" />
                         <Button color="orange" onClick={newStudent} icon={UserPlus} title="New Student" />
@@ -25,7 +32,7 @@ export default function ViewStudentList() {
                     </div>
                 </div>
 
-                <TableStudentList studentDatas={studentsSample} />
+                <TableStudentList studentDatas={studentDatas} />
             </div>
         </div>
     )

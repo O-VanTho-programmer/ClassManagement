@@ -1,22 +1,62 @@
-'use client';   
+'use client';
 
+import { useAlert } from "@/components/AlertProvider/AlertContext";
 import AttendanceGridFilter from "@/components/AttendanceGridFilter/AttendanceGridFilter";
 import AttendanceGridStudentTable from "@/components/AttendanceGridStudentTable/AttendanceGridStudentTable";
 import AttendanceSummary from "@/components/AttendanceSummary/AttendanceSummary";
-import { classData } from "@/data_sample/classDataSample";
+import ErrorState from "@/components/QueryState/ErrorState";
+import LoadingState from "@/components/QueryState/LoadingState";
+import { useGetClassById } from "@/hooks/useGetClassById";
+import { ClassData } from "@/types/ClassData";
 import calculateScheduledDays from "@/utils/calculateScheduledDays";
 import { Calendar, GraduationCap, Users } from "lucide-react";
-import { useState } from "react";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function AttendanceGridPage() {
-    const classInfo = classData[0];
+    const { showAlert } = useAlert();
 
-    const [startDate, setStartDate] = useState<string>(classInfo.startDate);
-    const [endDate, setEndDate] = useState<string>(classInfo.endDate);
+    const { class_id } = useParams();
+    const { data: classInfo, isLoading: isLoadingClass, isError: isErrorClass, error: errorClass } = useGetClassById(class_id as string);
 
+    const [startDate, setStartDate] = useState<string | undefined>(classInfo?.startDate);
+    const [endDate, setEndDate] = useState<string | undefined>(classInfo?.endDate);
 
-    // Tong so buoi hoc
-    const totalDays = calculateScheduledDays(classInfo.schedule, classInfo.startDate, classInfo.endDate);
+    let totalDays = 0;
+
+    useEffect(() => {
+
+        if (classInfo) {
+            setStartDate(classInfo.startDate);
+            setEndDate(classInfo.endDate);
+
+            totalDays = calculateScheduledDays(classInfo.schedule, classInfo.startDate, classInfo.endDate);
+        }
+    }, [classInfo]);
+
+    const handleFilter = (selectedStartDate: any, selectedEndDate: any) => {
+        if (selectedStartDate === undefined || selectedEndDate === undefined) {
+            showAlert("Invalid Date", 'error');
+            return;
+        }
+        setStartDate(selectedStartDate);
+        setEndDate(selectedEndDate);
+    }
+
+    const handleResetFilter = () => {
+        setStartDate(classInfo?.startDate);
+        setEndDate(classInfo?.endDate);
+    }
+
+    if (isLoadingClass || !classInfo || !startDate || !endDate) return <LoadingState fullScreen message="Loading your class..." />;
+    if (isErrorClass) return (
+        <ErrorState
+            fullScreen
+            title="Error Loading Class"
+            message={errorClass?.message || "Something went wrong while loading your class. Please try again."}
+            onRetry={() => window.location.reload()}
+        />
+    );
 
     return (
         <>
@@ -37,7 +77,10 @@ export default function AttendanceGridPage() {
             </div>
             {/*  */}
 
-            <AttendanceGridFilter startDate={startDate} endDate={endDate} />
+            <AttendanceGridFilter 
+                onFilter={handleFilter}
+                onResetFilter={handleResetFilter}
+                startDate={startDate} endDate={endDate} />
             <AttendanceSummary />
             <AttendanceGridStudentTable class_id={classInfo.id} schedule={classInfo.schedule} startDate={startDate} endDate={endDate} />
         </>

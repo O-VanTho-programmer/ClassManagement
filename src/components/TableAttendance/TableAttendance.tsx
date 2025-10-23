@@ -3,6 +3,9 @@ import TableClassRow from "../TableClassRow/TableClassRow";
 
 
 export default function TableAttendance({ datas }: TableClassProps) {
+    
+    if(datas == null || datas == undefined) return ;
+    
     return (
         <div className="mx-9 py-4 overflow-x-scroll">
             <table className="border-collapse">

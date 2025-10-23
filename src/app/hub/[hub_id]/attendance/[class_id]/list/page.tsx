@@ -2,16 +2,20 @@
 
 import AttendanceListFilter from "@/components/AttendanceListFilter/AttendanceListFilter";
 import AttendanceListStudentTable from "@/components/AttendanceListStudentTable/AttendanceListStudentTable";
-import AttendanceListStudentTableRow from "@/components/AttendanceListStudentTableRow/AttendanceListStudentTableRow";
 import AttendanceSummary from "@/components/AttendanceSummary/AttendanceSummary";
-import LayoutDashboard from "@/components/LayoutDashboard/LayoutDashboard";
-import { classData } from "@/data_sample/classDataSample";
+import { useGetClassById } from "@/hooks/useGetClassById";
+import { ClassData } from "@/types/ClassData";
 import calculateScheduledDays from "@/utils/calculateScheduledDays";
 import { Calendar, GraduationCap, Users } from "lucide-react";
+import { useParams } from "next/navigation";
 
 export default function AttendanceListPage() {
-
-    const classInfo = classData[0];
+    const { class_id } = useParams();
+    const { data: classInfo, isLoading: isLoadingClass, isError: isErrorClass, error: errorClass } = useGetClassById(class_id as string);    
+    
+    if(classInfo == null || classInfo == undefined){
+        return null;
+    }
 
     // Tong so buoi hoc
     const totalDays = calculateScheduledDays(classInfo.schedule, classInfo.startDate, classInfo.endDate);

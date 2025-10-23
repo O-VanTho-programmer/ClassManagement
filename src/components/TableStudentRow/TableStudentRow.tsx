@@ -13,7 +13,7 @@ export default function TableStudentRow(student: Student) {
         <tr className="border-b border-gray-200 text-sm">
             <td className="py-4 px-2 whitespace-nowrap text-gray-800">
                 <div className="flex items-center space-x-2">
-                    <HeaderAvatar size="smaller" />
+                    <HeaderAvatar size="smaller" name={student.name}/>
                     <p className="font-medium text-gray-800">{student.name}</p>
                 </div>
             </td>
@@ -25,7 +25,11 @@ export default function TableStudentRow(student: Student) {
                 <Badge bg_clr="bg-yellow-500" title={student.enroll_date} />
             </td>
             <td className="py-4 px-2 whitespace-nowrap text-gray-800">
-                <Badge bg_clr="bg-green-500" title={student.status} />
+                {student.status === 'Studying' ? (
+                    <Badge bg_clr="bg-green-500" title={student.status} />
+                ) : (
+                    <Badge bg_clr="bg-orange-500" title={student.status} />
+                )}
             </td>
             <td className="py-4 px-2 whitespace-nowrap text-gray-800">
                 <div className="flex justify-end gap-1">

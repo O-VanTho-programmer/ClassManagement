@@ -1,3 +1,5 @@
+import { ClassData } from "@/types/ClassData";
+import { Schedule } from "@/types/Schedule";
 import { useState } from "react";
 
 interface CreateClassModalProps {
@@ -7,9 +9,9 @@ interface CreateClassModalProps {
 }
 
 export default function CreateClassModal({ isOpen, onClose, onSubmit }: CreateClassModalProps) {
-    const [formData, setFormData] = useState < Omit < ClassData, 'id' >> ({
+    const [formData, setFormData] = useState<Omit<ClassData, 'id'>>({
         name: '',
-        schedule: [{ day: 'Monday', time: '' }],
+        schedule: [{ day: 'Monday', startTime: '', endTime: '' }],
         studentCount: 0,
         teacher: '',
         assistant: '',
@@ -17,12 +19,12 @@ export default function CreateClassModal({ isOpen, onClose, onSubmit }: CreateCl
         tuition: '',
         tuitionType: 'Monthly',
         base: '',
-        status: 'active',
+        status: 'Active',
         startDate: '',
         endDate: '',
     });
 
-    const [errors, setErrors] = useState < Record < string, string>> ({});
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
     const validateForm = () => {
         const newErrors: Record<string, string> = {};
@@ -37,10 +39,17 @@ export default function CreateClassModal({ isOpen, onClose, onSubmit }: CreateCl
         }
 
         formData.schedule.forEach((session, index) => {
-            if (!session.time.trim()) {
-                newErrors[`schedule-${index}`] = 'Time is required';
+            if (!session.startTime) {
+                newErrors[`schedule-startTime-${index}`] = 'Start time is required';
+            }
+            if (!session.endTime) {
+                newErrors[`schedule-endTime-${index}`] = 'End time is required';
+            }
+            if (session.startTime && session.endTime && session.startTime >= session.endTime) {
+                newErrors[`schedule-endTime-${index}`] = 'End time must be after start time';
             }
         });
+
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -52,7 +61,7 @@ export default function CreateClassModal({ isOpen, onClose, onSubmit }: CreateCl
             onSubmit(formData);
             setFormData({
                 name: '',
-                schedule: [{ day: 'Monday', time: '' }],
+                schedule: [{ day: 'Monday', startTime: '', endTime: '' }],
                 studentCount: 0,
                 teacher: '',
                 assistant: '',
@@ -60,7 +69,7 @@ export default function CreateClassModal({ isOpen, onClose, onSubmit }: CreateCl
                 tuition: '',
                 tuitionType: 'Monthly',
                 base: '',
-                status: 'active',
+                status: 'Active',
                 startDate: '',
                 endDate: '',
             });
@@ -70,7 +79,7 @@ export default function CreateClassModal({ isOpen, onClose, onSubmit }: CreateCl
     const addScheduleSlot = () => {
         setFormData(prev => ({
             ...prev,
-            schedule: [...prev.schedule, { day: 'Monday', time: '' }]
+            schedule: [...prev.schedule, { day: 'Monday', startTime: '', endTime: '' }]
         }));
     };
 
@@ -81,7 +90,7 @@ export default function CreateClassModal({ isOpen, onClose, onSubmit }: CreateCl
         }));
     };
 
-    const updateScheduleSlot = (index: number, field: 'day' | 'time', value: string) => {
+    const updateScheduleSlot = (index: number, field: keyof Schedule, value: string) => {
         setFormData(prev => ({
             ...prev,
             schedule: prev.schedule.map((session, i) =>
@@ -203,26 +212,30 @@ export default function CreateClassModal({ isOpen, onClose, onSubmit }: CreateCl
                                         <option value="Sunday">Sunday</option>
                                     </select>
 
-                                    <input
-                                        type="text"
-                                        value={session.time}
-                                        onChange={(e) => updateScheduleSlot(index, 'time', e.target.value)}
-                                        placeholder="e.g., 14:00 - 16:00"
-                                        className={`flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors[`schedule-${index}`] ? 'border-red-500' : 'border-gray-300'
-                                            }`}
-                                    />
+                                    <div className="relative">
+                                        <input
+                                            type="time"
+                                            value={session.startTime}
+                                            onChange={(e) => updateScheduleSlot(index, 'startTime', e.target.value)}
+                                            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors[`schedule-startTime-${index}`] ? 'border-red-500' : 'border-gray-300'}`}
+                                        />
+                                        {errors[`schedule-startTime-${index}`] && <p className="text-red-500 text-xs mt-1 absolute">{errors[`schedule-startTime-${index}`]}</p>}
+                                    </div>
 
-                                    {formData.schedule.length > 1 && (
-                                        <button
-                                            type="button"
-                                            onClick={() => removeScheduleSlot(index)}
-                                            className="px-3 py-2 text-red-600 hover:text-red-700 transition-colors"
-                                        >
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                            </svg>
-                                        </button>
-                                    )}
+                                    <div className="relative flex items-center gap-2">
+                                        <input
+                                            type="time"
+                                            value={session.endTime}
+                                            onChange={(e) => updateScheduleSlot(index, 'endTime', e.target.value)}
+                                            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors[`schedule-endTime-${index}`] ? 'border-red-500' : 'border-gray-300'}`}
+                                        />
+                                        {formData.schedule.length > 1 && (
+                                            <button type="button" onClick={() => removeScheduleSlot(index)} className="text-red-500 hover:text-red-700 transition-colors">
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                            </button>
+                                        )}
+                                        {errors[`schedule-endTime-${index}`] && <p className="text-red-500 text-xs mt-1 absolute top-full left-0">{errors[`schedule-endTime-${index}`]}</p>}
+                                    </div>
                                 </div>
                             ))}
                         </div>
@@ -311,11 +324,11 @@ export default function CreateClassModal({ isOpen, onClose, onSubmit }: CreateCl
                         </label>
                         <select
                             value={formData.status}
-                            onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as 'active' | 'finished' }))}
+                            onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as 'Active' | 'Finished' }))}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         >
-                            <option value="active">Active</option>
-                            <option value="finished">Finished</option>
+                            <option value="Active">Active</option>
+                            <option value="Finished">Finished</option>
                         </select>
                     </div>
 

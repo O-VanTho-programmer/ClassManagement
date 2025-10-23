@@ -1,3 +1,4 @@
+import { ClassData } from "@/types/ClassData";
 import Badge from "../Badge/Badge";
 import formatDisplayDate from "@/utils/Format/formatDisplayDate";
 
@@ -58,7 +59,7 @@ export default function ClassesInfoCard({ classData, onClick }: ClassesInfoCardP
                     {classData.schedule.map((session, index) => (
                         <div key={index} className="flex justify-between items-center text-sm">
                             <span className="font-medium text-gray-700">{session.day}</span>
-                            <span className="text-gray-500">{session.time}</span>
+                            <span className="text-gray-500">{session.startTime} - {session.endTime}</span>
                         </div>
                     ))}
                 </div>

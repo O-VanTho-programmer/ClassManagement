@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
     try {
-        const { body } = await req.json();
+        const { newRecord, classId } = await req.json();
         const {
             // Student
             id,
@@ -15,20 +15,24 @@ export async function POST(req: Request) {
             is_finished_homework,
             comment,
             date,
-            classId
-            // 
-        } = body;
+        } = newRecord;
 
         const [studentRow]: any[] = await pool.query(`
-        SELECT * FROM student WHERE StudentId = ?
-        LIMIT 1
-    `, [id])
+            SELECT * FROM student WHERE StudentId = ? AND Name = ?
+            LIMIT 1
+        `, [id, name])
+
+        if (studentRow.length === 0) {
+            return NextResponse.json({ message: "Student not found" }, { status: 404 });
+        }
+
+        const dateType = new Date(date);
 
         const queryNewAttendanceRecord = `
-        INSERT INTO record_attendance (Present, Score, IsFinishHomework Commemt, CreatedDate, StudentId, ClassId)
+        INSERT INTO record_attendance (Present, Score, IsFinishHomework, Commemt, CreatedDate, StudentId, ClassId)
         VALUES (?, ?, ?, ?, ?, ?, ?)
     `
-        await pool.query(queryNewAttendanceRecord, [present, score, is_finished_homework, comment, date, studentRow[0].StudentId, classId]);
+        await pool.query(queryNewAttendanceRecord, [present, score, is_finished_homework, comment, dateType, id, classId]);
 
         return NextResponse.json({ message: "Success" }, { status: 200 });
     } catch (error) {

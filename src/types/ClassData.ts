@@ -1,7 +1,9 @@
-interface ClassData {
+import type { Schedule } from "./Schedule";
+
+export interface ClassData {
     id: string;
     name: string;
-    schedule: { day: string; time: string; }[];
+    schedule: Schedule[];
     studentCount: number;
     teacher: string;
     assistant?: string;
@@ -9,7 +11,7 @@ interface ClassData {
     tuition?: string;
     tuitionType: "Monthly" | "Quarter" | "Course" | "Flexible",
     base?: string;
-    status: 'active' | 'finished';
+    status: 'Active' | 'Finished';
     startDate: string;
     endDate: string;
 }

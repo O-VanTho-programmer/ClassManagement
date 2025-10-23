@@ -9,8 +9,10 @@ import { useGetUserHubsQuery } from "@/hooks/useGetUserHubsQuery";
 import { newHubApi } from "@/lib/api/newHub";
 import getHubStatsSum from "@/utils/getHubStatsSum";
 import { Hub, HubAddDto } from "@/types/Hub";
-import { Plus, RefreshCw } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useState, useEffect } from "react";
+import LoadingState from "@/components/QueryState/LoadingState";
+import ErrorState from "@/components/QueryState/ErrorState";
 import { useRouter } from "next/navigation";
 
 export default function HubPage() {
@@ -69,38 +71,15 @@ export default function HubPage() {
         router.push(`/hub/${hub.id}/classes`);
     };
 
-    // Show loading state
-    if (isLoading) {
-        return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Loading your hubs...</p>
-                </div>
-            </div>
-        );
-    }
-
-    // Show error state
-    if (isError) {
-        return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="text-center max-w-md">
-                    <div className="text-red-500 text-6xl mb-4">⚠️</div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-4">Error Loading Hubs</h2>
-                    <p className="text-gray-600 mb-6">
-                        {error?.message || "Something went wrong while loading your hubs. Please try again."}
-                    </p>
-                    <Button 
-                        color="blue" 
-                        icon={RefreshCw}
-                        title="Retry" 
-                        onClick={() => window.location.reload()} 
-                    />
-                </div>
-            </div>
-        );
-    }
+    if (isLoading) return <LoadingState fullScreen message="Loading your hubs..." />;
+    if (isError) return (
+        <ErrorState
+            fullScreen
+            title="Error Loading Hubs"
+            message={error?.message || "Something went wrong while loading your hubs. Please try again."}
+            onRetry={() => window.location.reload()}
+        />
+    );
 
     if (userHubs.length === 0) {
         return (

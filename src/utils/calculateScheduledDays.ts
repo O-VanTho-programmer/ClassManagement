@@ -1,5 +1,7 @@
+import { Schedule } from "@/types/Schedule";
+
 export default function calculateScheduledDays(
-  schedule: { day: string; time: string }[],
+  schedule: Schedule[],
   startDate: string,
   endDate: string
 ): number {

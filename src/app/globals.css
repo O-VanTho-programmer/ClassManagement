@@ -53,3 +53,49 @@ html, body {
 .overlay{
   background: rgba(0,0,0,0.5);
 }
+
+.input {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  border: 1px solid #D1D5DB;
+  border-radius: 0.5rem;
+  transition: box-shadow 0.15s ease-in-out;
+}
+.input:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px #3B82F6;
+}
+.input-error {
+  border-color: #EF4444;
+}
+.input-error:focus {
+  box-shadow: 0 0 0 2px #F87171;
+}
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background-color: #2563EB;
+  color: white;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+.btn-primary:hover {
+  background-color: #1D4ED8;
+}
+.btn-secondary {
+  padding: 0.5rem 1rem;
+  background-color: white;
+  border: 1px solid #D1D5DB;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+.btn-secondary:hover {
+  background-color: #F9FAFB;
+}

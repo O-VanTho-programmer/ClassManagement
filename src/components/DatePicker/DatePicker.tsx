@@ -4,6 +4,7 @@ import {LucideIcon } from "lucide-react";
 import { useState } from "react";
 
 interface DatePickerProps{
+    isLabelAbsolute?: boolean,
     date?: string,
     onChange: (date: string) => void,
     icon?: LucideIcon,
@@ -11,8 +12,7 @@ interface DatePickerProps{
     size? : "smaller"
 }
 
-export default function DatePicker ({date, onChange, icon, label, size} : DatePickerProps) {
-    console.log(date);
+export default function DatePicker ({date, onChange, icon, label, isLabelAbsolute = true, size} : DatePickerProps) {
     const [selectedDate, setSelectedDate] = useState(date ??'2025-09-25');
 
     const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -26,7 +26,7 @@ export default function DatePicker ({date, onChange, icon, label, size} : DatePi
 
     return (
         <div className="relative">
-            <div className="absolute -top-6 left-0 text-sm font-medium text-gray-500">
+            <div className={`${isLabelAbsolute && "absolute -top-6 left-0"} text-sm font-medium text-gray-500`}>
                 {label}
             </div>
             <div className={`relative ${widthClass}`}>

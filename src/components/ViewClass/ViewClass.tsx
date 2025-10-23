@@ -1,9 +1,8 @@
 'use client';
 
-import { classData } from "@/data_sample/classDataSample"
 import Selection, { Option } from "../Selection/Selection"
 import TableClass from "../TableClass/TableClass"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import ToggleViewClassList from "../ToggleViewClassList/ToggleViewClassList";
 import Button from "../Button/Button";
 import { Plus, Search } from "lucide-react";
@@ -11,6 +10,12 @@ import ViewCardClasses from "../ViewCardClasses/ViewCardClasses";
 import CreateClassModal from "../CreateClassModal/CreateClassModal";
 import api from "@/lib/axios";
 import { useAlert } from "../AlertProvider/AlertContext";
+import { useGetUserClassesQuery } from "@/hooks/useGetUserClassesQuery";
+import { useParams } from "next/navigation";
+import LoadingState from "../QueryState/LoadingState";
+import ErrorState from "../QueryState/ErrorState";
+import type { ClassData } from "@/types/ClassData";
+import { useQueryClient } from "@tanstack/react-query";
 
 const statusOptions: Option[] = [
     {
@@ -44,17 +49,20 @@ const tuitionTypeOptions: Option[] = [
 export default function ViewClass() {
 
     const { showAlert } = useAlert();
+    const { hub_id } = useParams();
+
     const [searchTerm, setSearchTerm] = useState<string>("");
     const [statusOption, setStatusOption] = useState<string>("");
     const [tuitionType, setTuitionType] = useState<string>("");
     const [isTableView, setIsTableView] = useState<boolean>(true);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-    const [classes, setClasses] = useState<ClassData[]>(classData);
+    const { data: classData = [], isLoading, isError, error } = useGetUserClassesQuery(hub_id as string);
+    const queryClient = useQueryClient();
 
     const filteredClasses = useMemo(() => {
-        return classes.filter(classItem => {
-            const matchesStatus = !statusOption || classItem.status.toLowerCase() === statusOption.toLowerCase();
+        return classData.filter(classItem => {
+            const matchesStatus = !statusOption || classItem.status === statusOption;
             const matchesTuition = !tuitionType || classItem.tuitionType === tuitionType;
 
             const lowerSearchTerm = searchTerm.toLowerCase();
@@ -66,7 +74,7 @@ export default function ViewClass() {
 
             return matchesStatus && matchesTuition && matchesSearch;
         });
-    }, [classes, statusOption, tuitionType, searchTerm]);
+    }, [classData, statusOption, tuitionType, searchTerm]);
 
 
 
@@ -79,7 +87,11 @@ export default function ViewClass() {
                 id: res.data.id,
             };
 
-            setClasses(prev => [newClass, ...prev]);
+            // Update cache for classes of this hub
+            queryClient.setQueryData<ClassData[]>(['userClasses', hub_id], (prev = []) => [
+                newClass,
+                ...prev,
+            ]);
             setIsCreateModalOpen(false);
 
             if (res.status === 200) {
@@ -91,6 +103,16 @@ export default function ViewClass() {
             console.error("Failed to create class:", error);
         }
     };
+
+    if (isLoading) return <LoadingState fullScreen message="Loading your classes..." />;
+    if (isError) return (
+        <ErrorState
+            fullScreen
+            title="Error Loading Classes"
+            message={error?.message || "Something went wrong while loading your classes. Please try again."}
+            onRetry={() => window.location.reload()}
+        />
+    );
 
     return (
         <div className="mt-8">
@@ -130,20 +152,20 @@ export default function ViewClass() {
                         <ViewCardClasses datas={filteredClasses} />
                     )
                 ) : (
-                <div className="text-center py-12">
-                    <div className="text-gray-400 mb-4">
-                        <svg className="mx-auto h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 14l9-5-9-5-9 5 9 5z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 14l9-5-9-5-9 5 9 5zm0 0l-9 5m9-5v6" />
-                        </svg>
-                    </div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">No classes found</h3>
-                    <p className="text-gray-600 max-w-md mx-auto mb-2">
-                        Try adjusting your search terms or filters to find what you're looking for.
-                    </p>
+                    <div className="text-center py-12">
+                        <div className="text-gray-400 mb-4">
+                            <svg className="mx-auto h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 14l9-5-9-5-9 5 9 5z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 14l9-5-9-5-9 5 9 5zm0 0l-9 5m9-5v6" />
+                            </svg>
+                        </div>
+                        <h3 className="text-xl font-semibold text-gray-900 mb-2">No classes found</h3>
+                        <p className="text-gray-600 max-w-md mx-auto mb-2">
+                            Try adjusting your search terms or filters to find what you're looking for.
+                        </p>
 
-                    <Button color="blue" icon={Plus} onClick={() => setIsCreateModalOpen(true)} title="Create Class"/>
-                </div>
+                        <Button color="blue" icon={Plus} onClick={() => setIsCreateModalOpen(true)} title="Create Class" />
+                    </div>
                 )}
 
             </div>

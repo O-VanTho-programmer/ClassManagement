@@ -1,6 +1,7 @@
+import { Schedule } from "@/types/Schedule";
 import { dayMap } from "./calculateScheduledDays";
 
-const generateDateRange = (startDateStr: string, endDateStr: string, schedule: { day: string; time: string; }[]): string[] => {
+const generateDateRange = (startDateStr: string, endDateStr: string, schedule: Schedule[]): string[] => {
     // Robustly create local date objects by ensuring time components are 00:00:00 locally
     const start = new Date(startDateStr);
     start.setHours(0, 0, 0, 0); // Set to midnight local time
@@ -8,8 +9,6 @@ const generateDateRange = (startDateStr: string, endDateStr: string, schedule: {
     const end = new Date(endDateStr);
     end.setHours(23, 59, 59, 999); // Set to end of day local time
 
-    // Convert Vietnamese day names to JS getDay() indices (0-6)
-    // Based on the provided schedule (Thứ 3 & Thứ 5), this should result in [2, 4]
     const scheduledDays = schedule.map(s => dayMap[s.day]).filter(day => day !== undefined);
 
     const dates: string[] = [];
@@ -17,15 +16,19 @@ const generateDateRange = (startDateStr: string, endDateStr: string, schedule: {
 
     while (current <= end) {
         const dayOfWeek = current.getDay(); // 0 for Sunday, 1 for Monday...
+        console.log(dayOfWeek)
 
         if (scheduledDays.includes(dayOfWeek)) {
-            const dateString = current.toISOString().split('T')[0];
+            console.log(dayOfWeek)
+            const dateString = current.toLocaleDateString('vn-VN').split('T')[0];
+            console.log(dateString)
             dates.push(dateString);
         }
 
         current.setDate(current.getDate() + 1);
     }
 
+    console.log(dates)
     return dates;
 };
 

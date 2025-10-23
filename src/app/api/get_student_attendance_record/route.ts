@@ -17,10 +17,11 @@ export async function GET(req: Request) {
             rd.Score as score,
             rd.IsFinishHomework as is_finished_homework,
             rd.Commemt as comment,
-            rd.CreatedDate as date
-        FROM record_attendance AS rd
-        JOIN student s ON s.StudentId = rd.StudentId
-        WHERE rd.ClassId = ?
+            DATE_FORMAT(rd.CreatedDate, '%m/%d/%Y') as date
+        FROM class_student cs
+        JOIN student s ON s.StudentId = cs.StudentId 
+        LEFT JOIN record_attendance rd ON s.StudentId = rd.StudentId
+        WHERE cs.ClassId = 1
         ORDER BY rd.CreatedDate DESC;
         `;
 
@@ -30,8 +31,8 @@ export async function GET(req: Request) {
 
         type tempType = StudentAttendance & Student
 
-        for(const row of rows as tempType[]){
-            if(!studentsMap.has(row.id)){
+        for (const row of rows as tempType[]) {
+            if (!studentsMap.has(row.id)) {
                 studentsMap.set(row.id, {
                     id: row.id,
                     name: row.name,
@@ -52,9 +53,9 @@ export async function GET(req: Request) {
                 date: row.date,
             });
         }
-        
-        
-        return NextResponse.json(Array.from(studentsMap.values()));
+
+
+        return NextResponse.json({message: "Success", studentAttendanceRecords: Array.from(studentsMap.values())}, {status: 200});
     } catch (error) {
         console.log("Error with get attendance record api", error);
         return NextResponse.json({ message: "Server error" }, { status: 500 });
