@@ -1,6 +1,6 @@
 import api from "../axios";
 
-export const fetchStudentListByClassId = async (classId: string): Promise<Student[] | []> => {
+export const fetchStudentListByClassId = async (classId: string): Promise<StudentWithEnrollment[] | []> => {
   try {
     if (!classId) {
       console.warn("No classId provided — skipping fetchStudentListByClassId");
@@ -9,7 +9,7 @@ export const fetchStudentListByClassId = async (classId: string): Promise<Studen
 
     const res = await api.get(`/get_student_list_by_class_id?classId=${classId}`);
     console.log('Fetch classes response:', res);
-    return (res.data?.studentList ?? []) as Student[]
+    return (res.data?.studentList ?? []) as StudentWithEnrollment[]
   } catch (error) {
     console.error("Failed to fetch student list:", error);
     return [];

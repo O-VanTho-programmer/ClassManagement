@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import SearchBar from "../SearchBar/SearchBar";
+import DatePicker from "../DatePicker/DatePicker";
 import { X } from "lucide-react";
 
 interface AddStudentIntoClassModalProps {
@@ -8,7 +9,7 @@ interface AddStudentIntoClassModalProps {
     isOpen: boolean;
     classId: string;
     onClose: () => void;
-    onSubmit: (selectedStudentIds: string[], classId: string) => void;
+    onSubmit: (selectedStudentIds: string[], classId: string, enrollDate: string) => void;
 }
 
 export default function AddStudentIntoClassModal({
@@ -31,19 +32,21 @@ export default function AddStudentIntoClassModal({
 
     const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
+    const [enrollDate, setEnrollDate] = useState(new Date().toISOString().split('T')[0]);
 
     useEffect(() => {
         if (!isOpen) {
             setSelectedStudents([]);
             setSearchTerm('');
+            setEnrollDate(new Date().toISOString().split('T')[0]);
         }
     }, [isOpen]);
 
     const filteredStudents = useMemo(() => {
-        return allStudentList.filter(student => {
-            student.name.toLowerCase().includes(searchTerm.toLowerCase())
+        return allStudentList.filter(student => 
+            student.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
             !studentsAlreadyInClass.some(s => s.id === student.id)
-        }); 
+        ); 
     }, [allStudentList, studentsAlreadyInClass, searchTerm]);
 
     const handleSelectStudent = (studentId: string) => {
@@ -63,7 +66,7 @@ export default function AddStudentIntoClassModal({
     };
 
     const handleSubmit = () => {
-        onSubmit(selectedStudents, classId);
+        onSubmit(selectedStudents, classId, enrollDate);
         onClose();
     };
 
@@ -86,7 +89,15 @@ export default function AddStudentIntoClassModal({
                 {/* Search and Select All */}
                 <div className="p-6 border-b border-gray-200">
                     <SearchBar search_width_style="header-dashboard" />
-                    <div className="flex items-center">
+                    <div className="mt-4">
+                        <DatePicker 
+                            date={enrollDate} 
+                            isLabelAbsolute={false} 
+                            label="Enroll Date" 
+                            onChange={setEnrollDate} 
+                        />
+                    </div>
+                    <div className="flex items-center mt-4">
                         <input
                             type="checkbox"
                             id="select-all"

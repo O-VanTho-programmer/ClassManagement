@@ -5,7 +5,7 @@ import Button from "../Button/Button";
 import { ListPlus, UserPlus } from "lucide-react";
 
 interface ViewStudentListProps {
-    studentDatas: Student[] | [] | undefined ;
+    studentDatas: StudentWithEnrollment[] | [] | undefined ;
     isLoading: boolean;
     isError: boolean;
     error: any;

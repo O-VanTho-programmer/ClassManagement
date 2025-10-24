@@ -4,7 +4,6 @@ export const studentAttendanceRecordsDataSample: StudentWithAttendanceRecordList
         id: 'STD001',
         name: 'Nguyễn Văn An',
         birthday: '2010-05-15',
-        enroll_date: '2025-09-01',
         status: 'Studying',
         records: [
             {
@@ -42,7 +41,6 @@ export const studentAttendanceRecordsDataSample: StudentWithAttendanceRecordList
         id: 'STD002',
         name: 'Trần Thị Bảo Châu',
         birthday: '2009-11-20',
-        enroll_date: '2025-09-01',
         status: 'Finished',
         records: [
             {

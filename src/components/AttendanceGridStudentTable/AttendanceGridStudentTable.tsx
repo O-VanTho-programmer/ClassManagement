@@ -26,6 +26,35 @@ export default function AttendanceGridStudentTable({ class_id, schedule, startDa
     const { data: fetchedStudents, isLoading, isError, error } = useGetStudentAttendanceRecordsQuery(class_id);
     const queryClient = useQueryClient();
 
+    const studentsWithRecordMaps = useMemo(() => {
+        // Return an empty array if data isn't ready
+        if (!fetchedStudents) return [];
+
+        // 2. Map over students ONCE
+        return fetchedStudents.map(student => {
+            // 3. Create the fast-lookup Map for this student
+            const recordsMap = new Map<string, AttendanceRecord>();
+
+            for (const record of student.records) {
+                // 4. Normalize the date from the DB (e.g., "2025-10-15T17:00:00.000Z") 
+                //    to a simple string ("2025-10-16")
+                const recordDate = new Date(record.date);
+                const year = recordDate.getFullYear();
+                const month = (recordDate.getMonth() + 1).toString().padStart(2, '0');
+                const day = recordDate.getDate().toString().padStart(2, '0');
+                const localDateString = `${year}-${month}-${day}`;
+
+                recordsMap.set(localDateString, record);
+            }
+
+            // 5. Return the student with their new record Map
+            return {
+                ...student,
+                recordsMap, // Add the map to the student object
+            };
+        });
+    }, [fetchedStudents]);
+
     const [isSaving, setIsSaving] = useState(false);
     const { showAlert } = useAlert();
     const dateRange = useMemo(() => generateDateRange(startDate, endDate, schedule), [startDate, endDate]);
@@ -136,7 +165,7 @@ export default function AttendanceGridStudentTable({ class_id, schedule, startDa
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                        {fetchedStudents.map((student, studentIndex) => {
+                        {studentsWithRecordMaps.map((student, studentIndex) => {
                             const totalCheckedSessions = student.records.length;
                             return (
                                 <tr key={student.id} className="hover:bg-gray-50 transition duration-150 relative">
@@ -163,19 +192,20 @@ export default function AttendanceGridStudentTable({ class_id, schedule, startDa
 
                                     {/* Attendance Cells for each date - SCROLLABLE */}
                                     {dateRange.map(dateString => {
-                                        // Find the record for the current date or use a pending default
-                                        const record = student.records.find(r => new Date(r.date).setHours(0, 0, 0, 0) === new Date(dateString).setHours(0, 0, 0, 0)
-                                        ) || {
+
+                                        // 8. Get the record instantly! (O(1) lookup)
+                                        const record = student.recordsMap.get(dateString) || {
                                             present: 'pending',
                                             score: null,
                                             is_finished_homework: undefined,
                                             comment: 'Not Checked Yet',
                                             date: dateString
                                         };
+
                                         return (
                                             <AttendanceCell
                                                 key={dateString}
-                                                record={record as AttendanceRecord & { present: StudentAttendanceType | 'pending' }} // Use the union type here
+                                                record={record as any} // Cast as needed
                                                 onEdit={(rec) => handleEditClick(rec, student.id, student.name)}
                                             />
                                         );

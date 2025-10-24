@@ -11,7 +11,7 @@ export async function GET(req: Request){
                 s.StudentId AS id,
                 s.Name AS name,
                 DATE_FORMAT(s.DateOfBirth, '%m/%d/%Y') as birthday,
-                DATE_FORMAT(s.EnrollDate, '%m/%d/%Y') as enroll_date,
+                DATE_FORMAT(cs.EnrollDate, '%m/%d/%Y') as enroll_date,
                 s.Status as status
             FROM student s
             JOIN class_student cs ON s.StudentId = cs.StudentId

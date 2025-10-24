@@ -3,7 +3,7 @@ import Badge from "../Badge/Badge";
 import Button from "../Button/Button";
 import HeaderAvatar from "../HeaderAvatar/HeaderAvatar";
 
-export default function TableStudentRow(student: Student) {
+export default function TableStudentRow(student: StudentWithEnrollment) {
 
     const removeFromClass = () => {
 

@@ -32,33 +32,33 @@ export default function Class() {
 
     const queryClient = useQueryClient();
 
-    const addStudentIntoClass = async (selectedStudentIds: string[], classId: string) => {
+    const addStudentIntoClass = async (selectedStudentIds: string[], classId: string, enrollDate: string) => {
         try {
             for (const newStu of selectedStudentIds) {
-                await addStudentIntoClassAPI(newStu, classId);
+                await addStudentIntoClassAPI(newStu, classId, enrollDate);
             }
 
-            queryClient.invalidateQueries({ queryKey: ["getStudentListByClassId", class_id] });
+            queryClient.invalidateQueries({ queryKey: ["get_student_list_by_class_id", class_id] });
             queryClient.invalidateQueries({ queryKey: ['all_student_list_by_hub_id', hub_id] });
         } catch (error) {
             console.error("Error adding student into class:", error);
         }
     }
 
-    const newStudent = async (newStudentForm: StudentInputDto, selectedClassIds: string[]) => {
+    const newStudent = async (newStudentForm: StudentInputDto, classEnrollments: ClassEnrollmentDto[]) => {
         try {
             // Create student first
             const newStudentIdRes = await newStudentInHub(newStudentForm, hub_id as string);
 
-            // Then add student into class
-            for (const classId of selectedClassIds) {
-                await addStudentIntoClassAPI(newStudentIdRes, classId);
+            // Then add student into classes with individual enroll dates
+            for (const enrollment of classEnrollments) {
+                await addStudentIntoClassAPI(newStudentIdRes, enrollment.classId, enrollment.enrollDate);
             }
 
             queryClient.invalidateQueries({ queryKey: ['all_student_list_by_hub_id', hub_id] });
 
-            if (selectedClassIds.includes(class_id as string)) {
-                queryClient.invalidateQueries({ queryKey: ["getStudentListByClassId", class_id] });
+            if (classEnrollments.some(e => e.classId === class_id)) {
+                queryClient.invalidateQueries({ queryKey: ["get_student_list_by_class_id", class_id] });
             }
         } catch (error) {
             console.error("Error adding new student:", error);

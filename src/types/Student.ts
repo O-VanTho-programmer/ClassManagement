@@ -4,14 +4,21 @@ interface Student {
     id: string,
     name: string,
     birthday: string,
-    enroll_date: string,
     status: StudentStatus,
+}
+
+interface StudentWithEnrollment extends Student {
+    enroll_date: string,
 }
 
 interface StudentInputDto {
     name: string,
     birthday: string,
-    enroll_date: string,
+}
+
+interface ClassEnrollmentDto {
+    classId: string,
+    enrollDate: string,
 }
 
 type StudentAttendanceType = 'present' | 'late' | 'excused' | 'absent' | 'unchecked'

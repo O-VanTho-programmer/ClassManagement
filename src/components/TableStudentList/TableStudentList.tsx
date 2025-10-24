@@ -2,7 +2,7 @@ import SearchBar from "../SearchBar/SearchBar";
 import TableStudentRow from "../TableStudentRow/TableStudentRow";
 
 interface TableStudentListProps {
-    studentDatas: Student[]
+    studentDatas: StudentWithEnrollment[]
 }
 
 export default function TableStudentList({studentDatas} : TableStudentListProps) {

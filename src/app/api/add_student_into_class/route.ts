@@ -3,15 +3,14 @@ import { NextResponse } from "next/server";
 
 export async function POST(req:Request) {
     try {
-        const {studentId, classId} = await req.json();
-
+        const {studentId, classId, enrollDate} = await req.json();
 
         const queryAddStudentIntoClass = `
-            INSERT INTO class_student (ClassId, StudentId)
-            VALUES (?, ?)
+            INSERT INTO class_student (ClassId, StudentId, EnrollDate)
+            VALUES (?, ?, ?)
         `;
 
-        await pool.query(queryAddStudentIntoClass, [classId, studentId]);
+        await pool.query(queryAddStudentIntoClass, [classId, studentId, enrollDate]);
 
         return NextResponse.json({ message: "Success" }, { status: 200 });
     } catch (error) {

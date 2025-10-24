@@ -1,16 +1,16 @@
 import api from "../axios";
 
-export const addStudentIntoClassAPI = async (studentId: string, classId: string) => {
+export const addStudentIntoClassAPI = async (studentId: string, classId: string, enrollDate: string) => {
     try {
-        if(!studentId || !classId){
+        if(!studentId || !classId || !enrollDate){
             console.error("Invalid input");
-            return;
+            throw new Error("Invalid input parameters");
         }
 
-        const res = await api.post(`/add_student_into_class`, {studentId, classId});
+        const res = await api.post(`/add_student_into_class`, {studentId, classId, enrollDate});
         return res;
     } catch (error) {
-        console.error("Failed to fetch hubs:", error);
-        return null;
+        console.error("Failed to add student to class:", error);
+        throw error;
     }
 }

@@ -8,7 +8,7 @@ interface NewStudentInHubModalProps {
     availableClassDatas: ClassData[] | undefined | null;
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (formData: StudentInputDto, selectedClassIds: string[]) => void;
+    onSubmit: (formData: StudentInputDto, classEnrollments: ClassEnrollmentDto[]) => void;
 }
 
 export default function NewStudentInHubModal({
@@ -25,11 +25,10 @@ export default function NewStudentInHubModal({
     const initialFormData: StudentInputDto = {
         name: '',
         birthday: '',
-        enroll_date: '',
     };
 
     const [formData, setFormData] = useState<StudentInputDto>(initialFormData);
-    const [selectedClasses, setSelectedClasses] = useState<string[]>([]);
+    const [selectedClasses, setSelectedClasses] = useState<ClassEnrollmentDto[]>([]);
     const [classSearchTerm, setClassSearchTerm] = useState('');
     const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -46,7 +45,6 @@ export default function NewStudentInHubModal({
         const newErrors: Record<string, string> = {};
         if (!formData.name.trim()) newErrors.name = "Student's name is required.";
         if (!formData.birthday) newErrors.birthday = "Birthday is required.";
-        if (!formData.enroll_date) newErrors.enroll_date = "Enroll date is required.";
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -69,8 +67,17 @@ export default function NewStudentInHubModal({
     };
 
     const handleSelectClass = (classId: string) => {
-        setSelectedClasses(prev =>
-            prev.includes(classId) ? prev.filter(id => id !== classId) : [...prev, classId]
+        const isSelected = selectedClasses.some(c => c.classId === classId);
+        if (isSelected) {
+            setSelectedClasses(prev => prev.filter(c => c.classId !== classId));
+        } else {
+            setSelectedClasses(prev => [...prev, { classId, enrollDate: new Date().toISOString().split('T')[0] }]);
+        }
+    };
+
+    const handleEnrollDateChange = (classId: string, enrollDate: string) => {
+        setSelectedClasses(prev => 
+            prev.map(c => c.classId === classId ? { ...c, enrollDate } : c)
         );
     };
 
@@ -78,7 +85,10 @@ export default function NewStudentInHubModal({
         if (selectedClasses.length === filteredAvailableClassList.length) {
             setSelectedClasses([]);
         } else {
-            setSelectedClasses(filteredAvailableClassList.map(c => c.id));
+            setSelectedClasses(filteredAvailableClassList.map(c => ({ 
+                classId: c.id, 
+                enrollDate: new Date().toISOString().split('T')[0] 
+            })));
         }
     };
 
@@ -123,28 +133,10 @@ export default function NewStudentInHubModal({
                         {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                            <select
-                                value={formData.status}
-                                onChange={(e) => handleInputChange('status', e.target.value)}
-                                className="w-full input"
-                            >
-                                <option value="active">Active</option>
-                                <option value="trial">Trial</option>
-                                <option value="inactive">Inactive</option>
-                                <option value="dropped">Dropped</option>
-                            </select>
-                        </div> */}
                         <div className="">
                             <DatePicker date={formData.birthday} isLabelAbsolute={false} label="Birthday" onChange={(date) => handleInputChange('birthday', date)} />
                             {errors.birthday && <p className="text-red-500 text-sm mt-1">{errors.birthday}</p>}
                         </div>
-                        <div className="">
-                            <DatePicker date={formData.enroll_date} isLabelAbsolute={false} label="Enroll Date" onChange={(date) => handleInputChange('enroll_date', date)} />
-                            {errors.enroll_date && <p className="text-red-500 text-sm mt-1">{errors.enroll_date}</p>}
-                        </div>
-
                     </div>
 
                     {/* Optional Class Assignment Section */}
@@ -165,21 +157,41 @@ export default function NewStudentInHubModal({
                                 </label>
                             </div>
                             <div className="max-h-48 overflow-y-auto space-y-2 pr-2">
-                                {filteredAvailableClassList.map(cls => (
-                                    <div
-                                        key={cls.id}
-                                        className={`flex items-center p-3 rounded-lg border cursor-pointer ${selectedClasses.includes(cls.id) ? 'bg-blue-50 border-blue-500' : 'hover:bg-gray-50'}`}
-                                        onClick={() => handleSelectClass(cls.id)}
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedClasses.includes(cls.id)}
-                                            readOnly
-                                            className="h-4 w-4 text-blue-600 rounded pointer-events-none"
-                                        />
-                                        <p className="ml-3 font-medium text-gray-800">{cls.name}</p>
-                                    </div>
-                                ))}
+                                {filteredAvailableClassList.map(cls => {
+                                    const isSelected = selectedClasses.some(c => c.classId === cls.id);
+                                    const selectedClass = selectedClasses.find(c => c.classId === cls.id);
+                                    
+                                    return (
+                                        <div
+                                            key={cls.id}
+                                            className={`p-3 rounded-lg border ${isSelected ? 'bg-blue-50 border-blue-500' : 'hover:bg-gray-50'}`}
+                                        >
+                                            <div 
+                                                className="flex items-center cursor-pointer"
+                                                onClick={() => handleSelectClass(cls.id)}
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isSelected}
+                                                    readOnly
+                                                    className="h-4 w-4 text-blue-600 rounded pointer-events-none"
+                                                />
+                                                <p className="ml-3 font-medium text-gray-800">{cls.name}</p>
+                                            </div>
+                                            
+                                            {isSelected && (
+                                                <div className="mt-3 ml-7">
+                                                    <DatePicker 
+                                                        date={selectedClass?.enrollDate || ''} 
+                                                        isLabelAbsolute={false} 
+                                                        label="Enroll Date" 
+                                                        onChange={(date) => handleEnrollDateChange(cls.id, date)} 
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
                     )}
