@@ -3,7 +3,6 @@
 import AttendanceStudentTable from "@/components/AttendanceStudentTable/AttendanceStudentTable";
 import AttendanceSummary from "@/components/AttendanceSummary/AttendanceSummary";
 import DatePicker from "@/components/DatePicker/DatePicker";
-import LayoutDashboard from "@/components/LayoutDashboard/LayoutDashboard";
 import { useGetClassById } from "@/hooks/useGetClassById";
 import { ArrowLeftIcon, CalendarDays, CheckIcon, List } from "lucide-react";
 import { useParams } from "next/navigation";
@@ -17,7 +16,7 @@ export default function AttendancePage() {
     }
 
     return (
-        <LayoutDashboard>
+        <>
             {/* Header */}
             <div className="bg-white shadow-md rounded-xl p-4 flex justify-between items-center mb-6">
                 <div className="flex items-center space-x-2 text-blue-600">
@@ -44,6 +43,6 @@ export default function AttendancePage() {
             <AttendanceSummary />
             <AttendanceStudentTable/>
             
-        </LayoutDashboard>
+        </>
     )
 }

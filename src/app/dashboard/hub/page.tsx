@@ -14,6 +14,7 @@ import { useState, useEffect } from "react";
 import LoadingState from "@/components/QueryState/LoadingState";
 import ErrorState from "@/components/QueryState/ErrorState";
 import { useRouter } from "next/navigation";
+import LayoutDashboard from "@/components/LayoutDashboard/LayoutDashboard";
 
 export default function HubPage() {
 
@@ -68,7 +69,7 @@ export default function HubPage() {
     };
 
     const handleHubClick = (hub: Hub) => {
-        router.push(`/hub/${hub.id}/classes`);
+        router.push(`hub/${hub.id}/classes`);
     };
 
     if (isLoading) return <LoadingState fullScreen message="Loading your hubs..." />;
@@ -153,48 +154,50 @@ export default function HubPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <LayoutDashboard>
+            <div className="min-h-screen bg-gray-50 py-8">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-                {/* Header */}
-                <div className="flex justify-between items-center mb-12">
-                    <div>
-                        <h1 className="text-4xl font-bold text-gray-900 mb-4">My Teaching Hubs</h1>
-                        <p className="text-xl text-gray-600">
-                            Manage your teaching hubs and collaborate with other educators
-                        </p>
+                    {/* Header */}
+                    <div className="flex justify-between items-center mb-12">
+                        <div>
+                            <h1 className="text-4xl font-bold text-gray-900 mb-4">My Teaching Hubs</h1>
+                            <p className="text-xl text-gray-600">
+                                Manage your teaching hubs and collaborate with other educators
+                            </p>
+                        </div>
+
+                        <Button color="blue" icon={Plus} title="Create New Hub"
+                            onClick={handleOpenCreateModal} />
                     </div>
 
-                    <Button color="blue" icon={Plus} title="Create New Hub"
-                        onClick={handleOpenCreateModal} />
+                    {/* Hubs Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        {userHubs.map((hub) => (
+                            <HubCard
+                                key={hub.id}
+                                hub={hub}
+                                isOwner={hub.owner.match(user?.Name) ? true : false}
+                                onClick={handleHubClick}
+                            />
+                        ))}
+                    </div>
+
+                    {/* Statistics */}
+                    <Statistics
+                        stats={hubStats}
+                        columns={4}
+                        className="mt-12"
+                    />
                 </div>
 
-                {/* Hubs Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {userHubs.map((hub) => (
-                        <HubCard
-                            key={hub.id}
-                            hub={hub}
-                            isOwner={hub.owner.match(user?.Name) ? true : false}
-                            onClick={handleHubClick}
-                        />
-                    ))}
-                </div>
-
-                {/* Statistics */}
-                <Statistics
-                    stats={hubStats}
-                    columns={4}
-                    className="mt-12"
+                {/* Create Hub Modal */}
+                <CreateHubModal
+                    isOpen={isCreateModalOpen}
+                    onClose={() => setIsCreateModalOpen(false)}
+                    onSubmit={handleCreateHub}
                 />
             </div>
-
-            {/* Create Hub Modal */}
-            <CreateHubModal
-                isOpen={isCreateModalOpen}
-                onClose={() => setIsCreateModalOpen(false)}
-                onSubmit={handleCreateHub}
-            />
-        </div>
+        </LayoutDashboard>
     );
 }

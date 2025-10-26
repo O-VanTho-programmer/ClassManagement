@@ -22,7 +22,7 @@ export default function NavigationSection({ title, items, hubId, activePage, isS
                 {items.map((item) => (
                     <li key={item.name} className="mb-2" title={isShrunk ? item.name : undefined}>
                         <Link
-                            href={`/hub/${hubId}${item.href}`}
+                            href={`/dashboard/hub/${hubId}${item.href}`}
                             className={`flex items-center w-full px-4 py-3 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50 ${activePage.includes(item.href) ? 'bg-slate-700 text-blue-400' : 'text-slate-200 hover:bg-slate-700 hover:text-white'}`}
                         >   
                             <div className="flex items-center w-full">

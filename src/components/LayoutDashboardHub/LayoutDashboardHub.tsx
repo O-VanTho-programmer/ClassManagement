@@ -1,25 +1,42 @@
 'use client';
 
-import React, { useEffect, useState } from 'react'
-import HeaderDashboard from '../HeaderDashboard/HeaderDashboard';
-import SideNavigation from '../SideNavigation/SideNavigation';
-import {  MenuIcon, School } from 'lucide-react';
-import { usePathname } from 'next/navigation';
+import { useEffect, useState } from "react";
+import SideNavigation from "../SideNavigation/SideNavigation"
+import { MenuIcon, BellElectricIcon, CalendarClock, CalendarDays, GraduationCapIcon, HomeIcon, StarIcon, BookPlusIcon, BookUp2 } from "lucide-react";
+import HeaderDashboard from "../HeaderDashboard/HeaderDashboard";
+import { usePathname } from "next/navigation";
 
-export default function LayoutDashboard({ children }: { children: React.ReactNode }) {
+export default function LayoutDashboardHub({ children }: { children: React.ReactNode }) {
+
+    const navigationSections = [
+        {
+            title: 'Class Management',
+            items: [
+                { name: 'Classes', icon: GraduationCapIcon, href: '/classes' },
+                { name: 'Attendance', icon: CalendarDays, href: '/attendance' },
+                { name: 'Class Rank', icon: StarIcon, href: '/class_rank' },
+            ]
+        },
+        {
+            title: 'Homework',
+            items: [
+                { name: 'Homework List', icon: BookPlusIcon, href: '/homework_list' },
+                { name: 'Assign Homework', icon: BookUp2, href: '/homework_assign' },
+            ]
+        },
+        {
+            title: 'Schedule',
+            items: [
+                { name: 'Class Schedule', icon: CalendarClock, href: '/class_schedule' },
+                { name: 'Class Period', icon: BellElectricIcon, href: '/class_period' },
+            ]
+        }
+    ];
+
     const [isNavOpen, setIsNavOpen] = useState(false);
     const [isNavShrunk, setIsNavShrunk] = useState(false);
     const pathname = usePathname();
     const [currentPage, setCurrentPage] = useState('');
-
-    const navigationSections = [
-        {
-            title: 'Hub Management',
-            items: [
-                { name: 'Hub', icon: School, href: '/dashboard/hub' },
-            ]
-        },
-    ];
 
     useEffect(() => {
         setCurrentPage(pathname);

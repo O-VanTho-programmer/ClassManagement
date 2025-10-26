@@ -7,9 +7,10 @@ import getDayNameFromDate from "@/utils/Format/getDateNameFromDate"
 interface AttendanceListStudentTableRowProps {
     student: StudentAttendance
     openModalEdit: (studentId: StudentAttendance) => void;
+    isHasHomework?: boolean;
 }
 
-export default function AttendanceListStudentTableRow({ student, openModalEdit }: AttendanceListStudentTableRowProps) {
+export default function AttendanceListStudentTableRow({ student, openModalEdit, isHasHomework }: AttendanceListStudentTableRowProps) {
     
     const handleOpenModalEdit = () => {
         openModalEdit(student);
@@ -30,11 +31,11 @@ export default function AttendanceListStudentTableRow({ student, openModalEdit }
                 </div>
             </td>
             <td className="py-4 px-2 whitespace-nowrap">
-                {student.present === 'present' ? (
+                {student.present === 'Present' ? (
                     <Badge bg_clr="bg-green-100 text-green-700! border-green-500" title="Present" />
-                ) : student.present === 'excused' ? (
+                ) : student.present === 'Excused' ? (
                     <Badge bg_clr="bg-blue-100 text-blue-700! border-blue-500" title="Excused" />
-                ) : student.present === 'absent' ? (
+                ) : student.present === 'Absent' ? (
                     <Badge bg_clr="bg-red-100 text-red-700! border-red-500" title="Absent" />
                 ) : (
                     <Badge bg_clr="bg-yellow-100 text-yellow-700! border-yellow-500" title="Absent" />
@@ -52,7 +53,7 @@ export default function AttendanceListStudentTableRow({ student, openModalEdit }
                 <p>{student.comment ?? "No comment"}</p>
             </td>
             <td className="py-4 px-2 whitespace-nowrap">
-                {student.is_finished_homework === undefined ? (
+                {!isHasHomework ? (
                     <span className="inline-block w-6 text-gray-500 font-bold p-1">-</span>
                 ) : (
                     student.is_finished_homework ? (

@@ -4,15 +4,20 @@ import { studentsAttendanceSample } from "@/data_sample/studentAttendanceSample"
 import { ModalEditAttendance } from "../ModalEditAttendance/ModalEditAttendance";
 import { newAttendanceRecordsApi } from "@/lib/api/newAttendanceRecord";
 import { useAlert } from "../AlertProvider/AlertContext";
-import { useParams } from "next/navigation";
+import { useGetAttendanceRecordsQuery } from "@/hooks/useGetAttendanceRecords";
+import { useQueryClient } from "@tanstack/react-query";
+import LoadingState from "../QueryState/LoadingState";
+import ErrorState from "../QueryState/ErrorState";
 
-export default function AttendanceListStudentTable({class_id}: {class_id: string}) {
-    
-    const [studentDatas, setStudentDatas] = useState<StudentAttendance[]>(studentsAttendanceSample);
+export default function AttendanceListStudentTable({ class_id }: { class_id: string }) {
+
+    const { data: fetchStudentAttendance, isLoading, isError, error } = useGetAttendanceRecordsQuery(class_id);
     const [editingStudent, setEditingStudent] = useState<StudentAttendance | null>(null);
     const [isSaving, setIsSaving] = useState(false);
     const { showAlert } = useAlert();
     const isModalOpen = !!editingStudent;
+
+    const queryClient = useQueryClient();
 
     const openModalEdit = (student: StudentAttendance) => {
         setEditingStudent(student);
@@ -28,12 +33,18 @@ export default function AttendanceListStudentTable({class_id}: {class_id: string
         try {
             const res = await newAttendanceRecordsApi(updatedStudent, class_id);
 
-            console.log("Attendance saved:", updatedStudent);
-
             if (res?.status === 200) {
-                setStudentDatas(prevStudents =>
+                console.log("Attendance saved:", updatedStudent);
+
+                // 1. Manually update the cache for an instant UI update
+                queryClient.setQueryData<StudentAttendance[]>(["studentAttendance", class_id], (prevStudents = []) =>
                     prevStudents.map(s => s.id === updatedStudent.id ? updatedStudent : s)
                 );
+
+                // 2. Invalidate the query to refetch in the background for consistency.
+                // This ensures the data is fresh without making the user wait.
+                queryClient.invalidateQueries({ queryKey: ["studentAttendance", class_id] });
+
                 showAlert("Attendance saved successfully!", "success");
                 handleCloseModal();
             } else {
@@ -47,10 +58,20 @@ export default function AttendanceListStudentTable({class_id}: {class_id: string
         }
     };
 
+    if (isLoading) return <LoadingState fullScreen message="Loading attendance logs..." />;
+    if (isError) return (
+        <ErrorState
+            fullScreen
+            title="Error Loading Attendance Logs"
+            message={error?.message || "Something went wrong. Please try again."}
+            onRetry={() => window.location.reload()}
+        />
+    );
+
     return (
         <>
             <div className="bg-white shadow-md rounded-xl p-4 flex justify-between items-center mb-6">
-                <div className="mx-9 py-4 overflow-x-scroll w-full">
+                <div className="mx-9 py-4 overflow-x-scroll w-full overflow-y-auto h-[400px]">
                     <table className="border-collapse">
                         <thead className="bg-gray-50">
                             <tr>
@@ -65,8 +86,8 @@ export default function AttendanceListStudentTable({class_id}: {class_id: string
                         </thead>
 
                         <tbody className="bg-white divide-y divide-gray-200">
-                            {studentDatas.map((student, index) => (
-                                <AttendanceListStudentTableRow key={index} student={student} openModalEdit={openModalEdit} />
+                            {fetchStudentAttendance?.map((student, index) => (
+                                <AttendanceListStudentTableRow isHasHomework={student.is_homework} key={index} student={student} openModalEdit={openModalEdit} />
                             ))}
                         </tbody>
                     </table>
@@ -80,6 +101,7 @@ export default function AttendanceListStudentTable({class_id}: {class_id: string
                     student={editingStudent}
                     onSave={handleSaveAttendance}
                     isSaving={isSaving}
+                    isHasHomework={editingStudent.is_homework}
                 />
             )}
         </>

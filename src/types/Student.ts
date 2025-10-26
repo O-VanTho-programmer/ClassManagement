@@ -21,7 +21,7 @@ interface ClassEnrollmentDto {
     enrollDate: string,
 }
 
-type StudentAttendanceType = 'present' | 'late' | 'excused' | 'absent' | 'unchecked'
+type StudentAttendanceType = 'Present' | 'Late' | 'Excused' | 'Absent' | 'Unchecked'
 
 type StudentAttendance = AttendanceRecord & {
     id: string,
@@ -32,10 +32,12 @@ interface AttendanceRecord {
     present: StudentAttendanceType,
     score?: number,
     is_finished_homework?: boolean,
+    is_homework?: boolean,
     comment?: string,
     date: string,
 }
 
 type StudentWithAttendanceRecordList = Student & {
-    records: AttendanceRecord[]
+    records: AttendanceRecord[],
+    total_present: number,
 }

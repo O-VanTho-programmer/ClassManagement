@@ -1,4 +1,4 @@
-import LayoutDashboard from "@/components/LayoutDashboard/LayoutDashboard";
+import LayoutDashboardHub from "@/components/LayoutDashboardHub/LayoutDashboardHub";
 
 export default async function HubLayout({
     children,
@@ -6,8 +6,8 @@ export default async function HubLayout({
     children: React.ReactNode;
   }>) {
     return (
-        <LayoutDashboard>
+        <LayoutDashboardHub>
           {children}
-        </LayoutDashboard>
+        </LayoutDashboardHub>
     );
   }

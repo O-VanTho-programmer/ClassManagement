@@ -11,7 +11,6 @@ export async function GET(req: Request) {
             s.StudentId AS id,
             s.Name AS name,
             s.DateOfBirth as birthday,
-            s.EnrollDate as enroll_date,
             s.Status as status,
             rd.Present as present,
             rd.Score as score,
@@ -21,7 +20,7 @@ export async function GET(req: Request) {
         FROM class_student cs
         JOIN student s ON s.StudentId = cs.StudentId 
         LEFT JOIN record_attendance rd ON s.StudentId = rd.StudentId
-        WHERE cs.ClassId = 1
+        WHERE cs.ClassId = ?
         ORDER BY rd.CreatedDate DESC;
         `;
 
@@ -37,13 +36,17 @@ export async function GET(req: Request) {
                     id: row.id,
                     name: row.name,
                     birthday: row.birthday,
-                    enroll_date: row.enroll_date,
+                    total_present: 0,
                     status: row.status,
                     records: []
                 });
             }
 
             let curStudent = studentsMap.get(row.id);
+            
+            if((row.present === 'Present' || row.present === 'Late') && curStudent !== undefined){
+                curStudent.total_present += 1;
+            }
 
             curStudent?.records.push({
                 present: row.present,

@@ -2,11 +2,14 @@ import { School } from "lucide-react";
 import SearchBar from "../SearchBar/SearchBar";
 import UserHeader from "../UserHeader/UserHeader";
 import Button from "../Button/Button";
+import { useRouter } from "next/navigation";
 
 export default function HeaderDashboard() {
 
+    const router = useRouter();
+
     const onClick = () => {
-        return null;
+        router.push('/dashboard/hub');
     }
     return (
         <div className="sticky top-0 z-30 border-b border-slate-200 bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60 h-[72px]">

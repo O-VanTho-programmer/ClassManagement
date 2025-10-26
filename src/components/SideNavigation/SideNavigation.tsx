@@ -2,34 +2,19 @@ import { BellElectricIcon, CalendarClock, CalendarDays, ChevronLeftIcon, Chevron
 import NavigationSection from "../NavigationSection/NavigationSection";
 import { useParams } from "next/navigation";
 
-
-const navigationSections = [
-    {
-        title: 'Class Management',
-        items: [
-            { name: 'Classes', icon: GraduationCapIcon, href: '/classes' },
-            { name: 'Attendance', icon: CalendarDays, href: '/attendance' },
-            { name: 'Class Rank', icon: StarIcon, href: '/class_rank' },
-        ]
-    },
-    {
-        title: 'Schedule',
-        items: [
-            { name: 'Class Schedule', icon: CalendarClock, href: '/class_schedule' },
-            { name: 'Class Period', icon: BellElectricIcon, href: '/class_period' },
-        ]
-    }
-];
-
 type SideNavigationProps = {
     isOpen: boolean;
     toggleNav: () => void;
     activePage: string;
     isShrunk: boolean;
     toggleShrink: () => void;
+    navigationSections: {
+        title: string;
+        items: { name: string; icon: any; href: string }[];
+    }[];
 }
 
-export default function SideNavigation({isOpen, toggleNav, activePage, isShrunk, toggleShrink }: SideNavigationProps) {
+export default function SideNavigation({isOpen, toggleNav, activePage, isShrunk, toggleShrink, navigationSections }: SideNavigationProps) {
 
     const { hub_id } = useParams();
     return (

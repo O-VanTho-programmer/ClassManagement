@@ -11,7 +11,7 @@ export default function ViewCardClasses({ datas }: TableClassProps) {
     const hub_id = params.hub_id;
 
     const directToClassDetail = (classId: string) => {
-        router.push(`/hub/${hub_id}/classes/${classId}`);
+        router.push(`classes/${classId}`);
     }
 
     return (

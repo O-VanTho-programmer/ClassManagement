@@ -8,9 +8,10 @@ interface ModalEditAttendanceProps {
     onClose: () => void;
     onSave: (updatedStudent: StudentAttendance) => void;
     isSaving?: boolean;
+    isHasHomework?: boolean;
 }
 
-export function ModalEditAttendance({ student, isOpen, onClose, onSave, isSaving }: ModalEditAttendanceProps) {
+export function ModalEditAttendance({ student, isOpen, onClose, onSave, isSaving, isHasHomework }: ModalEditAttendanceProps) {
     const [editData, setEditData] = useState<StudentAttendance>(student);
 
     // Reset local state when a new student is passed in or when modal opens
@@ -49,10 +50,10 @@ export function ModalEditAttendance({ student, isOpen, onClose, onSave, isSaving
 
 
     const attendanceButtons = [
-        { status: 'present', label: 'Present', color: 'green' },
-        { status: 'absent', label: 'Absent', color: 'red' },
-        { status: 'late', label: 'Late', color: 'yellow' },
-        { status: 'excused', label: 'Excused', color: 'blue' },
+        { status: 'Present', label: 'Present', color: 'green' },
+        { status: 'Absent', label: 'Absent', color: 'red' },
+        { status: 'Late', label: 'Late', color: 'yellow' },
+        { status: 'Excused', label: 'Excused', color: 'blue' },
     ];
 
 
@@ -125,18 +126,20 @@ export function ModalEditAttendance({ student, isOpen, onClose, onSave, isSaving
                     </div>
 
                     {/* 3. Homework Checkbox (from user snippet) */}
-                    <div className="flex items-center space-x-3 pt-2">
-                        <input
-                            id="homework"
-                            type="checkbox"
-                            checked={editData.is_finished_homework || false} // Treat undefined as false for the checkbox state
-                            onChange={handleToggleHomework}
-                            className="form-checkbox cursor-pointer h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-                        />
-                        <label htmlFor="homework" className="text-sm font-medium text-gray-700">
-                            Finished Homework
-                        </label>
-                    </div>
+                    {isHasHomework && (
+                        <div className="flex items-center space-x-3 pt-2">
+                            <input
+                                id="homework"
+                                type="checkbox"
+                                checked={editData.is_finished_homework || false} // Treat undefined as false for the checkbox state
+                                onChange={handleToggleHomework}
+                                className="form-checkbox cursor-pointer h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                            />
+                            <label htmlFor="homework" className="text-sm font-medium text-gray-700">
+                                Finished Homework
+                            </label>
+                        </div>
+                    )}
 
                     {/* 4. Comment Textarea */}
                     <div>

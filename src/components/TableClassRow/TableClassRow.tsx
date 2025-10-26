@@ -33,7 +33,7 @@ function TableClassRowForClasses({ data, index }: TableClassRowProps) {
     const hub_id = params.hub_id;
 
     const directToClassDetail = (classId: string) => {
-        router.push(`/hub/${hub_id}/classes/${classId}`);
+        router.push(`classes/${classId}`);
     }
 
     return (
@@ -99,15 +99,15 @@ function TableClassRowForAttendance({ data, index }: TableClassRowProps) {
     const hub_id = params.hub_id;
     
     const TakeAttendance = () => {
-        router.push(`/hub/${hub_id}/attendance/${data.id}/grid`);
+        router.push(`attendance/${data.id}/grid`);
     }
 
     const DirectToAttendanceReport = () => {
-        router.push(`/hub/${hub_id}/attendance/${data.id}/report`);
+        router.push(`attendance/${data.id}/report`);
     }
 
     const DirectToAttendanceList = () => {
-        router.push(`/hub/${hub_id}/attendance/${data.id}/list`);
+        router.push(`attendance/${data.id}/list`);
     }
 
     return (
@@ -138,7 +138,7 @@ function TableClassRowForAttendance({ data, index }: TableClassRowProps) {
             </td>
             <td className="py-4 px-2 whitespace-nowrap text-gray-800">
                 <div className="flex justify-end gap-1">
-                    <Button color="blue_off" onClick={DirectToAttendanceList} icon={ListCheck} title="Attendance List" />
+                    <Button color="blue_off" onClick={DirectToAttendanceList} icon={ListCheck} title="Attendance Logs" />
                     <Button color="blue_off" onClick={TakeAttendance} icon={CalendarCheck} title="Take Attendance" />
                     <Button color="green_off" onClick={DirectToAttendanceReport} icon={ChartArea} title="Report" />
                 </div>

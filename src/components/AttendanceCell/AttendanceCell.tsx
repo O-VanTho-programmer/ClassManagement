@@ -13,7 +13,8 @@ export default function AttendanceCell ({ record, onEdit }: AttendanceCellProps)
         score: record.score,
         is_finished_homework: record.is_finished_homework,
         comment: record.comment,
-        date: record.date
+        date: record.date,
+        is_homework: record.is_homework
     };
 
     const handleClick = () => onEdit(recordToPass);
@@ -22,15 +23,21 @@ export default function AttendanceCell ({ record, onEdit }: AttendanceCellProps)
     let iconClass = "w-6 h-6 mx-auto flex items-center justify-center p-1 rounded-full cursor-pointer transition-colors";
 
     switch (record.present) {
-        case 'present':
+        case 'Present':
             content = <Check className="w-4 h-4 text-green-500" />;
             iconClass += " hover:bg-green-50";
             break;
-        case 'absent':
-        case 'late':
-        case 'excused':
-            content = <X className="w-4 h-4 text-red-500" />;
+        case 'Absent':
+            content = <Check className="w-4 h-4 text-red-500" />;
             iconClass += " hover:bg-red-50";
+            break;
+        case 'Late':
+            content = <Check className="w-4 h-4 text-yellow-500" />;
+            iconClass += " hover:bg-orange-50";
+            break;
+        case 'Excused':
+            content = <X className="w-4 h-4 text-blue-500" />;
+            iconClass += " hover:bg-blue-50";
             break;
         default:
             content = <Edit3 className="w-4 h-4 text-gray-400" />;
