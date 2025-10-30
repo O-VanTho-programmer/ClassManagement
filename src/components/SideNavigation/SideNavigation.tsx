@@ -46,7 +46,7 @@ export default function SideNavigation({isOpen, toggleNav, activePage, isShrunk,
                     ))}
                 </ul>
                 {/* Toggle button for shrinking/expanding */}
-                <div className="flex justify-end mt-4 md:block hidden">
+                <div className="absolute bottom-2.5 right-2.5 md:flex hidden">
                     <button onClick={toggleShrink} className="p-2 rounded-full text-slate-400 hover:bg-slate-700 hover:text-white transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-400">
                         {isShrunk ? <ChevronRightIcon className="h-6 w-6" /> : <ChevronLeftIcon className="h-6 w-6" />}
                     </button>

@@ -40,7 +40,7 @@ export default function Login() {
           });
 
           showAlert(res.data.message, "success");
-          window.location.href = '/hub';
+          window.location.href = '/dashboard/hub';
 
         } catch (error: any) {
           if (error.response) { 
@@ -71,7 +71,7 @@ export default function Login() {
         if (res.status === 201) {
           showAlert(res.data.message, "success");
           setIsLogin(true);
-          window.location.href = '/'
+          window.location.href = '/auth'
         } else {
           showAlert(res.data.message, "error");
         }

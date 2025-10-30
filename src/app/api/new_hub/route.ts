@@ -20,11 +20,11 @@ export async function POST(req: Request) {
         const hubId = newHubRow.insertId;
 
         const queryHubRole = `
-            INSERT INTO hub_role (HubId, UserId, Role)
+            INSERT INTO hub_role (HubId, UserId, Role, IsOwner)
             VALUES (?, ?, ?)
         `;
 
-        await pool.query(queryHubRole, [hubId, owner, "Master"]);
+        await pool.query(queryHubRole, [hubId, owner, "Owner", true]);
 
         if (includedTeachers.length > 0) {
             const [teachers]: any = await pool.query(

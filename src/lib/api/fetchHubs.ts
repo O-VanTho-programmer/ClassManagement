@@ -10,9 +10,9 @@ export const fetchHubs = async (userId?: string): Promise<Hub[] | null> => {
 
     const res = await api.get(`/get_hubs?userId=${userId}`);
     console.log('Fetch hubs response:', res);
-    return res.data as Hub[];
+    return res.data.hubs as Hub[];
   } catch (error) {
     console.error("Failed to fetch hubs:", error);
-    return null;
+    return [] as Hub[];
   }
 };

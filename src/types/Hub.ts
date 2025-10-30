@@ -5,6 +5,7 @@ export interface Hub{
     numberOfClasses: number
     numberOfTeachers: number;
     owner: string,
+    isOwner: 1 | 0,
 }
 
 export interface HubAddDto{

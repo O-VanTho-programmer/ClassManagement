@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import SideNavigation from "../SideNavigation/SideNavigation"
-import { MenuIcon, BellElectricIcon, CalendarClock, CalendarDays, GraduationCapIcon, HomeIcon, StarIcon, BookPlusIcon, BookUp2 } from "lucide-react";
+import { MenuIcon, BellElectricIcon, CalendarClock, CalendarDays, GraduationCapIcon, HomeIcon, StarIcon, BookPlusIcon, BookUp2, HatGlasses } from "lucide-react";
 import HeaderDashboard from "../HeaderDashboard/HeaderDashboard";
 import { usePathname } from "next/navigation";
 
@@ -30,7 +30,13 @@ export default function LayoutDashboardHub({ children }: { children: React.React
                 { name: 'Class Schedule', icon: CalendarClock, href: '/class_schedule' },
                 { name: 'Class Period', icon: BellElectricIcon, href: '/class_period' },
             ]
-        }
+        },
+        {
+            title: 'Teacher',
+            items: [
+                { name: 'Teacher List', icon: HatGlasses, href: '/teacher' },
+            ]
+        },
     ];
 
     const [isNavOpen, setIsNavOpen] = useState(false);
