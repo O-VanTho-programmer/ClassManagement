@@ -1,9 +1,9 @@
 import React from 'react'
 
-export default function HomeworkList() {
+export default function HomeworkListPage() {
   return (
     <div>
-        
+
     </div>
   )
 }
