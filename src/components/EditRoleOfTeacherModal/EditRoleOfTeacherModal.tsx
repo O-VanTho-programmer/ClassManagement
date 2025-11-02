@@ -1,7 +1,7 @@
-import { X } from 'lucide-react';
-import React, { useState } from 'react'
+import { Loader2, X } from 'lucide-react';
+import React, { useMemo, useState } from 'react'
 import SearchBar from '../SearchBar/SearchBar';
-import { useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { updateTeacherAPI } from '@/lib/api/updateTeacher';
 import { updateTeacherRoleInHub } from '@/lib/api/updateTeacherRoleInHub';
 
@@ -24,20 +24,39 @@ export default function EditRoleOfTeacherModal({
     const queryClient = useQueryClient();
     const [searchTerm, setSearchTerm] = useState('');
 
-    const handleRoleChange = async (teacher: TeacherInHub, newRole: 'Master' | 'Member' | 'Owner') => {
+    const updateRoleMutation = useMutation({
+        mutationFn: ({ teacher, newRole }: { teacher: TeacherInHub, newRole: 'Master' | 'Member' | 'Owner' }) => {
+            return updateTeacherRoleInHub(teacher.id, hubId, newRole);
+        },
+        onSuccess: () => {
+            console.log("Role updated successfully!");
+            queryClient.invalidateQueries({ queryKey: ['teachers_workload', hubId] });
+        },
+        onError: (error: Error, variables) => {
+            alert(`Failed to update role for ${variables.teacher.name}: ${error.message}`);
+        }
+    });
+
+    const handleRoleChange = (teacher: TeacherInHub, newRole: 'Master' | 'Member' | 'Owner') => {
         if (currentUserRole !== 'Master' && currentUserRole !== 'Owner') {
             alert("You do not have permission to change roles.");
             return;
         }
 
-        const updatedTeacher = {
-            ...teacher,
-            role_hub: newRole
-        }
+        if (updateRoleMutation.isPending) return;
 
-        console.log(teacher, updatedTeacher);
-        await updateTeacherRoleInHub(updatedTeacher.id, hubId, newRole);
+        console.log(teacher, { ...teacher, role_hub: newRole });
+
+        updateRoleMutation.mutate({ teacher, newRole });
     };
+
+
+    const filteredTeachers = useMemo(() => {
+        return teachersList.filter(teacher =>
+            teacher.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            teacher.email.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [teachersList, searchTerm]);
 
     // const handleClose = () => {
     //     setSearchTerm('');
@@ -63,40 +82,48 @@ export default function EditRoleOfTeacherModal({
 
             {/* Results List */}
             <div className="flex-grow overflow-y-auto mt-4">
-                {teachersList && teachersList.length > 0 && (
+                {filteredTeachers && filteredTeachers.length > 0 && (
                     <ul className="divide-y divide-gray-200">
-                        {teachersList.map(teacher => {
-                            return (
-                                (
-                                    <li
-                                        key={teacher.id}
-                                        className={`p-3 cursor-pointer flex relative items-center hover:bg-gray-50`}
-                                    >
+                        {filteredTeachers.map(teacher => {
 
-                                        <div className="ml-3">
-                                            <p className="text-sm font-medium text-gray-900">{teacher.name}</p>
-                                            <p className="text-sm text-gray-500">{teacher.email}</p>
-                                        </div>
-                                        {teacher.role_hub === 'Owner' ? (
-                                            <span className="absolute right-5 text-sm font-medium text-gray-500">Owner</span>
-                                        ) : (
+                            // Check if this specific teacher is being updated
+                            const isUpdatingThisTeacher:boolean =
+                                updateRoleMutation.isPending &&
+                                updateRoleMutation.variables?.teacher.id === teacher.id;
+
+                            return (
+                                <li
+                                    key={teacher.id}
+                                    className={`p-3 cursor-pointer flex relative items-center hover:bg-gray-50 ${isUpdatingThisTeacher ? 'bg-gray-200' : ''}`}
+                                >
+                                    <div className="ml-3">
+                                        <p className="text-sm font-medium text-gray-900">{teacher.name}</p>
+                                        <p className="text-sm text-gray-500">{teacher.email}</p>
+                                    </div>
+
+                                    {teacher.role_hub === 'Owner' ? (
+                                        <span className="absolute right-5 text-sm font-medium text-gray-500">Owner</span>
+                                    ) : (
+                                        <div className="absolute right-5 flex items-center space-x-2">
+                                            {isUpdatingThisTeacher && (
+                                                <Loader2 size={16} className="animate-spin text-blue-600" />
+                                            )}
                                             <select
                                                 value={teacher.role_hub}
                                                 onChange={(e) => handleRoleChange(teacher, e.target.value as 'Master' | 'Member' | 'Owner')}
-                                                // Disable if not Master/Owner, or if mutation is pending for this teacher
                                                 disabled={
-                                                    (currentUserRole !== 'Master' && currentUserRole !== 'Owner')
+                                                    (currentUserRole !== 'Master' && currentUserRole !== 'Owner') ||
+                                                    isUpdatingThisTeacher 
                                                 }
-                                                className="absolute right-5 appearance-none bg-gray-100 border border-gray-300 text-gray-700 text-sm py-1.5 pl-3 pr-8 rounded-md leading-tight focus:outline-none focus:bg-white focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed"
+                                                className="appearance-none bg-gray-100 border border-gray-300 text-gray-700 text-sm py-1.5 pl-3 pr-8 rounded-md leading-tight focus:outline-none focus:bg-white focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed"
                                             >
                                                 <option value="Master">Master</option>
                                                 <option value="Member">Member</option>
                                             </select>
-                                        )}
-
-                                    </li>
-                                )
-                            )
+                                        </div>
+                                    )}
+                                </li>
+                            );
                         })}
                     </ul>
                 )}

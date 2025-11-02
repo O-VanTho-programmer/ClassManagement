@@ -68,6 +68,7 @@ export default function TeacherPage() {
            onClose={() => setAddModalOpen(false)}
            hub_id={hub_id as string}
            teachers={teachers}
+           isLoadingTeachers={isLoading}
            />
 
             {/* {selectedTeacherId && (

@@ -8,13 +8,15 @@ interface ManagementTeacherModalProps {
     onClose: () => void;
     hub_id: string;
     teachers: TeacherWorkload[];
+    isLoadingTeachers?: boolean;
 }
 
 export default function ManagementTeacherModal({
     isOpen,
     onClose,
     hub_id,
-    teachers
+    teachers,
+    isLoadingTeachers = false
 }: ManagementTeacherModalProps) {
     if (!isOpen) return null;
 
