@@ -6,12 +6,12 @@ import React from 'react'
 
 export default function CreateHomeworkPage() {
 
-  const { hubId } = useParams();
+  const { hub_id } = useParams();
   const user = useUser();
 
   return (
     <div>
-        <CreateHomework hubId={hubId as string} currentUserId={user?.id} />
+        <CreateHomework hubId={hub_id as string} currentUserId={user?.userId} />
     </div>
   )
 }

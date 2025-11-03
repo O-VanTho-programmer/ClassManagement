@@ -23,10 +23,15 @@ export default function CreateHomework({ hubId, currentUserId }: { hubId: string
         try {
             const res = await newHomework({hub_id: hubId, title, content, created_by_user_id: currentUserId});
 
-            showAlert('Homework created successfully!', 'success');
-            setTitle('');
-            setContent('');
-            setLoading(false);
+            if (res?.status === 200) {
+                showAlert('Homework created successfully!', 'success');
+                setTitle('');
+                setContent('');
+                setLoading(false);
+            } else {
+                showAlert('Error creating homework.', 'error');
+                setLoading(false);
+            }
         } catch (err) {
             console.error(err);
             showAlert('Error connecting to server.', 'error');

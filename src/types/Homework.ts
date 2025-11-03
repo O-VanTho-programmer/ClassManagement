@@ -8,4 +8,5 @@ interface HomeworkInputDto{
 interface Homework extends HomeworkInputDto {
     id: string,
     created_date: string,
+    created_by_user_name: string,
 }
