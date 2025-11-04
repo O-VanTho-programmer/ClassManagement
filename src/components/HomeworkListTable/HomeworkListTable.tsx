@@ -8,9 +8,10 @@ type Props = {
     isError: boolean;
     error: any;
     homeworkList: Homework[]
+    onSelectAssignHomeworkToClass: (homework: Homework) => void;
 }
 
-export default function HomeworkListTable({ isLoading, isError, error, homeworkList }: Props) {
+export default function HomeworkListTable({ isLoading, isError, error, homeworkList, onSelectAssignHomeworkToClass }: Props) {
     if (isLoading) return <LoadingState message='Loading homework list...' />;
     if (isError) return <ErrorState message={error.message} />;
 
@@ -38,7 +39,7 @@ export default function HomeworkListTable({ isLoading, isError, error, homeworkL
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{hw.created_by_user_name}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
-                                <button onClick={() => { }} className="flex items-center justify-center gap-1.5 text-blue-600 hover:text-blue-900">
+                                <button onClick={() => onSelectAssignHomeworkToClass(hw)} className="flex items-center justify-center gap-1.5 text-blue-600 hover:text-blue-900">
                                     <Send size={16} /> Assign
                                 </button>
                                 <button className="flex items-center justify-center gap-1.5 text-gray-600 hover:text-gray-900">

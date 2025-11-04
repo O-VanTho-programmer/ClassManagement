@@ -1,14 +1,16 @@
 'use client';
 
+import AssignHomeworkToClassModal from '@/components/AssignHomeworkToClassModal/AssignHomeworkToClassModal';
+import Button from '@/components/Button/Button';
 import HomeworkListTable from '@/components/HomeworkListTable/HomeworkListTable';
 import SearchBar from '@/components/SearchBar/SearchBar';
 import { useGetHomeworkListQuery } from '@/hooks/useGetHomeworkListQuery';
 import { Plus } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
-import React, { useMemo, useState } from 'react'
+import React, { use, useMemo, useState } from 'react'
 
 export default function HomeworkListPage() {
-  const {hub_id} = useParams();
+  const { hub_id } = useParams();
   const router = useRouter();
 
   const onCreateHomework = () => {
@@ -17,12 +19,19 @@ export default function HomeworkListPage() {
 
   const [searchTerm, setSearchTerm] = useState<string>("");
   const { data: homeworkList = [], isLoading: isLoadingHomeworkList, isError: isErrorHomeworkList, error: errorHomeworkList } = useGetHomeworkListQuery(hub_id as string);
+  const [selectedHomework, setSelectedHomework] = useState<Homework | null>(null);
+  const [isAssignHomeworkToClassModalOpen, setIsAssignHomeworkToClassModalOpen] = useState(false);
 
-  const filteredHomeworkList = useMemo(()=> {
-    return homeworkList.filter((hw)=> {
+  const filteredHomeworkList = useMemo(() => {
+    return homeworkList.filter((hw) => {
       return hw.title.toLowerCase().includes(searchTerm.toLowerCase());
     });
   }, [homeworkList, searchTerm]);
+
+  const handleSelectAssignHomeworkToClass = (homework: Homework) => {
+    setSelectedHomework(homework);
+    setIsAssignHomeworkToClassModalOpen(true);
+  };
 
   return (
     <div className="p-8 bg-gray-50 min-h-screen">
@@ -35,13 +44,7 @@ export default function HomeworkListPage() {
           onChange={(e) => setSearchTerm(e.target.value)}
         />
 
-        <button
-          onClick={onCreateHomework}
-          className="w-full cursor-pointer md:w-auto flex items-center justify-center px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <Plus size={18} className="mr-2" />
-          Create Homework
-        </button>
+        <Button color='blue' icon={Plus} title='Create Homework' onClick={onCreateHomework}/>
       </div>
 
       <div className="bg-white rounded-xl shadow-lg">
@@ -49,8 +52,21 @@ export default function HomeworkListPage() {
           isLoading={isLoadingHomeworkList}
           isError={isErrorHomeworkList}
           error={errorHomeworkList}
-          homeworkList={filteredHomeworkList as Homework[]} />
+          homeworkList={filteredHomeworkList as Homework[]} 
+          onSelectAssignHomeworkToClass={handleSelectAssignHomeworkToClass}/>
       </div>
+
+      {selectedHomework && (
+        <AssignHomeworkToClassModal
+          curHomework={selectedHomework}
+          hubId={hub_id as string}
+          isOpen={isAssignHomeworkToClassModalOpen}
+          onClose={() => {
+            setSelectedHomework(null);
+            setIsAssignHomeworkToClassModalOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 }
