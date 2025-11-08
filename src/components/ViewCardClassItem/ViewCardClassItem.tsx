@@ -1,6 +1,5 @@
 import { CalendarIcon, CircleX, ClockIcon, CreditCardIcon, PlayIcon, UserIcon, UsersIcon } from "lucide-react";
 import Badge from "../Badge/Badge";
-import getDiffTimeFromStartToNow from "@/utils/getDiffTimeFromStartToNow";
 import { ClassData } from "@/types/ClassData";
 
 interface ViewCardClassItemProps {

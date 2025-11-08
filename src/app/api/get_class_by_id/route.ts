@@ -1,9 +1,9 @@
 import pool from "@/lib/db";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(req:Response) {
+export async function GET(req: NextRequest) {
     try {
-        const { searchParams } = new URL(req.url);
+        const { searchParams } = req.nextUrl;
         const classId = searchParams.get("classId");
 
         const queryGetClassById = `

@@ -8,12 +8,11 @@ interface ClassHeaderProps {
 }
 
 export default function ClassHeader({ classInfo }: ClassHeaderProps) {
+    const [showFullDetails, setShowFullDetails] = useState(false);
 
     if(classInfo === null || classInfo === undefined){
         return null;
     }
-
-    const [showFullDetails, setShowFullDetails] = useState(false);
 
     return (
         <div className="flex flex-col w-full py-4 sm:py-8">

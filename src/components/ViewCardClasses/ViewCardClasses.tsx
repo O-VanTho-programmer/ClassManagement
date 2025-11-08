@@ -3,12 +3,9 @@ import ViewCardClassItem from "../ViewCardClassItem/ViewCardClassItem";
 import { useParams, useRouter } from "next/navigation";
 
 export default function ViewCardClasses({ datas }: TableClassProps) {
-    
-    if(datas == null || datas == undefined) return ;
-    
     const router = useRouter();
-    const params = useParams();
-    const hub_id = params.hub_id;
+    
+    if(datas == null || datas == undefined) return null;
 
     const directToClassDetail = (classId: string) => {
         router.push(`classes/${classId}`);

@@ -2,6 +2,7 @@ import { PlusSquare, X } from "lucide-react";
 import { useState } from "react";
 import Button from "../Button/Button";
 import { useUser } from "@/context/UserContext";
+import { HubAddDto } from "@/types/Hub";
 
 interface CreateHubModalProps {
     isOpen: boolean;
@@ -12,18 +13,18 @@ interface CreateHubModalProps {
 export default function CreateHubModal({ isOpen, onClose, onSubmit }: CreateHubModalProps) {
     const user = useUser();
 
-    if(!user){
-        return null;
-    }
-
     const [formData, setFormData] = useState<HubAddDto>({
         name: '',
         description: '',
         includedTeachers: [],
-        owner: user.userId
+        owner: user?.userId ?? ''
     });
 
     const [errors, setErrors] = useState<Record<string, string>>({});
+
+    if(!user){
+        return null;
+    }
 
     const validateForm = () => {
         const newErrors: Record<string, string> = {};

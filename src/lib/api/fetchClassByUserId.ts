@@ -7,6 +7,7 @@ export async function fetchClassByUserId(userId: string): Promise<ClassData[]> {
         console.log('Fetch classes response:', res);
         return res.data.classData as ClassData[];
     } catch (error) {
+        console.log("Failed to fetch class by user id" ,error);
         return [];
     }
 }

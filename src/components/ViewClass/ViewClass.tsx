@@ -2,7 +2,7 @@
 
 import Selection, { Option } from "../Selection/Selection"
 import TableClass from "../TableClass/TableClass"
-import { useEffect, useMemo, useState } from "react"
+import {  useMemo, useState } from "react"
 import ToggleViewClassList from "../ToggleViewClassList/ToggleViewClassList";
 import Button from "../Button/Button";
 import { Plus, Search } from "lucide-react";
@@ -161,7 +161,7 @@ export default function ViewClass() {
                         </div>
                         <h3 className="text-xl font-semibold text-gray-900 mb-2">No classes found</h3>
                         <p className="text-gray-600 max-w-md mx-auto mb-2">
-                            Try adjusting your search terms or filters to find what you're looking for.
+                            Try adjusting your search terms or filters to find what you are looking for.
                         </p>
 
                         <Button color="blue" icon={Plus} onClick={() => setIsCreateModalOpen(true)} title="Create Class" />

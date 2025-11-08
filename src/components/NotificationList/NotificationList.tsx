@@ -11,10 +11,6 @@ interface NotificationListProps {
 }
 
 const NotificationList = ({ title = "Thông báo", notificationsData, isOpen, onClose }: NotificationListProps) => {
-    if (!isOpen) {
-        return null;
-    }
-
     const ref = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -31,7 +27,11 @@ const NotificationList = ({ title = "Thông báo", notificationsData, isOpen, on
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         }
-    }, [isOpen])
+    }, [isOpen, onClose])
+
+    if (!isOpen) {
+        return null;
+    }
 
     const ReadAll = () => {
 

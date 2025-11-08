@@ -1,4 +1,4 @@
-import { ClassData, ClassDataWithTimeTableHour } from "@/types/ClassData";
+import { ClassDataWithTimeTableHour } from "@/types/ClassData";
 import { Moon, Sun } from "lucide-react";
 import React from "react";
 import ClassCardTimeTable from "../ClassCardTimeTable/ClassCardTimeTable";

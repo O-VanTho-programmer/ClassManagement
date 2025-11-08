@@ -12,7 +12,7 @@ export default function AttendanceStudentTableRow({ index, student, setStudents 
         setStudents(prevData =>
             prevData.map(student =>
                 student.id === studentId
-                    ? { ...student, present: student.present === status ? 'absent' : status }
+                    ? { ...student, present: student.present === status ? 'Absent' : status }
                     : student
             )
         );
@@ -60,26 +60,26 @@ export default function AttendanceStudentTableRow({ index, student, setStudents 
             <td className="py-4 px-2 whitespace-nowrap">
                 <div className="flex space-x-2">
                     <button
-                        onClick={() => handleToggleAttendance(student.id, 'present')}
-                        className={`px-3 py-1 rounded-full text-xs font-semibold border-2 ${student.present === 'present' ? 'bg-green-100 text-green-700 border-green-500' : 'bg-transparent text-gray-500 border-gray-300'} transition-colors`}
+                        onClick={() => handleToggleAttendance(student.id, 'Present')}
+                        className={`px-3 py-1 rounded-full text-xs font-semibold border-2 ${student.present === 'Present' ? 'bg-green-100 text-green-700 border-green-500' : 'bg-transparent text-gray-500 border-gray-300'} transition-colors`}
                     >
                         Có mặt
                     </button>
                     <button
-                        onClick={() => handleToggleAttendance(student.id, 'absent')}
-                        className={`px-3 py-1 rounded-full text-xs font-semibold border-2 ${student.present === 'absent' ? 'bg-red-100 text-red-700 border-red-500' : 'bg-transparent text-gray-500 border-gray-300'} transition-colors`}
+                        onClick={() => handleToggleAttendance(student.id, 'Absent')}
+                        className={`px-3 py-1 rounded-full text-xs font-semibold border-2 ${student.present === 'Absent' ? 'bg-red-100 text-red-700 border-red-500' : 'bg-transparent text-gray-500 border-gray-300'} transition-colors`}
                     >
                         Vắng
                     </button>
                     <button
-                        onClick={() => handleToggleAttendance(student.id, 'late')}
-                        className={`px-3 py-1 rounded-full text-xs font-semibold border-2 ${student.present === 'late' ? 'bg-yellow-100 text-yellow-700 border-yellow-500' : 'bg-transparent text-gray-500 border-gray-300'} transition-colors`}
+                        onClick={() => handleToggleAttendance(student.id, 'Late')}
+                        className={`px-3 py-1 rounded-full text-xs font-semibold border-2 ${student.present === 'Late' ? 'bg-yellow-100 text-yellow-700 border-yellow-500' : 'bg-transparent text-gray-500 border-gray-300'} transition-colors`}
                     >
                         Muộn
                     </button>
                     <button
-                        onClick={() => handleToggleAttendance(student.id, 'excused')}
-                        className={`px-3 py-1 rounded-full text-xs font-semibold border-2 ${student.present === 'excused' ? 'bg-blue-100 text-blue-700 border-blue-500' : 'bg-transparent text-gray-500 border-gray-300'} transition-colors`}
+                        onClick={() => handleToggleAttendance(student.id, 'Excused')}
+                        className={`px-3 py-1 rounded-full text-xs font-semibold border-2 ${student.present === 'Excused' ? 'bg-blue-100 text-blue-700 border-blue-500' : 'bg-transparent text-gray-500 border-gray-300'} transition-colors`}
                     >
                         Có phép
                     </button>

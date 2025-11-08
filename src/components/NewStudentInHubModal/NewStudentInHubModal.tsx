@@ -18,10 +18,6 @@ export default function NewStudentInHubModal({
     onSubmit
 }: NewStudentInHubModalProps) {
 
-    if (!isOpen) {
-        return null;
-    }
-
     const initialFormData: StudentInputDto = {
         name: '',
         birthday: '',
@@ -34,21 +30,12 @@ export default function NewStudentInHubModal({
 
     useEffect(() => {
         if (isOpen) {
-            setFormData(initialFormData);
+            setFormData({ name: '', birthday: '' });
             setSelectedClasses([]);
             setClassSearchTerm('');
             setErrors({});
         }
     }, [isOpen]);
-
-    const validateForm = () => {
-        const newErrors: Record<string, string> = {};
-        if (!formData.name.trim()) newErrors.name = "Student's name is required.";
-        if (!formData.birthday) newErrors.birthday = "Birthday is required.";
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
-
 
     const filteredAvailableClassList = useMemo(() => {
         const availableClassList = Array.isArray(availableClassDatas) ? availableClassDatas : [];
@@ -57,6 +44,18 @@ export default function NewStudentInHubModal({
             cl.name.toLowerCase().includes(classSearchTerm.toLowerCase())
         )
     }, [availableClassDatas, classSearchTerm]);
+
+    if (!isOpen) {
+        return null;
+    }
+
+    const validateForm = () => {
+        const newErrors: Record<string, string> = {};
+        if (!formData.name.trim()) newErrors.name = "Student's name is required.";
+        if (!formData.birthday) newErrors.birthday = "Birthday is required.";
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
 
 
     const handleInputChange = (field: keyof typeof initialFormData, value: string) => {

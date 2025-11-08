@@ -28,7 +28,7 @@ export default function ClassesInfoCard({ classData, onClick }: ClassesInfoCardP
             bg-white rounded-xl shadow-sm border border-gray-200 p-6 
             transition-all duration-300 hover:shadow-md hover:border-gray-300
             cursor-pointer group
-            ${classData.status === 'finished' ? 'opacity-70' : ''}
+            ${classData.status === 'Finished' ? 'opacity-70' : ''}
           `}
             onClick={() => onClick?.(classData)}
         >
@@ -37,7 +37,7 @@ export default function ClassesInfoCard({ classData, onClick }: ClassesInfoCardP
                 <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
                     {classData.name}
                 </h3>
-                {classData.status === "finished" ? (
+                {classData.status === "Finished" ? (
                     <Badge bg_clr="bg-red-500" title="Finished" />
                 ) : (
                     <Badge bg_clr="bg-green-500" title="Active" />

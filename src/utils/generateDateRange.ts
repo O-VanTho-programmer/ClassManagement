@@ -12,7 +12,7 @@ const generateDateRange = (startDateStr: string, endDateStr: string, schedule: S
     const scheduledDays = schedule.map(s => dayMap[s.day]).filter(day => day !== undefined);
 
     const dates: string[] = [];
-    let current = start;
+    const current = start;
 
     while (current <= end) {
         const dayOfWeek = current.getDay(); // 0 for Sunday, 1 for Monday...

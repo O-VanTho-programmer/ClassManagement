@@ -20,16 +20,6 @@ export default function AddStudentIntoClassModal({
     onClose,
     onSubmit,
 }: AddStudentIntoClassModalProps) {
-
-    if (!isOpen) {
-        return null;
-    }
-
-    if (allStudentList == null || allStudentList == undefined) return;
-    if (studentsAlreadyInClass == null || studentsAlreadyInClass == undefined) {
-        studentsAlreadyInClass = [];
-    }
-
     const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [enrollDate, setEnrollDate] = useState(new Date().toISOString().split('T')[0]);
@@ -42,12 +32,21 @@ export default function AddStudentIntoClassModal({
         }
     }, [isOpen]);
 
+    const safeStudentList = allStudentList ?? [];
+    const safeStudentsInClass = studentsAlreadyInClass ?? [];
+
     const filteredStudents = useMemo(() => {
-        return allStudentList.filter(student => 
+        return safeStudentList.filter(student => 
             student.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-            !studentsAlreadyInClass.some(s => s.id === student.id)
+            !safeStudentsInClass.some(s => s.id === student.id)
         ); 
-    }, [allStudentList, studentsAlreadyInClass, searchTerm]);
+    }, [safeStudentList, safeStudentsInClass, searchTerm]);
+
+    if (!isOpen) {
+        return null;
+    }
+
+    if (allStudentList == null || allStudentList == undefined) return null;
 
     const handleSelectStudent = (studentId: string) => {
         setSelectedStudents(prevSelected =>

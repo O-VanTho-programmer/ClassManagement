@@ -1,8 +1,9 @@
-import { studentsSample } from "@/data_sample/studentsDataSample";
 import SearchBar from "../SearchBar/SearchBar";
 import TableStudentList from "../TableStudentList/TableStudentList";
 import Button from "../Button/Button";
 import { ListPlus, UserPlus } from "lucide-react";
+import LoadingState from "../QueryState/LoadingState";
+import ErrorState from "../QueryState/ErrorState";
 
 interface ViewStudentListProps {
     studentDatas: StudentWithEnrollment[] | [] | undefined ;
@@ -19,7 +20,15 @@ export default function ViewStudentList({
     newStudent,
     addStudentIntoClass, 
 }: ViewStudentListProps) {
-    
+
+    if(isLoading){
+        <LoadingState fullScreen message="Loading your students..." />
+    }
+
+    if(isError){
+        <ErrorState message={error?.message || "Something went wrong while loading your students. Please try again."} onRetry={() => window.location.reload()} />
+    }
+
     return (
         <div className="mt-8">
             <div className="bg-white rounded-lg shadow-lg py-6">
