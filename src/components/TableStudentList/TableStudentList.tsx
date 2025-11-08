@@ -5,9 +5,15 @@ interface TableStudentListProps {
     studentDatas: StudentWithEnrollment[]
 }
 
-export default function TableStudentList({studentDatas} : TableStudentListProps) {
+export default function TableStudentList({ studentDatas }: TableStudentListProps) {
     return (
-        <div className="mx-9 py-4 overflow-x-scroll">
+        <div className="mx-9 py-4 overflow-scroll h-[400px]">
+            <style jsx>{`
+                .custom-scrollbar::-webkit-scrollbar {
+                    width: 6px;
+                    height: 6px;
+                }
+            `}</style>
             <table className="border-collapse">
                 <thead className="bg-gray-50">
                     <tr>

@@ -12,6 +12,11 @@ type AssignHomeworkToClassModalProps = {
     onClose: () => void,
 }
 
+type ClassHomeworkDate = {
+    assignedDate: string;
+    dueDate: string;
+}
+
 export default function AssignHomeworkToClassModal({
     curHomework: homework,
     hubId,
@@ -21,11 +26,9 @@ export default function AssignHomeworkToClassModal({
 
     const queryClient = useQueryClient();
     const [selectedClassIds, setSelectedClassIds] = useState<Set<string>>(new Set());
-    const [dueDate, setDueDate] = useState('');
-    const [assignedDate, setAssignedDate] = useState(new Date().toISOString().split('T')[0]); // Default to today
 
     const { data: allClasses = [], isLoading: isLoadingClasses } = useGetUserClassesQuery(hubId);
-
+    const [classWithHomeworkDate, setClassWithHomeworkDate] = useState<Map<string, ClassHomeworkDate>>(new Map());
 
     const mutation = useMutation({
         mutationFn: (data: HomeworkAssignedClassesDTO) => assignHomework(data),
@@ -40,48 +43,110 @@ export default function AssignHomeworkToClassModal({
 
     const handleClose = () => {
         setSelectedClassIds(new Set());
-        setDueDate('');
-        setAssignedDate(new Date().toISOString().split('T')[0]);
         onClose();
     };
 
     const handleClassToggle = (classId: string) => {
-        setSelectedClassIds(prev => {
-            const newSet = new Set(prev);
-            if (newSet.has(classId)) {
-                newSet.delete(classId);
-            } else {
-                newSet.add(classId);
+        const newSet = new Set(selectedClassIds);
+        const newMap = new Map(classWithHomeworkDate);
+
+        if (newSet.has(classId)) {
+            newSet.delete(classId);
+            newMap.delete(classId);
+        } else {
+            newSet.add(classId);
+            newMap.set(classId, {
+                assignedDate: new Date().toISOString().split('T')[0],
+                dueDate: ''
+            })
+        }
+
+        setSelectedClassIds(newSet);
+        setClassWithHomeworkDate(newMap);
+    };
+
+    const setAssignedDate = (classId: string, date: string) => {
+        setClassWithHomeworkDate(prevMap => {
+            const newMap = new Map(prevMap);
+            const currentDates = newMap.get(classId);
+            if (currentDates) {
+                newMap.set(classId, { ...currentDates, assignedDate: date });
             }
-            return newSet;
+            return newMap;
         });
     };
+
+    const setDueDate = (classId: string, date: string) => {
+        setClassWithHomeworkDate(prevMap => {
+            const newMap = new Map(prevMap);
+            const currentDates = newMap.get(classId);
+            if (currentDates) {
+                newMap.set(classId, { ...currentDates, dueDate: date });
+            }
+            return newMap;
+        });
+    };
+
 
     const handleSelectAllClasses = () => {
         if (selectedClassIds.size === allClasses.length) {
             setSelectedClassIds(new Set());
+            setClassWithHomeworkDate(new Map());
         } else {
-            setSelectedClassIds(new Set(allClasses.map(c => c.id)));
+            const newSet = new Set<string>();
+            const newMap = new Map<string, ClassHomeworkDate>();
+
+            allClasses.forEach(cls => {
+                newSet.add(cls.id);
+                newMap.set(cls.id, {
+                    assignedDate: new Date().toISOString().split('T')[0],
+                    dueDate: ''
+                });
+            });
+
+            setSelectedClassIds(newSet);
+            setClassWithHomeworkDate(newMap);
         }
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!homework) return;
         if (selectedClassIds.size === 0) {
             alert('Please select at least one class.');
             return;
         }
-        if (!dueDate) {
-            alert('Please set a due date.');
+
+        const assignmentsToSubmit: HomeworkAssignedClassesDTO[] = [];
+
+        for (let classId of selectedClassIds) {
+            const curItem = classWithHomeworkDate.get(classId);
+
+            if (!curItem) {
+                console.log("Miss Class Ids: " + classId);
+                continue;
+            }
+
+            assignmentsToSubmit.push({
+                homework_id: homework.id,
+                class_id: classId,
+                due_date: curItem.dueDate,
+                assigned_date: curItem.assignedDate
+            });
+        }
+
+        if(assignHomework.length === 0){
+            alert("No valid assignments to submit.");
             return;
         }
 
-        mutation.mutate({
-            homework_id: homework.id,
-            class_ids: Array.from(selectedClassIds),
-            due_date: dueDate,
-            assigned_date: assignedDate
-        });
+        try {
+            await Promise.all(assignmentsToSubmit.map(item => mutation.mutateAsync(item)));
+            alert("Homework assigned successfully!")
+            handleClose();
+            
+        } catch (error) {
+            alert(`Error assigning homework: ${(error as Error).message}. Please try again.`);
+        }
     };
 
     if (!isOpen || !homework) return null;
@@ -136,8 +201,8 @@ export default function AssignHomeworkToClassModal({
                                                     <label className="block text-sm font-medium text-gray-700 mb-1">Assigned Date</label>
                                                     <input
                                                         type="date"
-                                                        value={assignedDate}
-                                                        onChange={(e) => setAssignedDate(e.target.value)}
+                                                        value={classWithHomeworkDate?.get(cls.id)?.assignedDate || ''}
+                                                        onChange={(e) => setAssignedDate(cls.id, e.target.value)}
                                                         className="w-full px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                                     />
                                                 </div>
@@ -145,8 +210,8 @@ export default function AssignHomeworkToClassModal({
                                                     <label className="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
                                                     <input
                                                         type="date"
-                                                        value={dueDate}
-                                                        onChange={(e) => setDueDate(e.target.value)}
+                                                        value={classWithHomeworkDate?.get(cls.id)?.dueDate || ''}
+                                                        onChange={(e) => setDueDate(cls.id, e.target.value)}
                                                         className="w-full px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                                     />
                                                 </div>

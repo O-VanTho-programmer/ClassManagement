@@ -5,7 +5,7 @@ export async function POST(req: Request) {
     try {
         const {
             homework_id,
-            class_ids,
+            class_id,
             assigned_date,
             due_date,
         } = await req.json();
@@ -16,9 +16,7 @@ export async function POST(req: Request) {
             VALUES (?, ?, ?, ?) 
         `
 
-        for (const classId of class_ids) {
-            await pool.query(queryAssignHomework, [classId, homework_id, due_date, assigned_date]);
-        }
+        await pool.query(queryAssignHomework, [class_id, homework_id, due_date, assigned_date]);
 
         return NextResponse.json({ message: "Success" }, { status: 200 })
     } catch (error) {

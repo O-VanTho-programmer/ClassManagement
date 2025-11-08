@@ -15,3 +15,9 @@ export interface ClassData {
     startDate: string;
     endDate: string;
 }
+
+export interface ClassDataWithTimeTableHour {
+    class: ClassData,
+    session: Schedule;
+    start_hour: number;
+}

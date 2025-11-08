@@ -20,15 +20,14 @@ export default function LayoutDashboardHub({ children }: { children: React.React
         {
             title: 'Homework',
             items: [
-                { name: 'Homework List', icon: BookPlusIcon, href: '/homework_list' },
-                { name: 'Assign Homework', icon: BookUp2, href: '/homework_assign' },
+                { name: 'Homework List', icon: BookPlusIcon, href: '/homework_list' }
             ]
         },
         {
             title: 'Schedule',
             items: [
                 { name: 'Class Schedule', icon: CalendarClock, href: '/class_schedule' },
-                { name: 'Class Period', icon: BellElectricIcon, href: '/class_period' },
+                { name: 'Class Period', icon: BellElectricIcon, href: '/time_table' },
             ]
         },
         {
