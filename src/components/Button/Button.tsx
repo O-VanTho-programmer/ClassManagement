@@ -2,6 +2,7 @@ import { LucideIcon } from "lucide-react"
 
 interface ButtonProps {
     title: string,
+    style?: string,
     disabled?: boolean,
     icon?: LucideIcon,
     onClick: () => void,
@@ -18,12 +19,12 @@ const colorMap: { [key: string]: string } = {
     white: "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
 }
 
-export default function Button({ title, icon, onClick, color, disabled=false }: ButtonProps) {
+export default function Button({ title, icon, onClick, color, disabled=false, style="" }: ButtonProps) {
     const styleClr = colorMap[color];
     const Icon = icon || null;
 
     return (
-        <button disabled={disabled} type="button" onClick={onClick} className={`cursor-pointer py-2 px-4 rounded-lg ${styleClr} transition-colors duration-200`}>
+        <button disabled={disabled} type="button" onClick={onClick} className={` ${style} cursor-pointer py-2 px-4 rounded-lg ${styleClr} transition-colors duration-200`}>
             <span className="flex items-center gap-2">
                 {Icon && <Icon size={16} />}
                 {title}
