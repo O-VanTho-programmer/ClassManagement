@@ -20,14 +20,13 @@ const times = {
     },
     'Afternoon': {
         timeLable: '12:00 - 17:00',
-        // Added more times to match the image's style
-        timeList: [12, 13, 14, 15, 16, 17, 18, 19, 20]
+        timeList: [12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
     },
 }
 
 export default function TimeTableCard({
     timeSchedule = 'Morning',
-    classes = [] // Accept classes as a prop
+    classes = [] 
 }: TimeTableCardProps) {
     const timeLable = times[timeSchedule].timeLable;
     const timeList = times[timeSchedule].timeList;

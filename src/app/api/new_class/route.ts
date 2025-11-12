@@ -16,48 +16,43 @@ export async function POST(req: Request) {
       status,
       startDate,
       endDate,
+      hubId
     } = body;
 
     if (!name || !teacher || !subject || !tuitionType || !startDate || !endDate) {
       return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
     }
 
-    // ✅ Find teacher ID
-    const [teacherRows]: any = await pool.query(
-      `SELECT UserId FROM user WHERE Name = ? LIMIT 1`,
-      [teacher]
-    );
-
-    if (!teacherRows.length) {
-      return NextResponse.json({ message: "Teacher not found" }, { status: 404 });
+    if (!Array.isArray(schedule) || schedule.length === 0) {
+      return NextResponse.json({ message: "Schedule is required and must have at least one time slot" }, { status: 400 });
     }
 
-    const teacherId = teacherRows[0].UserId;
-
-    let assistantId = null;
-    if (assistant) {
-      const [assistantRows]: any = await pool.query(
-        `SELECT UserId FROM user WHERE Name = ? LIMIT 1`,
-        [assistant]
-      );
-      if (assistantRows.length) assistantId = assistantRows[0].UserId;
+    for (const s of schedule) {
+      if (!s.day || !s.startTime || !s.endTime) {
+        return NextResponse.json({ message: "Each schedule item must have day, startTime, and endTime" }, { status: 400 });
+      }
     }
+
+    const assistantId = (assistant && assistant) || null;
+    const tuitionValue = (tuition && tuition) || null;
+    const baseValue = (base && base) || null;
 
     const [classResult]: any = await pool.query(
       `INSERT INTO class 
-        (Name, StartDate, EndDate, Teacher, Assistant, Subject, Tuition, TuitionType, Base, Status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        (Name, StartDate, EndDate, TeacherUserId, AssistantUserId, Subject, Tuition, TuitionType, Base, Status, HubId)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         name,
         startDate,
         endDate,
-        teacherId,
+        teacher,
         assistantId,
         subject,
-        tuition ?? null,
+        tuitionValue,
         tuitionType,
-        base ?? null,
+        baseValue,
         status ?? "active",
+        hubId
       ]
     );
 
@@ -69,8 +64,7 @@ export async function POST(req: Request) {
     `;
 
     for (const s of schedule) {
-      const [startTime, endTime] = s.time.split(" - ").map((t:string) => t.trim());
-      await pool.query(scheduleSql, [s.day, startTime, endTime, classId]);
+      await pool.query(scheduleSql, [s.day, s.startTime, s.endTime, classId]);
     }
 
     return NextResponse.json({

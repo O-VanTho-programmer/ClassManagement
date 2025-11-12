@@ -8,14 +8,14 @@ import Button from "../Button/Button";
 import { Plus, Search } from "lucide-react";
 import ViewCardClasses from "../ViewCardClasses/ViewCardClasses";
 import CreateClassModal from "../CreateClassModal/CreateClassModal";
-import api from "@/lib/axios";
 import { useAlert } from "../AlertProvider/AlertContext";
-import { useGetUserClassesQuery } from "@/hooks/useGetUserClassesQuery";
+import { useGetClassesByHubIdQuery } from "@/hooks/useGetClassesByHubIdQuery";
 import { useParams } from "next/navigation";
 import LoadingState from "../QueryState/LoadingState";
 import ErrorState from "../QueryState/ErrorState";
 import type { ClassData } from "@/types/ClassData";
 import { useQueryClient } from "@tanstack/react-query";
+import { newClassAPI } from "@/lib/api/newClassAPI";
 
 const statusOptions: Option[] = [
     {
@@ -57,7 +57,7 @@ export default function ViewClass() {
     const [isTableView, setIsTableView] = useState<boolean>(true);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-    const { data: classData = [], isLoading, isError, error } = useGetUserClassesQuery(hub_id as string);
+    const { data: classData = [], isLoading, isError, error } = useGetClassesByHubIdQuery(hub_id as string);
     const queryClient = useQueryClient();
 
     const filteredClasses = useMemo(() => {
@@ -80,27 +80,19 @@ export default function ViewClass() {
 
     const handleCreateClass = async (newClassData: Omit<ClassData, 'id'>) => {
         try {
-            const res = await api.post('new_class', newClassData);
+            const res = await newClassAPI(newClassData, hub_id as string);
 
-            const newClass: ClassData = {
-                ...newClassData,
-                id: res.data.id,
-            };
-
-            // Update cache for classes of this hub
-            queryClient.setQueryData<ClassData[]>(['userClasses', hub_id], (prev = []) => [
-                newClass,
-                ...prev,
-            ]);
+            queryClient.invalidateQueries({ queryKey: ['userClasses', hub_id] });
             setIsCreateModalOpen(false);
 
-            if (res.status === 200) {
+            if (res?.status === 200) {
                 showAlert(res.data.message, 'success');
             } else {
-                showAlert(res.data.message, 'error');
+                showAlert(res?.data?.message || "Failed to create class.", 'error');
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Failed to create class:", error);
+            showAlert(error?.response?.data?.message || "Failed to create class. Please try again.", 'error');
         }
     };
 
@@ -174,6 +166,7 @@ export default function ViewClass() {
                 isOpen={isCreateModalOpen}
                 onClose={() => setIsCreateModalOpen(false)}
                 onSubmit={handleCreateClass}
+                hubId = {hub_id as string}
             />
         </div>
     )

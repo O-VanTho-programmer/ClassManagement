@@ -7,7 +7,6 @@ import AttendanceSummary from "@/components/AttendanceSummary/AttendanceSummary"
 import ErrorState from "@/components/QueryState/ErrorState";
 import LoadingState from "@/components/QueryState/LoadingState";
 import { useGetClassById } from "@/hooks/useGetClassById";
-import { ClassData } from "@/types/ClassData";
 import calculateScheduledDays from "@/utils/calculateScheduledDays";
 import { Calendar, GraduationCap, Users } from "lucide-react";
 import { useParams } from "next/navigation";
@@ -16,7 +15,7 @@ import { useEffect, useState } from "react";
 export default function AttendanceGridPage() {
     const { showAlert } = useAlert();
 
-    const { class_id } = useParams();
+    const { hub_id, class_id } = useParams();
     const { data: classInfo, isLoading: isLoadingClass, isError: isErrorClass, error: errorClass } = useGetClassById(class_id as string);
 
     const [startDate, setStartDate] = useState<string | undefined>(classInfo?.startDate);
@@ -82,7 +81,7 @@ export default function AttendanceGridPage() {
                 onResetFilter={handleResetFilter}
                 startDate={startDate} endDate={endDate} />
             <AttendanceSummary />
-            <AttendanceGridStudentTable class_id={classInfo.id} schedule={classInfo.schedule} startDate={startDate} endDate={endDate} />
+            <AttendanceGridStudentTable hub_id={hub_id as string} class_id={classInfo.id} schedule={classInfo.schedule} startDate={startDate} endDate={endDate} />
         </>
     )
 }

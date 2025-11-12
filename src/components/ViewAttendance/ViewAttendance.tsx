@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import SearchBar from "../SearchBar/SearchBar";
 import TableAttendance from "../TableAttendance/TableAttendance";
-import { useGetUserClassesQuery } from "@/hooks/useGetUserClassesQuery";
+import { useGetClassesByHubIdQuery } from "@/hooks/useGetClassesByHubIdQuery";
 import LoadingState from "../QueryState/LoadingState";
 import ErrorState from "../QueryState/ErrorState";
 
@@ -12,7 +12,7 @@ export default function ViewAttendance() {
 
     const { hub_id } = useParams();
 
-    const { data: classData = [], isLoading, isError, error } = useGetUserClassesQuery(hub_id as string);
+    const { data: classData = [], isLoading, isError, error } = useGetClassesByHubIdQuery(hub_id as string);
     
     if(classData == null || classData == undefined) return ;
 

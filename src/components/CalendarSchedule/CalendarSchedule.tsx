@@ -7,9 +7,8 @@ import { useMemo, useState } from "react";
 
 type CalendarScheduleProps = {
     classes: ClassData[];
-    // We add these two new props to support the Gemini feature
     onEventClick: (classData: ClassData) => void;
-    isLoading?: boolean; // To show a loader if classes are fetching
+    isLoading?: boolean;
 }
 
 interface ProcessedEvent {
@@ -18,15 +17,10 @@ interface ProcessedEvent {
     rowSpan: number;
 }
 
-// --- Helper Functions ---
-// (These are needed for the component to run)
-
 const startHour = 7; // 7AM
 const endHour = 20; // 8 PM
 
-/**
- * Generates an array of 30-minute time slots (e.g., "07:00", "07:30", ... "20:00")
- */
+//  Generates an array of 30-minute time slots (e.g., "07:00", "07:30", ... "20:00") 
 const generate30MinTimeSlots = (): string[] => {
     const slots: string[] = [];
     for (let h = startHour; h <= endHour; h++) {
@@ -38,9 +32,6 @@ const generate30MinTimeSlots = (): string[] => {
     return slots;
 };
 
-/**
- * Helper to add 30 minutes to a "HH:mm" time string
- */
 const add30Minutes = (time: string): string => {
     const [hour, minute] = time.split(':').map(Number);
     if (minute === 30) {
@@ -99,7 +90,6 @@ export default function CalendarSchedule({
         setCurrentDate(new Date(currentDate.setDate(currentDate.getDate() + 7)));
     };
 
-    // Process classes into a fast-lookup Map and a Set of covered slots
     const { eventsMap, coveredSlots } = useMemo(() => {
         const eventsMap = new Map<string, ProcessedEvent>();
         const coveredSlots = new Set<string>();
@@ -120,7 +110,7 @@ export default function CalendarSchedule({
                 const eventKey = `${day}-${session.startTime}`;
                 eventsMap.set(eventKey, { event: cls, session, rowSpan });
 
-                // Add all *covered* slots to the Set
+                // Add all covered slots to the Set
                 let currentTime = session.startTime;
                 for (let i = 0; i < rowSpan - 1; i++) {
                     currentTime = add30Minutes(currentTime);
@@ -130,6 +120,8 @@ export default function CalendarSchedule({
         }
         return { eventsMap, coveredSlots };
     }, [classes]);
+
+
 
     return (
         <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">

@@ -8,8 +8,8 @@ export async function GET(req:Request) {
 
         const queryGetDateHasHomework = `
             SELECT 
-                DATE_FORMAT(Date, '%m/%d/%Y') as date 
-            FROM homework_date
+                DATE_FORMAT(AssignedDate, '%m/%d/%Y') as date 
+            FROM class_homework
             WHERE ClassId = ?
         `;
 

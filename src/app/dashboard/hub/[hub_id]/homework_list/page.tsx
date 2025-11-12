@@ -2,6 +2,8 @@
 
 import AssignHomeworkToClassModal from '@/components/AssignHomeworkToClassModal/AssignHomeworkToClassModal';
 import Button from '@/components/Button/Button';
+import DeleteHomeworkModal from '@/components/DeleteHomeworkModal/DeleteHomeworkModal';
+import EditHomeworkModal from '@/components/EditHomeworkModal/EditHomeworkModal';
 import HomeworkListTable from '@/components/HomeworkListTable/HomeworkListTable';
 import SearchBar from '@/components/SearchBar/SearchBar';
 import { useGetHomeworkListQuery } from '@/hooks/useGetHomeworkListQuery';
@@ -18,9 +20,12 @@ export default function HomeworkListPage() {
   }
 
   const [searchTerm, setSearchTerm] = useState<string>("");
+  
   const { data: homeworkList = [], isLoading: isLoadingHomeworkList, isError: isErrorHomeworkList, error: errorHomeworkList } = useGetHomeworkListQuery(hub_id as string);
   const [selectedHomework, setSelectedHomework] = useState<Homework | null>(null);
   const [isAssignHomeworkToClassModalOpen, setIsAssignHomeworkToClassModalOpen] = useState(false);
+  const [isEditHomeworkModalOpen, setIsEditHomeworkModalOpen] = useState(false);
+  const [isDeleteHomeworkModalOpen, setIsDeleteHomeworkModalOpen] = useState(false);
 
   const filteredHomeworkList = useMemo(() => {
     return homeworkList.filter((hw) => {
@@ -33,6 +38,17 @@ export default function HomeworkListPage() {
     setIsAssignHomeworkToClassModalOpen(true);
   };
 
+  const handleSelectEditHomework = (homework: Homework) => {
+    setSelectedHomework(homework);
+    setIsEditHomeworkModalOpen(true);
+  };
+
+  const handleDeleteHomework = (homework: Homework) => {
+    setSelectedHomework(homework);
+    setIsDeleteHomeworkModalOpen(true);
+  };
+
+
   return (
     <div className="p-8 bg-gray-50 min-h-screen">
       <h1 className="text-3xl font-bold text-gray-900 mb-6">Homework Library</h1>
@@ -44,7 +60,7 @@ export default function HomeworkListPage() {
           onChange={(e) => setSearchTerm(e.target.value)}
         />
 
-        <Button color='blue' icon={Plus} title='Create Homework' onClick={onCreateHomework}/>
+        <Button color='blue' icon={Plus} title='Create Homework' onClick={onCreateHomework} />
       </div>
 
       <div className="bg-white rounded-xl shadow-lg">
@@ -52,11 +68,14 @@ export default function HomeworkListPage() {
           isLoading={isLoadingHomeworkList}
           isError={isErrorHomeworkList}
           error={errorHomeworkList}
-          homeworkList={filteredHomeworkList as Homework[]} 
-          onSelectAssignHomeworkToClass={handleSelectAssignHomeworkToClass}/>
+          homeworkList={filteredHomeworkList as Homework[]}
+          onSelectAssignHomeworkToClass={handleSelectAssignHomeworkToClass}
+          onSelectEditHomework={handleSelectEditHomework}
+          onSelectDeleteHomework={handleDeleteHomework}
+        />
       </div>
 
-      {selectedHomework && (
+      {selectedHomework && isAssignHomeworkToClassModalOpen && (
         <AssignHomeworkToClassModal
           curHomework={selectedHomework}
           hubId={hub_id as string}
@@ -67,6 +86,31 @@ export default function HomeworkListPage() {
           }}
         />
       )}
+
+      {selectedHomework && isEditHomeworkModalOpen && (
+        <EditHomeworkModal
+          curHomework={selectedHomework}
+          hubId={hub_id as string}
+          isOpen={isEditHomeworkModalOpen}
+          onClose={() => {
+            setSelectedHomework(null);
+            setIsEditHomeworkModalOpen(false);
+          }}
+        />
+      )}
+
+      {selectedHomework && isDeleteHomeworkModalOpen && (
+        <DeleteHomeworkModal
+          curHomework={selectedHomework}
+          hubId={hub_id as string}
+          isOpen={isDeleteHomeworkModalOpen}
+          onClose={() => {
+            setSelectedHomework(null);
+            setIsDeleteHomeworkModalOpen(false);
+          }}
+        />
+      )}
+
     </div>
   );
 }

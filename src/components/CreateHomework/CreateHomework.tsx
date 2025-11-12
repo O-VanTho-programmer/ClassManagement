@@ -4,9 +4,12 @@ import React, { useState } from 'react';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import { useAlert } from '../AlertProvider/AlertContext';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function CreateHomework({ hubId, currentUserId }: { hubId: string, currentUserId: string }) {
     const { showAlert } = useAlert();
+
+    const queryClient = useQueryClient();
     
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
@@ -28,6 +31,7 @@ export default function CreateHomework({ hubId, currentUserId }: { hubId: string
                 setTitle('');
                 setContent('');
                 setLoading(false);
+                queryClient.invalidateQueries({ queryKey: ['homeworkList', hubId] });
             } else {
                 showAlert('Error creating homework.', 'error');
                 setLoading(false);

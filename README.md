@@ -158,7 +158,7 @@ class-management/
 │   │   └── UserContext.tsx   # User context provider
 │   ├── hooks/                # Custom React hooks
 │   │   ├── useGetUserHubsQuery.ts
-│   │   ├── useGetUserClassesQuery.ts
+│   │   ├── useGetClassesByHubIdQuery.ts
 │   │   └── ...               # Other hooks
 │   ├── lib/                  # Utility libraries
 │   │   ├── api/              # API client functions

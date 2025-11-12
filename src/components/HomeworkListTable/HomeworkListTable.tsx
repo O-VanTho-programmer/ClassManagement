@@ -3,15 +3,22 @@ import React from 'react'
 import LoadingState from '../QueryState/LoadingState';
 import ErrorState from '../QueryState/ErrorState';
 
-type Props = {
+type HomeworkListTableProps = {
     isLoading: boolean;
     isError: boolean;
     error: any;
     homeworkList: Homework[]
     onSelectAssignHomeworkToClass: (homework: Homework) => void;
+    onSelectEditHomework: (homework: Homework) => void;
+    onSelectDeleteHomework: (homework: Homework) => void;
 }
 
-export default function HomeworkListTable({ isLoading, isError, error, homeworkList, onSelectAssignHomeworkToClass }: Props) {
+export default function HomeworkListTable({
+    isLoading, isError, error, homeworkList,
+    onSelectAssignHomeworkToClass,
+    onSelectEditHomework,
+    onSelectDeleteHomework
+}: HomeworkListTableProps) {
     if (isLoading) return <LoadingState message='Loading homework list...' />;
     if (isError) return <ErrorState message={error.message} />;
 
@@ -42,10 +49,10 @@ export default function HomeworkListTable({ isLoading, isError, error, homeworkL
                                 <button onClick={() => onSelectAssignHomeworkToClass(hw)} className="flex items-center justify-center gap-1.5 text-blue-600 hover:text-blue-900">
                                     <Send size={16} /> Assign
                                 </button>
-                                <button className="flex items-center justify-center gap-1.5 text-gray-600 hover:text-gray-900">
+                                <button onClick={() => onSelectEditHomework(hw)} className="flex items-center justify-center gap-1.5 text-gray-600 hover:text-gray-900">
                                     <Edit2 size={16} /> Edit
                                 </button>
-                                <button className="flex items-center justify-center gap-1.5 text-red-600 hover:text-red-900">
+                                <button onClick={() => onSelectDeleteHomework(hw)} className="flex items-center justify-center gap-1.5 text-red-600 hover:text-red-900">
                                     <Trash2 size={16} /> Delete
                                 </button>
                             </td>

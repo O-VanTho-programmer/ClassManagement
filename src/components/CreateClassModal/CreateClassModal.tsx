@@ -1,19 +1,36 @@
+import { useGetTeacherListByHubId } from "@/hooks/useGetTeacherListByHubId";
 import { ClassData } from "@/types/ClassData";
 import { Schedule } from "@/types/Schedule";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import Selection, { Option } from "../Selection/Selection";
+import SquareButton from "../SquareButton/SquareButton";
+import { X } from "lucide-react";
+
+// Teacher type from API response
+interface Teacher {
+    id: string;
+    name: string;
+    email: string;
+    phone?: string;
+    address?: string;
+}
 
 interface CreateClassModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSubmit: (classData: Omit<ClassData, 'id'>) => void;
+    hubId: string;
 }
 
-export default function CreateClassModal({ isOpen, onClose, onSubmit }: CreateClassModalProps) {
+export default function CreateClassModal({ isOpen, onClose, onSubmit, hubId }: CreateClassModalProps) {
+
+    const { data: teacherList = [], isLoading: isLoadingTeachers, isError: isErrorTeachers, error: teachersError } = useGetTeacherListByHubId(hubId);
+
     const [formData, setFormData] = useState<Omit<ClassData, 'id'>>({
         name: '',
         schedule: [{ day: 'Monday', startTime: '', endTime: '' }],
         studentCount: 0,
-        teacher: '',
+        teacher: '',  //accept teacher Id
         assistant: '',
         subject: '',
         tuition: '',
@@ -24,13 +41,30 @@ export default function CreateClassModal({ isOpen, onClose, onSubmit }: CreateCl
         endDate: '',
     });
 
+    const teacherOptions: Option[] = useMemo(() => {
+        return teacherList.map((teacher: Teacher) => ({
+            label: teacher.name,
+            value: teacher.id
+        }));
+    }, [teacherList]);
+
+    // Convert teacher list to options for assistant, excluding the selected teacher
+    const assistantOptions: Option[] = useMemo(() => {
+        return teacherList
+            .filter((teacher: Teacher) => teacher.id !== formData.teacher)
+            .map((teacher: Teacher) => ({
+                label: teacher.name,
+                value: teacher.id
+            }));
+    }, [teacherList, formData.teacher]);
+
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     const validateForm = () => {
         const newErrors: Record<string, string> = {};
 
         if (!formData.name.trim()) newErrors.name = 'Class name is required';
-        if (!formData.teacher.trim()) newErrors.teacher = 'Teacher is required';
+        if (!formData.teacher) newErrors.teacher = 'Teacher is required';
         if (!formData.subject.trim()) newErrors.subject = 'Subject is required';
         if (!formData.startDate) newErrors.startDate = 'Start date is required';
         if (!formData.endDate) newErrors.endDate = 'End date is required';
@@ -59,21 +93,23 @@ export default function CreateClassModal({ isOpen, onClose, onSubmit }: CreateCl
         e.preventDefault();
         if (validateForm()) {
             onSubmit(formData);
-            setFormData({
-                name: '',
-                schedule: [{ day: 'Monday', startTime: '', endTime: '' }],
-                studentCount: 0,
-                teacher: '',
-                assistant: '',
-                subject: '',
-                tuition: '',
-                tuitionType: 'Monthly',
-                base: '',
-                status: 'Active',
-                startDate: '',
-                endDate: '',
-            });
+            // setFormData({
+            //     name: '',
+            //     schedule: [{ day: 'Monday', startTime: '', endTime: '' }],
+            //     studentCount: 0,
+            //     teacher: '',
+            //     assistant: '',
+            //     subject: '',
+            //     tuition: '',
+            //     tuitionType: 'Monthly',
+            //     base: '',
+            //     status: 'Active',
+            //     startDate: '',
+            //     endDate: '',
+            // });
         }
+
+
     };
 
     const addScheduleSlot = () => {
@@ -155,28 +191,59 @@ export default function CreateClassModal({ isOpen, onClose, onSubmit }: CreateCl
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Teacher *
                             </label>
-                            <input
-                                type="text"
-                                value={formData.teacher}
-                                onChange={(e) => setFormData(prev => ({ ...prev, teacher: e.target.value }))}
-                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.teacher ? 'border-red-500' : 'border-gray-300'
-                                    }`}
-                                placeholder="Enter teacher name"
-                            />
-                            {errors.teacher && <p className="text-red-500 text-sm mt-1">{errors.teacher}</p>}
+                            {isLoadingTeachers ? (
+                                <div className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500">
+                                    Loading teachers...
+                                </div>
+                            ) : isErrorTeachers ? (
+                                <div className="w-full px-3 py-2 border border-red-300 rounded-lg bg-red-50 text-red-600 text-sm">
+                                    Error loading teachers
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="w-full">
+                                        <Selection
+                                            value={formData.teacher}
+                                            placeholder="Select teacher"
+                                            options={teacherOptions}
+                                            onChange={(value) => setFormData(prev => {
+                                                // Clear assistant if it was set to the same teacher
+                                                const newAssistant = prev.assistant === value ? '' : prev.assistant;
+                                                return { ...prev, teacher: value, assistant: newAssistant };
+                                            })}
+                                        />
+                                    </div>
+                                    {errors.teacher && <p className="text-red-500 text-sm mt-1">{errors.teacher}</p>}
+                                </>
+                            )}
                         </div>
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Assistant
                             </label>
-                            <input
-                                type="text"
-                                value={formData.assistant}
-                                onChange={(e) => setFormData(prev => ({ ...prev, assistant: e.target.value }))}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                placeholder="Enter assistant name (optional)"
-                            />
+                            {isLoadingTeachers ? (
+                                <div className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500">
+                                    Loading teachers...
+                                </div>
+                            ) : isErrorTeachers ? (
+                                <div className="w-full px-3 py-2 border border-red-300 rounded-lg bg-red-50 text-red-600 text-sm">
+                                    Error loading teachers
+                                </div>
+                            ) : (
+                                <div className="w-full flex items-center gap-1">
+                                    <Selection
+                                        value={formData.assistant}
+                                        placeholder="Select assistant (optional)"
+                                        options={assistantOptions}
+                                        onChange={(value) => setFormData(prev => ({ ...prev, assistant: value }))}
+                                    />
+
+                                    {formData.assistant && (
+                                        <SquareButton color="blue" icon={X} onClick={() => setFormData(prev => ({ ...prev, assistant: '' }))} />
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
 

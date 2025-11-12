@@ -9,20 +9,21 @@ import LoadingState from "@/components/QueryState/LoadingState";
 import ViewStudentList from "@/components/ViewStudentList/ViewStudentList";
 import { useGetAllStudentListByHubId } from "@/hooks/useGetAllStudentListByHubId";
 import { useGetClassById } from "@/hooks/useGetClassById";
+import { useGetClassesByHubIdQuery } from "@/hooks/useGetClassesByHubIdQuery";
 import { useGetStudentListByClassId } from "@/hooks/useGetStudentListByClassId";
-import { useGetUserClassesQuery } from "@/hooks/useGetUserClassesQuery";
 import { addStudentIntoClassAPI } from "@/lib/api/addStudentIntoClassAPI";
 import { newStudentInHub } from "@/lib/api/newStudentInHub";
 import { useQueryClient } from "@tanstack/react-query";
 import { Album, CalendarCheck, Pen, QrCode } from "lucide-react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function Class() {
 
     const { hub_id, class_id } = useParams();
+    const router = useRouter();
 
-    const { data: classList = [], isLoading: isLoadingClassList, isError: isErrorClassList, error: errorClassList } = useGetUserClassesQuery(hub_id as string);
+    const { data: classList = [], isLoading: isLoadingClassList, isError: isErrorClassList, error: errorClassList } = useGetClassesByHubIdQuery(hub_id as string);
     const { data: classData, isLoading: isLoadingClass, isError: isErrorClass, error: errorClass } = useGetClassById(class_id as string);
     const { data: studentDatas, isLoading: isLoadingStudent, isError: isErrorStudent, error: errorStudent } = useGetStudentListByClassId(class_id as string);
     const { data: allStudentList, isLoading: isLoadingAllStudentList, isError: isErrorAllStudentList, error: errorAllStudentList } = useGetAllStudentListByHubId(hub_id as string);
@@ -47,10 +48,8 @@ export default function Class() {
 
     const newStudent = async (newStudentForm: StudentInputDto, classEnrollments: ClassEnrollmentDto[]) => {
         try {
-            // Create student first
             const newStudentIdRes = await newStudentInHub(newStudentForm, hub_id as string);
 
-            // Then add student into classes with individual enroll dates
             for (const enrollment of classEnrollments) {
                 await addStudentIntoClassAPI(newStudentIdRes, enrollment.classId, enrollment.enrollDate);
             }
@@ -78,7 +77,9 @@ export default function Class() {
             title: "Homework",
             descr: "Create homework",
             bg_clr: 'blue',
-            onClick: () => { return null },
+            onClick: () => { 
+                router.push(`${class_id}/homework`);
+             },
         },
         {
             icon: Album,

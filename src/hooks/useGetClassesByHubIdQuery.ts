@@ -1,7 +1,7 @@
 import { fetchClasses } from "@/lib/api/fetchClasses";
 import { useQuery } from "@tanstack/react-query";
 
-export function useGetUserClassesQuery(hubId: string) {
+export function useGetClassesByHubIdQuery(hubId: string) {
     return useQuery({
         queryKey: ['userClasses', hubId],
         queryFn: () => fetchClasses(hubId),

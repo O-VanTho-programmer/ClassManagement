@@ -1,5 +1,5 @@
 import { ChevronDownIcon } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export interface Option {
     label: string;
@@ -10,13 +10,18 @@ interface SelectionProps {
     placeholder: string,
     options: Option[],
     onChange: (value: string) => void;
+    value?: string;
 }
 
-export default function Selection({ placeholder, onChange, options = [] }: SelectionProps) {
+export default function Selection({ placeholder, onChange, options = [], value = ''}: SelectionProps) {
     const [isOpen, setIsOpen] = useState(false);
-    const [selectedValue, setSelectedValue] = useState<string | null>(null);
+    const [selectedValue, setSelectedValue] = useState<string | null>(value || null);
 
-    // Safely find the selected option label, checking if options is defined.
+    // Sync internal state with controlled value prop
+    useEffect(() => {
+        setSelectedValue(value || null);
+    }, [value]);
+
     const selectedOptionLabel = options.find(option => option.value === selectedValue)?.label;
 
     const handleOptionClick = (option: Option) => {

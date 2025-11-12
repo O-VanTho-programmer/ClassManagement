@@ -1,5 +1,4 @@
-import { useGetClassById } from '@/hooks/useGetClassById';
-import { useGetUserClassesQuery } from '@/hooks/useGetUserClassesQuery';
+import { useGetClassesByHubIdQuery } from '@/hooks/useGetClassesByHubIdQuery';
 import { assignHomework } from '@/lib/api/assignHomework';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Loader2, X } from 'lucide-react';
@@ -27,7 +26,7 @@ export default function AssignHomeworkToClassModal({
     const queryClient = useQueryClient();
     const [selectedClassIds, setSelectedClassIds] = useState<Set<string>>(new Set());
 
-    const { data: allClasses = [], isLoading: isLoadingClasses } = useGetUserClassesQuery(hubId);
+    const { data: allClasses = [], isLoading: isLoadingClasses } = useGetClassesByHubIdQuery(hubId);
     const [classWithHomeworkDate, setClassWithHomeworkDate] = useState<Map<string, ClassHomeworkDate>>(new Map());
 
     const mutation = useMutation({
@@ -185,7 +184,7 @@ export default function AssignHomeworkToClassModal({
                                 </div>
                                 <div className="max-h-48 overflow-y-auto">
                                     {allClasses.map(cls => (
-                                        <div className="p-3 border-b bg-gray-50 flex items-center justify-between">
+                                        <div key={cls.id} className="p-3 border-b bg-gray-50 flex items-center justify-between">
                                             <label key={cls.id} className="flex items-center cursor-pointer">
                                                 <input
                                                     type="checkbox"

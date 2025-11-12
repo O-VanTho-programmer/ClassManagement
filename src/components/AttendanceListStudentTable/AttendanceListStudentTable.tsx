@@ -36,13 +36,10 @@ export default function AttendanceListStudentTable({ class_id }: { class_id: str
             if (res?.status === 200) {
                 console.log("Attendance saved:", updatedStudent);
 
-                // 1. Manually update the cache for an instant UI update
                 queryClient.setQueryData<StudentAttendance[]>(["studentAttendance", class_id], (prevStudents = []) =>
                     prevStudents.map(s => s.id === updatedStudent.id ? updatedStudent : s)
                 );
 
-                // 2. Invalidate the query to refetch in the background for consistency.
-                // This ensures the data is fresh without making the user wait.
                 queryClient.invalidateQueries({ queryKey: ["studentAttendance", class_id] });
 
                 showAlert("Attendance saved successfully!", "success");

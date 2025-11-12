@@ -14,7 +14,6 @@ export default function LayoutDashboardHub({ children }: { children: React.React
             items: [
                 { name: 'Classes', icon: GraduationCapIcon, href: '/classes' },
                 { name: 'Attendance', icon: CalendarDays, href: '/attendance' },
-                { name: 'Class Rank', icon: StarIcon, href: '/class_rank' },
             ]
         },
         {

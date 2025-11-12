@@ -14,18 +14,21 @@ import ErrorState from "../QueryState/ErrorState";
 import { useQueryClient } from "@tanstack/react-query";
 import SearchBar from "../SearchBar/SearchBar";
 import { useGetDateHasHomeworkQuery } from "@/hooks/useGetDateHasHomework";
+import { BookPlus } from "lucide-react";
+import QuickAssignHomeworkModal from "../QuickAssignHomeworkModal/QuickAssignHomeworkModal";
 
 interface AttendanceGridStudentTableProps {
     class_id: string,
+    hub_id: string,
     schedule: Schedule[];
     startDate: string,
     endDate: string,
 }
 
-export default function AttendanceGridStudentTable({ class_id, schedule, startDate, endDate }: AttendanceGridStudentTableProps) {
+export default function AttendanceGridStudentTable({ hub_id, class_id, schedule, startDate, endDate }: AttendanceGridStudentTableProps) {
 
     const { data: fetchedStudents, isLoading, isError, error } = useGetStudentAttendanceRecordsQuery(class_id);
-    const {data: dateHasHomework, isLoading: isDateHasHomeworkLoading, isError: isDateHasHomeworkError, error: dateHasHomeworkError} = useGetDateHasHomeworkQuery(class_id);
+    const { data: dateHasHomework, isLoading: isDateHasHomeworkLoading, isError: isDateHasHomeworkError, error: dateHasHomeworkError } = useGetDateHasHomeworkQuery(class_id);
 
     const queryClient = useQueryClient();
 
@@ -82,6 +85,14 @@ export default function AttendanceGridStudentTable({ class_id, schedule, startDa
     const handleCloseModal = () => {
         setEditingRecord(null);
     };
+
+    const [openQuickAssignHomeworkModal, setOpenQuickAssignHomeworkModal] = useState<boolean>(false);
+    const [selectedDateForAssignHomework, setSelectedDateForAssignHomework] = useState<string | null>(null);
+
+    const handleQuickAssignHomework = (date: string) => {
+        setSelectedDateForAssignHomework(date);
+        setOpenQuickAssignHomeworkModal(true);
+    }
 
     const handleSaveAttendance = async (updatedRecord: StudentAttendance) => {
         if (!editingRecord) return;
@@ -152,15 +163,15 @@ export default function AttendanceGridStudentTable({ class_id, schedule, startDa
                 }}
                 search_width_style="medium"
             />
-           
+
             <style jsx>{`
                 .custom-scrollbar::-webkit-scrollbar {
                     width: 6px;
                     height: 6px;
                 }
             `}</style>
-            
-            <div className="bg-white rounded-xl shadow-lg overflow-x-auto w-full mt-6 h-[400px] custom-scrollbar">
+
+            <div className="bg-white rounded-xl shadow-lg overflow-x-auto w-full mt-6 max-h-[400px] custom-scrollbar">
                 <table className="min-w-full table-auto border-collapse">
                     <thead className="sticky top-0 z-10">
                         <tr className="bg-indigo-700 text-white shadow-lg">
@@ -181,6 +192,13 @@ export default function AttendanceGridStudentTable({ class_id, schedule, startDa
                                 <th key={dateString} className="py-3 px-2 text-center text-xs font-medium uppercase border-l border-indigo-600 min-w-[60px]">
                                     {formatDisplayDate(dateString)}
                                     <p className="text-xs font-normal opacity-80 mt-0.5">{getDayNameFromDate(dateString)}</p>
+                                    <button
+                                        onClick={() => handleQuickAssignHomework(dateString)}
+                                        className="mt-1 p-1.5 rounded-full text-indigo-200 hover:bg-indigo-500 hover:text-white transition-all duration-200 cursor-pointer"
+                                        title={`Assign homework due ${dateString}`}
+                                    >
+                                        <BookPlus size={16} />
+                                    </button>
                                 </th>
                             ))}
                         </tr>
@@ -248,10 +266,21 @@ export default function AttendanceGridStudentTable({ class_id, schedule, startDa
                     isHasHomework={
                         !!editingRecord && dateHasHomework.some((hw: { date: string }) => {
                             if (!editingRecord.date) return false;
-                            
+
                             return hw.date === editingRecord.date;
                         })
                     }
+                />
+            )}
+
+            {/* Quick Assign Homework */}
+            {openQuickAssignHomeworkModal && selectedDateForAssignHomework && (
+                <QuickAssignHomeworkModal
+                    isOpen={openQuickAssignHomeworkModal}
+                    onClose={() => setOpenQuickAssignHomeworkModal(false)}
+                    hubId={hub_id}
+                    classId={class_id}
+                    assignedDate={selectedDateForAssignHomework}
                 />
             )}
         </div>
