@@ -16,7 +16,7 @@ export default function ViewHomeworkModal({
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center overlay transition-opacity duration-300">
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl p-6 m-4 transform transition-all duration-300 scale-100 flex flex-col max-h-[90vh]">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-y-scroll p-6 m-4 transform transition-all duration-300 scale-100 flex flex-col max-h-[90vh]">
                 <div className="flex items-center justify-between pb-4 border-b">
                     <h2 className="text-2xl font-bold text-gray-800">{assignment.title}</h2>
                     <button onClick={onClose} className="cursor-pointer p-2 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600">

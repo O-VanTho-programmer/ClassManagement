@@ -15,7 +15,7 @@ export async function DELETE(req: Request) {
 
         const queryDeleteHomework = `
             DELETE FROM homework
-            WHERE id = ${homeworkId};
+            WHERE HomeworkId = ${homeworkId};
         `;
 
         const [result] = await pool.query(queryDeleteHomework);

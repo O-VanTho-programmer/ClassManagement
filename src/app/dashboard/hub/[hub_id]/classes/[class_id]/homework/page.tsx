@@ -9,7 +9,7 @@ import { useParams } from 'next/navigation';
 import React, { useState } from 'react'
 
 export default function ClassHomeworkPage() {
-    const {class_id} = useParams();
+    const { class_id } = useParams();
 
     const [isViewOpen, setViewOpen] = useState(false);
     const [isEditOpen, setEditOpen] = useState(false);
@@ -29,17 +29,14 @@ export default function ClassHomeworkPage() {
 
     const handleViewSubmissions = (assignment: ClassHomework) => {
         alert(`Opening submissions for: ${assignment.title}`);
-        // You would navigate to a new page here, e.g.:
-        // router.push(`/class/${classId}/homework/${assignment.classHomeworkId}/submissions`);
     };
 
     const handleCloseModals = () => {
         setViewOpen(false);
         setEditOpen(false);
-        setSelectedAssignment(null); // Clear selection on close
+        setSelectedAssignment(null); 
     };
-    
-    // --- Render Logic ---
+
 
     const renderContent = () => {
         if (isLoading) {
@@ -70,8 +67,8 @@ export default function ClassHomeworkPage() {
         }
 
         return (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {assignments.map((assignment : ClassHomework) => (
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                {assignments.map((assignment: ClassHomework) => (
                     <HomeworkCard
                         key={assignment.homework_id}
                         assignment={assignment}
@@ -86,26 +83,29 @@ export default function ClassHomeworkPage() {
 
     return (
         <div className="p-8 bg-gray-50 min-h-screen">
-            {/* This component would live inside your ClassDetailsPage.
-                The header below is just for this example.
-            */}
             <h1 className="text-3xl font-bold text-gray-900 mb-6">Class Homework</h1>
-            
+
             <div className="">
                 {renderContent()}
             </div>
 
-            <ViewHomeworkModal 
-                isOpen={isViewOpen}
-                onClose={handleCloseModals}
-                assignment={selectedAssignment}
-            />
-            
-            <EditAssignmentHomeworkModal 
-                isOpen={isEditOpen}
-                onClose={handleCloseModals}
-                assignment={selectedAssignment}
-            />
+            {selectedAssignment && isViewOpen &&(
+                <ViewHomeworkModal
+                    isOpen={isViewOpen}
+                    onClose={handleCloseModals}
+                    assignment={selectedAssignment}
+                />
+            )}
+
+            {selectedAssignment && isEditOpen && (
+                <EditAssignmentHomeworkModal
+                    initialAssignedDate={selectedAssignment.assigned_date}
+                    initialdueDate={selectedAssignment.due_date}
+                    isOpen={isEditOpen}
+                    onClose={handleCloseModals}
+                    assignment={selectedAssignment}
+                />
+            )}
         </div>
     );
 }

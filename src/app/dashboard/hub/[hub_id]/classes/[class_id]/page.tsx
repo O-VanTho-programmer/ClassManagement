@@ -14,7 +14,7 @@ import { useGetStudentListByClassId } from "@/hooks/useGetStudentListByClassId";
 import { addStudentIntoClassAPI } from "@/lib/api/addStudentIntoClassAPI";
 import { newStudentInHub } from "@/lib/api/newStudentInHub";
 import { useQueryClient } from "@tanstack/react-query";
-import { Album, CalendarCheck, Pen, QrCode } from "lucide-react";
+import { Album, AlbumIcon, CalendarCheck, Pen, QrCode } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -70,7 +70,7 @@ export default function Class() {
             title: "Attendance",
             descr: "Take attendance",
             bg_clr: 'green',
-            onClick: () => { window.location.href = '/classes' },
+            onClick: () => { router.push(`/dashboard/hub/${hub_id}/attendance/${class_id}`); },
         },
         {
             icon: Pen,
@@ -82,18 +82,11 @@ export default function Class() {
              },
         },
         {
-            icon: Album,
+            icon: AlbumIcon,
             title: "Lesson Plan",
-            descr: "Planning your lesson",
+            descr: "In Proccess",
             bg_clr: 'red',
             onClick: () => { return null },
-        },
-        {
-            icon: QrCode,
-            title: "QR Code",
-            descr: "QR code for qick attendance",
-            bg_clr: 'yellow',
-            onClick: () => { return null }
         },
     ];
 

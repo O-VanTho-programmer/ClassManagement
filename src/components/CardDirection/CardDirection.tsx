@@ -19,6 +19,13 @@ export default function CardDirection({ icon, title, descr, bg_clr, onClick }: C
         'blue': 'from-blue-400 to-indigo-500 group-hover:from-blue-500 group-hover:to-indigo-600',
     };
 
+    const colorIcon = {
+        'yellow': 'text-yellow-400',
+        'green': 'text-green-400',
+        'red': 'text-red-400',
+        'blue': 'text-blue-400',
+    }
+
 
     return (
         <div className={`
@@ -27,7 +34,7 @@ export default function CardDirection({ icon, title, descr, bg_clr, onClick }: C
     `}>
             <div className="flex items-center space-x-4 mb-2">
                 <div className={`flex items-center justify-center w-12 h-12 rounded-lg bg-white bg-opacity-10 transition-colors duration-300`}>
-                    <Icon className={`w-6 h-6 text-white`} />
+                    <Icon className={`w-6 h-6 ${colorIcon[bg_clr]}`} />
                 </div>
                 <div>
                     <h3 className={`text-xl font-bold text-white`}>{title}</h3>

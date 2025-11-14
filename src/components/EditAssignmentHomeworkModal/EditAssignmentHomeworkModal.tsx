@@ -3,30 +3,31 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Calendar, Clock, Loader2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react'
 import Button from '../Button/Button';
+import DeleteConfirmHomeworkAssignment from '../DeleteConfirmHomeworkAssignment/DeleteConfirmHomeworkAssignment';
 
 type EditAssignmentHomeworkModalProps = {
     isOpen: boolean;
     onClose: () => void;
     assignment: ClassHomework | null;
+    initialAssignedDate: string;
+    initialdueDate: string;
 }
 
 export default function EditAssignmentHomeworkModal({
     isOpen,
     onClose,
-    assignment
+    assignment,
+    initialAssignedDate,
+    initialdueDate,
 }: EditAssignmentHomeworkModalProps) {
     const queryClient = useQueryClient();
-    const [assignedDate, setAssignedDate] = useState('');
-    const [dueDate, setDueDate] = useState('');
 
-    useEffect(() => {
-        if (assignment) {
-            setAssignedDate(assignment.assigned_date);
-            setDueDate(assignment.due_date);
-        }
-    }, [assignment]);
+    const [assignedDate, setAssignedDate] = useState(initialAssignedDate);
+    const [dueDate, setDueDate] = useState(initialdueDate);
+    const [selectedAssignment, setSelectedAssignment] = useState<ClassHomework | null>(null);
+    const [isDeleteOpen, setDeleteOpen] = useState(false);
 
-    const mutation = useMutation({
+    const mutationUpdateHomeworkAssignmentDate = useMutation({
         mutationFn: () => updateClassHomeworkDate(assignment!.class_homework_id, assignedDate, dueDate),
         onSuccess: () => {
 
@@ -44,7 +45,12 @@ export default function EditAssignmentHomeworkModal({
             alert('Due date cannot be before the assigned date.');
             return;
         }
-        mutation.mutate();
+        mutationUpdateHomeworkAssignmentDate.mutate();
+    };
+
+    const handleDelete = () => {
+        setSelectedAssignment(assignment);
+        setDeleteOpen(true);
     };
 
     if (!isOpen || !assignment) return null;
@@ -87,22 +93,30 @@ export default function EditAssignmentHomeworkModal({
                 </div>
 
                 <div className="pt-6 flex justify-between gap-3 border-t">
-                    <Button onClick={onClose} title='Delete' color='red_off' />
+                    <Button onClick={handleDelete} title='Delete' color='red_off' />
                     <div className='flex items-center gap-1'>
                         <Button onClick={onClose} title='Cancel' color='white' />
 
                         <button
                             type="button"
                             onClick={handleSubmit}
-                            disabled={mutation.isPending}
+                            disabled={mutationUpdateHomeworkAssignmentDate.isPending}
                             className="px-4 py-2 bg-blue-600 text-white cursor-pointer rounded-md hover:bg-blue-700 disabled:bg-gray-400 flex items-center"
                         >
-                            {mutation.isPending && <Loader2 size={16} className="animate-spin mr-2" />}
+                            {mutationUpdateHomeworkAssignmentDate.isPending && <Loader2 size={16} className="animate-spin mr-2" />}
                             Save Changes
                         </button>
                     </div>
                 </div>
             </div>
+
+            {isDeleteOpen && selectedAssignment && (
+                <DeleteConfirmHomeworkAssignment
+                    isOpen={isDeleteOpen}
+                    onClose={() => setDeleteOpen(false)}
+                    assignment={selectedAssignment}
+                />
+            )}
         </div>
     );
 }

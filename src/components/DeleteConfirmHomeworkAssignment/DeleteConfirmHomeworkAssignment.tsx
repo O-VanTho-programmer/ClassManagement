@@ -1,30 +1,29 @@
-import { deleteHomework } from "@/lib/api/deleteHomeworkAPI";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, Loader2, Trash2, X } from "lucide-react";
-import { useAlert } from "../AlertProvider/AlertContext";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import React from 'react'
+import { useAlert } from '../AlertProvider/AlertContext';
+import { AlertTriangle, Loader2, Trash2, X } from 'lucide-react';
+import { deleteClassHomework } from '@/lib/api/deleteClassHomeworkAPI';
 
-interface DeleteHomeworkModalProps {
+type DeleteConfirmHomeworkAssignmentProps = {
     isOpen: boolean;
     onClose: () => void;
-    curHomework: Homework | null;
-    hubId: string;
+    assignment: ClassHomework,
 }
 
-export default function DeleteHomeworkModal({
+function DeleteConfirmHomeworkAssignment({
     isOpen,
     onClose,
-    curHomework,
-    hubId
-}: DeleteHomeworkModalProps) {
+    assignment,
+}: DeleteConfirmHomeworkAssignmentProps) {
 
-    const { showAlert } = useAlert();
     const queryClient = useQueryClient();
+    const { showAlert } = useAlert();
 
     const mutation = useMutation({
-        mutationFn: (homeworkId: string) => deleteHomework(homeworkId),
+        mutationFn: (class_homework_id: string) => deleteClassHomework(class_homework_id),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['homeworkList', hubId] });
-            showAlert('Homework deleted successfully.', 'success');
+            queryClient.invalidateQueries({ queryKey: ['homework_by_class_id', assignment.class_id] });
+            showAlert('Homework unassigned successfully.', 'success');
             onClose();
         },
         onError: (error: Error) => {
@@ -33,11 +32,11 @@ export default function DeleteHomeworkModal({
     });
 
     const handleDelete = () => {
-        if (!curHomework) return;
-        mutation.mutate(curHomework.id);
+        if (!assignment) return;
+        mutation.mutate(assignment.class_homework_id);
     };
 
-    if (!isOpen || !curHomework) {
+    if (!isOpen || !assignment) {
         return null;
     }
 
@@ -47,7 +46,7 @@ export default function DeleteHomeworkModal({
 
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b">
-                    <h2 className="text-xl font-bold text-gray-800">Delete Homework</h2>
+                    <h2 className="text-xl font-bold text-gray-800">Aware</h2>
                     <button
                         onClick={onClose}
                         disabled={mutation.isPending}
@@ -67,12 +66,16 @@ export default function DeleteHomeworkModal({
                                 Are you sure?
                             </h3>
                             <div className="mt-2">
-                                <p className="text-sm text-gray-500">
-                                    You are about to permanently delete the homework:
+                                <p className="text-sm text-gray-500 mb-4">
+                                    You are about to unassign this homework from class:
                                     <br />
-                                    <strong className="text-gray-800 break-words">"{curHomework.title}"</strong>
+                                    <strong className="text-gray-800 break-words">"{assignment.title}"</strong>
                                 </p>
-                                <p className="mt-2 text-sm font-bold text-red-700">
+
+                                <p>Assigned Date: {assignment.assigned_date}</p>
+                                <p>Due Date: {assignment.due_date}</p>
+
+                                <p className="text-sm font-bold text-red-700 mt-4">
                                     This action cannot be undone.
                                 </p>
                             </div>
@@ -107,3 +110,5 @@ export default function DeleteHomeworkModal({
         </div>
     );
 }
+
+export default DeleteConfirmHomeworkAssignment
