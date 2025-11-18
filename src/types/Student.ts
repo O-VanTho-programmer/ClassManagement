@@ -3,7 +3,7 @@ type StudentStatus = 'Studying' | 'Finished'
 interface Student {
     id: string,
     name: string,
-    birthday: string,
+    birthday: string | null,
     status: StudentStatus,
 }
 
@@ -31,7 +31,7 @@ type StudentAttendance = AttendanceRecord & {
 interface AttendanceRecord {
     present: StudentAttendanceType,
     score?: number,
-    is_finished_homework?: boolean,
+    assignments?: ClassHomeworkForAttendacneRecord[],
     is_homework?: boolean,
     comment?: string,
     date: string,
@@ -40,4 +40,15 @@ interface AttendanceRecord {
 type StudentWithAttendanceRecordList = Student & {
     records: AttendanceRecord[],
     total_present: number,
+}
+
+type StudentWithHomework = Student & {
+    student_homework_id: string,
+    homework_status: string,
+    submission_data?: string,
+    submitted_date: string,
+    assigned_date: string,
+    due_date: string,
+    grade: number | 0,
+    feedback? : string
 }

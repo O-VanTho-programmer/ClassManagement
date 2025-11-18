@@ -3,19 +3,21 @@
 import EditAssignmentHomeworkModal from '@/components/EditAssignmentHomeworkModal/EditAssignmentHomeworkModal';
 import HomeworkCard from '@/components/HomeworkCard/HomeworkCard';
 import ViewHomeworkModal from '@/components/ViewHomeworkModal/ViewHomeworkModal';
-import { useGetHomeworkByClassId } from '@/hooks/useGetHomeworkByClassId';
+import { useGetClassHomeworkByClassId } from '@/hooks/useGetClassHomeworkByClassId';
 import { BookOpen, Loader2 } from 'lucide-react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import React, { useState } from 'react'
 
 export default function ClassHomeworkPage() {
+
+    const router = useRouter();
     const { class_id } = useParams();
 
     const [isViewOpen, setViewOpen] = useState(false);
     const [isEditOpen, setEditOpen] = useState(false);
     const [selectedAssignment, setSelectedAssignment] = useState<ClassHomework | null>(null);
 
-    const { data: assignments = [], isLoading, isError } = useGetHomeworkByClassId(class_id as string);
+    const { data: assignments = [], isLoading, isError } = useGetClassHomeworkByClassId(class_id as string);
 
     const handleViewDetails = (assignment: ClassHomework) => {
         setSelectedAssignment(assignment);
@@ -28,7 +30,9 @@ export default function ClassHomeworkPage() {
     };
 
     const handleViewSubmissions = (assignment: ClassHomework) => {
-        alert(`Opening submissions for: ${assignment.title}`);
+        const homeworkId = assignment.homework_id;
+        const assignmentId = assignment.class_homework_id;
+        router.push(`homework/${homeworkId}/${assignmentId}/submission`)
     };
 
     const handleCloseModals = () => {
@@ -60,14 +64,14 @@ export default function ClassHomeworkPage() {
             return (
                 <div className="p-10 text-center text-gray-500">
                     <BookOpen size={48} className="mx-auto mb-4 text-gray-400" />
-                    <h3 className="text-lg font-semibold">No Homework Assigned</h3>
+                    <h3 className="text-lg font-semibold">Nso Homework Assigned</h3>
                     <p>This class does not have any homework assignments yet.</p>
                 </div>
             );
         }
 
         return (
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                 {assignments.map((assignment: ClassHomework) => (
                     <HomeworkCard
                         key={assignment.homework_id}

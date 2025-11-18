@@ -1,6 +1,6 @@
 import api from "../axios";
 
-export async function fetchHomeworkListByClassId(classId:string) {
+export async function fetchClassHomeworkListByClassId(classId:string) {
     try {
         const res = await api.get(`/get_homework_list_by_class_id?classId=${classId}`);
         console.log('Fetch homework by class id response:', res);

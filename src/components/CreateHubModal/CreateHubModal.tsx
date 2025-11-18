@@ -3,6 +3,7 @@ import { useState } from "react";
 import Button from "../Button/Button";
 import { useUser } from "@/context/UserContext";
 import { HubAddDto } from "@/types/Hub";
+import IconButton from "../IconButton/IconButton";
 
 interface CreateHubModalProps {
     isOpen: boolean;
@@ -22,7 +23,7 @@ export default function CreateHubModal({ isOpen, onClose, onSubmit }: CreateHubM
 
     const [errors, setErrors] = useState<Record<string, string>>({});
 
-    if(!user){
+    if (!user) {
         return null;
     }
 
@@ -43,7 +44,7 @@ export default function CreateHubModal({ isOpen, onClose, onSubmit }: CreateHubM
             setFormData({
                 name: '',
                 description: '',
-                includedTeachers: [],        
+                includedTeachers: [],
                 owner: user.userId
             });
         }
@@ -61,12 +62,7 @@ export default function CreateHubModal({ isOpen, onClose, onSubmit }: CreateHubM
                 {/* Header */}
                 <div className="flex justify-between items-center p-6 border-b border-gray-200">
                     <h2 className="text-2xl font-bold text-gray-900">Create New Hub</h2>
-                    <button
-                        onClick={onClose}
-                        className="cursor-pointer text-gray-400 hover:text-gray-600 transition-colors"
-                    >
-                        <X />
-                    </button>
+                    <IconButton icon={X} onClick={onClose} size={20} className='text-gray-400 hover:text-gray-600 transition-colors' />
                 </div>
 
                 {/* Form */}

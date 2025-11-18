@@ -11,7 +11,7 @@ export default function AttendanceCell ({ record, onEdit }: AttendanceCellProps)
     const recordToPass: AttendanceRecord = {
         present: record.present as StudentAttendanceType,
         score: record.score,
-        is_finished_homework: record.is_finished_homework,
+        assignments: record.assignments,
         comment: record.comment,
         date: record.date,
         is_homework: record.is_homework

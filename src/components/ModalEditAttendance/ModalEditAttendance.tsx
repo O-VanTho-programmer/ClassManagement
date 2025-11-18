@@ -1,23 +1,28 @@
 import { ArrowLeft, Edit3, Loader2, Save, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import HeaderAvatar from "../HeaderAvatar/HeaderAvatar";
+import formatDateForCompare from "@/utils/Format/formatDateForCompare";
 
 interface ModalEditAttendanceProps {
-    student: StudentAttendance;
+    studentAttendance: StudentAttendance;
     isOpen: boolean;
     onClose: () => void;
     onSave: (updatedStudent: StudentAttendance) => void;
     isSaving?: boolean;
-    isHasHomework?: boolean;
+    classHomeworkList: ClassHomework[];
 }
 
-export function ModalEditAttendance({ student, isOpen, onClose, onSave, isSaving, isHasHomework }: ModalEditAttendanceProps) {
-    const [editData, setEditData] = useState<StudentAttendance>(student);
+export function ModalEditAttendance({ studentAttendance, isOpen, onClose, onSave, isSaving, classHomeworkList }: ModalEditAttendanceProps) {
+    const [editData, setEditData] = useState<StudentAttendance>(studentAttendance);
 
-    // Reset local state when a new student is passed in or when modal opens
+    console.log(studentAttendance)
+
+    const assignedHomework = studentAttendance.assignments;
+
+
     useEffect(() => {
-        setEditData(student);
-    }, [student]);
+        setEditData(studentAttendance);
+    }, [studentAttendance]);
 
 
     if (!isOpen) {
@@ -40,7 +45,7 @@ export function ModalEditAttendance({ student, isOpen, onClose, onSave, isSaving
     const handleToggleHomework = () => {
         setEditData(prev => ({
             ...prev,
-            is_finished_homework: prev.is_finished_homework === true ? false : true
+
         }));
     };
 
@@ -86,8 +91,8 @@ export function ModalEditAttendance({ student, isOpen, onClose, onSave, isSaving
                     <div className="flex items-center space-x-4 bg-gray-50 p-4 rounded-lg">
                         <HeaderAvatar size="smaller" />
                         <div>
-                            <p className="text-lg font-bold text-gray-900">{student.name}</p>
-                            <p className="text-sm text-gray-500">ID: {student.id}</p>
+                            <p className="text-lg font-bold text-gray-900">{studentAttendance.name}</p>
+                            <p className="text-sm text-gray-500">ID: {studentAttendance.id}</p>
                         </div>
                     </div>
 
@@ -126,20 +131,83 @@ export function ModalEditAttendance({ student, isOpen, onClose, onSave, isSaving
                     </div>
 
                     {/* 3. Homework Checkbox (from user snippet) */}
-                    {isHasHomework && (
-                        <div className="flex items-center space-x-3 pt-2">
-                            <input
-                                id="homework"
-                                type="checkbox"
-                                checked={editData.is_finished_homework || false} // Treat undefined as false for the checkbox state
-                                onChange={handleToggleHomework}
-                                className="form-checkbox cursor-pointer h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-                            />
-                            <label htmlFor="homework" className="text-sm font-medium text-gray-700">
-                                Finished Homework
-                            </label>
-                        </div>
-                    )}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Homework Submissions
+                        </label>
+                        {/* No longer needs loading/error states, as data is passed via props */}
+                        {assignedHomework === undefined || assignedHomework.length === 0 ? (
+                            <p className="text-sm text-gray-500 italic">No homework was assigned for this day.</p>
+                        ) : (
+                            <div className="space-y-3 rounded-md border border-gray-200 p-3">
+                                {assignedHomework.map((hw) => (
+                                    <div
+                                        key={hw.id}
+                                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition"
+                                    >
+                                        {/* LEFT SIDE: Checkbox + Title */}
+                                        <div className="flex items-center gap-3">
+                                            <input
+                                                id={String(hw.id)}
+                                                type="checkbox"
+                                                checked={!!hw.submitted_date}
+                                                className="h-5 w-5 cursor-pointer text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                                                disabled
+                                            />
+
+                                            <label
+                                                htmlFor={String(hw.id)}
+                                                className="text-sm font-medium text-gray-800 cursor-pointer"
+                                            >
+                                                {hw.title}
+                                            </label>
+                                        </div>
+
+                                        {/* RIGHT SIDE: Status */}
+                                        <div className="flex items-center gap-2">
+                                            {hw.status === "Pending" && (
+                                                <span className="px-2 py-1 rounded-full bg-gray-200 text-gray-700 text-xs font-medium">
+                                                    Pending
+                                                </span>
+                                            )}
+
+                                            {hw.status === "Submitted" && (
+                                                <span className="px-2 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">
+                                                    ✓ Submitted
+                                                </span>
+                                            )}
+
+                                            {hw.status === "Graded" && (
+                                                <span className="px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium">
+                                                    ✓ Submitted
+                                                </span>
+                                            )}
+
+                                            {hw.status === "Late" && (
+                                                <span className="px-2 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs font-medium">
+                                                    Late
+                                                </span>
+                                            )}
+
+                                            {hw.status === "Missed" && (
+                                                <span className="px-2 py-1 rounded-full bg-red-100 text-red-600 text-xs font-medium">
+                                                    Missed
+                                                </span>
+                                            )}
+
+                                            {/* Submitted Date */}
+                                            {hw.submitted_date && (
+                                                <span className="text-xs text-gray-500">
+                                                    {formatDateForCompare(hw.submitted_date)}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                ))}
+                            </div>
+                        )}
+                    </div>
 
                     {/* 4. Comment Textarea */}
                     <div>

@@ -16,19 +16,18 @@ const generateDateRange = (startDateStr: string, endDateStr: string, schedule: S
 
     while (current <= end) {
         const dayOfWeek = current.getDay(); // 0 for Sunday, 1 for Monday...
-        console.log(dayOfWeek)
+        // console.log(dayOfWeek)
 
         if (scheduledDays.includes(dayOfWeek)) {
-            console.log(dayOfWeek)
+            // console.log(dayOfWeek)
             const dateString = current.toLocaleDateString('vn-VN').split('T')[0];
-            console.log(dateString)
             dates.push(dateString);
         }
 
         current.setDate(current.getDate() + 1);
     }
 
-    console.log(dates)
+    // console.log(dates)
     return dates;
 };
 

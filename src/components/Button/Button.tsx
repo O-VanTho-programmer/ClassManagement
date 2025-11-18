@@ -1,9 +1,10 @@
-import { LucideIcon } from "lucide-react"
+import { Loader2, LucideIcon } from "lucide-react"
 
 interface ButtonProps {
     title: string,
     style?: string,
     disabled?: boolean,
+    isSaving?: boolean,
     icon?: LucideIcon,
     onClick: () => void,
     color: "orange" | "blue" | "green" | "blue_off" | "green_off" | "red_off" | "gray" | "white"
@@ -19,14 +20,17 @@ const colorMap: { [key: string]: string } = {
     white: "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
 }
 
-export default function Button({ title, icon, onClick, color, disabled=false, style="" }: ButtonProps) {
+export default function Button({ title, icon, onClick, color, disabled = false, style = "", isSaving = false }: ButtonProps) {
     const styleClr = colorMap[color];
     const Icon = icon || null;
 
     return (
         <button disabled={disabled} type="button" onClick={onClick} className={` ${style} cursor-pointer py-2 px-4 rounded-lg ${styleClr} transition-colors duration-200`}>
             <span className="flex items-center gap-2">
-                {Icon && <Icon size={16} />}
+                {isSaving ? <Loader2 size={16} className="animate-spin mr-2" /> : (
+                    Icon && <Icon size={16} />
+
+                )}
                 {title}
             </span>
         </button>

@@ -37,3 +37,13 @@ interface ClassHomework{
     due_date: string,
     created_by_user_name: string,
 }
+
+interface ClassHomeworkForAttendacneRecord {
+    id: string,
+    title: string,
+    submitted_date: string,
+    grade : string | "0",
+    status: string,
+    assigned_date: string,
+    due_date: string,
+}

@@ -16,6 +16,8 @@ import SearchBar from "../SearchBar/SearchBar";
 import { useGetDateHasHomeworkQuery } from "@/hooks/useGetDateHasHomework";
 import { BookPlus } from "lucide-react";
 import QuickAssignHomeworkModal from "../QuickAssignHomeworkModal/QuickAssignHomeworkModal";
+import { useGetClassHomeworkByClassId } from "@/hooks/useGetClassHomeworkByClassId";
+import formatDateForCompare from "@/utils/Format/formatDateForCompare";
 
 interface AttendanceGridStudentTableProps {
     class_id: string,
@@ -27,8 +29,8 @@ interface AttendanceGridStudentTableProps {
 
 export default function AttendanceGridStudentTable({ hub_id, class_id, schedule, startDate, endDate }: AttendanceGridStudentTableProps) {
 
-    const { data: fetchedStudents, isLoading, isError, error } = useGetStudentAttendanceRecordsQuery(class_id);
-    const { data: dateHasHomework, isLoading: isDateHasHomeworkLoading, isError: isDateHasHomeworkError, error: dateHasHomeworkError } = useGetDateHasHomeworkQuery(class_id);
+    const { data: fetchedStudentAttendanceRecords, isLoading, isError, error } = useGetStudentAttendanceRecordsQuery(class_id, schedule);
+    const { data: assignmentList, isLoading: isAssignmentListLoading, isError: isAssignmentListError, error: assignmentListError } = useGetClassHomeworkByClassId(class_id);
 
     const queryClient = useQueryClient();
 
@@ -36,9 +38,9 @@ export default function AttendanceGridStudentTable({ hub_id, class_id, schedule,
     const [filter, setFilter] = useState('');
 
     const processedStudentDatas = useMemo(() => {
-        if (!fetchedStudents) return [];
+        if (!fetchedStudentAttendanceRecords) return [];
 
-        let filteredStudents = fetchedStudents;
+        let filteredStudents = fetchedStudentAttendanceRecords;
 
         if (filter !== '') {
             filteredStudents = filteredStudents.filter(student => {
@@ -55,19 +57,17 @@ export default function AttendanceGridStudentTable({ hub_id, class_id, schedule,
                 recordsMap.set(record.date, record);
             }
 
-            return {
-                ...student,
-                recordsMap,
-            };
+            return { ...student, recordsMap };
         });
-    }, [fetchedStudents, filter]);
+    }, [fetchedStudentAttendanceRecords, filter]);
+
+    console.log(processedStudentDatas);
 
     const [isSaving, setIsSaving] = useState(false);
     const { showAlert } = useAlert();
     const dateRange = useMemo(() => generateDateRange(startDate, endDate, schedule), [startDate, endDate]);
 
     const [editingRecord, setEditingRecord] = useState<StudentAttendance | null>(null);
-    const isModalOpen = !!editingRecord;
 
     const handleEditClick = (record: AttendanceRecord, studentId: string, studentName: string) => {
         setEditingRecord({
@@ -76,7 +76,7 @@ export default function AttendanceGridStudentTable({ hub_id, class_id, schedule,
             date: record.date,
             present: record.present,
             comment: record.comment,
-            is_finished_homework: record.is_finished_homework,
+            assignments: record.assignments,
             is_homework: record.is_homework,
             score: record.score
         });
@@ -147,7 +147,7 @@ export default function AttendanceGridStudentTable({ hub_id, class_id, schedule,
         />
     );
 
-    if (fetchedStudents === undefined || fetchedStudents === null) {
+    if (fetchedStudentAttendanceRecords === undefined || fetchedStudentAttendanceRecords === null) {
         return;
     }
 
@@ -234,7 +234,7 @@ export default function AttendanceGridStudentTable({ hub_id, class_id, schedule,
                                         const record = student.recordsMap.get(dateString) || {
                                             present: 'Pending',
                                             score: null,
-                                            is_finished_homework: undefined,
+                                            assignments: [],
                                             comment: 'Not Checked Yet',
                                             date: dateString,
                                             is_homework: undefined
@@ -243,7 +243,7 @@ export default function AttendanceGridStudentTable({ hub_id, class_id, schedule,
                                         return (
                                             <AttendanceCell
                                                 key={dateString}
-                                                record={record as any} // Cast as needed
+                                                record={record as any} 
                                                 onEdit={(rec) => handleEditClick(rec, student.id, student.name)}
                                             />
                                         );
@@ -258,18 +258,12 @@ export default function AttendanceGridStudentTable({ hub_id, class_id, schedule,
             {/* Attendance Edit Modal */}
             {editingRecord && (
                 <ModalEditAttendance
-                    student={editingRecord}
-                    isOpen={isModalOpen}
+                    studentAttendance={editingRecord}
+                    isOpen={!!editingRecord}
                     onClose={handleCloseModal}
                     onSave={handleSaveAttendance}
                     isSaving={isSaving}
-                    isHasHomework={
-                        !!editingRecord && dateHasHomework.some((hw: { date: string }) => {
-                            if (!editingRecord.date) return false;
-
-                            return hw.date === editingRecord.date;
-                        })
-                    }
+                    classHomeworkList={assignmentList || []}
                 />
             )}
 

@@ -4,9 +4,9 @@ import { NextResponse } from "next/server";
 export async function GET(req:Request) {
     try {
         const { searchParams } = new URL(req.url);
-        const hubId = searchParams.get("hubId");
+        const homeworkId = searchParams.get("homeworkId");
 
-        const query =`
+        const queryGetHomeworkById = `
             SELECT 
                 h.HomeworkId as id,
                 h.HubId as hub_id,
@@ -17,15 +17,15 @@ export async function GET(req:Request) {
                 u.name AS created_by_user_name
             FROM homework h
             JOIN user u ON u.UserId = h.CreatedByUserId
-            WHERE h.HubId = ?
+            WHERE h.HomeworkId = ?
             ORDER BY h.CreatedDate DESC
-        `
+            LIMIT 1;
+        `;
 
-        const [homeworkList] = await pool.query(query, [hubId]);
+        const [homework] = await pool.query(queryGetHomeworkById, [homeworkId]);
 
-        return NextResponse.json({ message: 'Success', homeworkList }, { status: 200 });
+        return NextResponse.json({message: "Success", homework}, {status: 200});
     } catch (error) {
-        console.log("Error with get homework list api", error);
-        return NextResponse.json({ message: "Server error" }, { status: 500 });
+        return NextResponse.json({message: "Internal Server Error", error}, {status: 500});
     }
 }

@@ -60,9 +60,12 @@ export default function HomeworkCard({
                 </div>
             </div>
 
-            <div className="bg-gray-50 px-6 py-3 border-t border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-end sm:space-x-3 space-y-2 sm:space-y-0" >
-                <Button color="blue" icon={FileText} title="View Details" onClick={() => onViewDetails(assignment)} />
-                <Button color="blue_off" icon={View} title="Edit" onClick={() => onEdit(assignment)}/>
+            <div className="bg-gray-50 px-6 py-3 border-t border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between sm:space-x-3 space-y-2 sm:space-y-0" >
+                <Button color="orange" icon={Send} title="Submissions" onClick={() => onViewSubmissions(assignment)}/>
+                <div className="flex items-center space-x-3 sm:space-x-1">
+                    <Button color="blue" icon={FileText} title="View" onClick={() => onViewDetails(assignment)} />
+                    <Button color="blue_off" icon={View} title="Edit" onClick={() => onEdit(assignment)} />
+                </div>
             </div>
         </div>
     );
