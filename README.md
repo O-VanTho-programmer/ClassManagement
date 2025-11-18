@@ -38,6 +38,11 @@ A comprehensive, full-stack class management application built with Next.js 15, 
 - **Role Management**: Manage teacher roles within hubs (Owner, Master, Member)
 - **Teacher Search**: Search and add teachers to hubs via email
 
+### Homework Management
+- **Create Homework**: Create new homework in a Hub
+- **Homework List**: View homeworks of a Hub
+- **Assign Homework**: Assign Homework to a Class with assigned date and due date
+
 ### User Experience
 - **Responsive Design**: Fully responsive UI that works on desktop, tablet, and mobile
 - **Real-time Updates**: Optimistic UI updates with React Query
@@ -133,52 +138,6 @@ Before you begin, ensure you have the following installed:
    
    Navigate to [http://localhost:3000](http://localhost:3000)
 
-## 📁 Project Structure
-
-```
-class-management/
-├── src/
-│   ├── app/                    # Next.js App Router
-│   │   ├── api/                # API route handlers
-│   │   │   ├── auth/          # Authentication endpoints
-│   │   │   ├── new_class/     # Class creation
-│   │   │   ├── get_classes/   # Fetch classes
-│   │   │   └── ...            # Other API routes
-│   │   ├── auth/              # Authentication pages
-│   │   ├── dashboard/         # Dashboard pages
-│   │   │   └── hub/          # Hub management pages
-│   │   ├── layout.tsx        # Root layout
-│   │   └── page.tsx          # Home page
-│   ├── components/            # React components
-│   │   ├── Attendance*       # Attendance-related components
-│   │   ├── Create*           # Modal components
-│   │   ├── Layout*           # Layout components
-│   │   └── ...               # Other reusable components
-│   ├── context/              # React contexts
-│   │   └── UserContext.tsx   # User context provider
-│   ├── hooks/                # Custom React hooks
-│   │   ├── useGetUserHubsQuery.ts
-│   │   ├── useGetClassesByHubIdQuery.ts
-│   │   └── ...               # Other hooks
-│   ├── lib/                  # Utility libraries
-│   │   ├── api/              # API client functions
-│   │   ├── auth.ts           # Authentication utilities
-│   │   ├── db.ts             # Database connection
-│   │   └── axios.ts          # Axios configuration
-│   ├── types/                # TypeScript type definitions
-│   │   ├── Student.ts
-│   │   ├── Teacher.ts
-│   │   ├── ClassData.ts
-│   │   └── Hub.ts
-│   ├── utils/                # Utility functions
-│   └── providers/            # React providers
-│       └── ReactQueryProvider.tsx
-├── public/                    # Static assets
-├── package.json
-├── tsconfig.json
-└── README.md
-```
-
 ## 🔐 API Endpoints
 
 ### Authentication
@@ -252,6 +211,11 @@ class-management/
    - Choose grid or list view
    - Record attendance, scores, and homework status
 
+6. **Assign Homework**
+   - Create new homework in a hub
+   - Go to Homework List to see all homeworks of a hub
+   - Assign a homework to a class with assigned date and due date
+   
 ## 🔒 Security Considerations
 
 - **Never commit `.env.local`** - Keep sensitive credentials out of version control
