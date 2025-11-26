@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
 import { CheckCircle, XCircle, AlertTriangle, Info, X } from 'lucide-react';
 
-type AlertType = 'success' | 'error' | 'info' | 'warning';
+export type AlertType = 'success' | 'error' | 'info' | 'warning';
 
 interface AlertState {
   isOpen: boolean;

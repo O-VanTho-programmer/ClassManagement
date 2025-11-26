@@ -1,6 +1,7 @@
 import { FileImage, Loader2, Sparkles, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import IconButton from "../IconButton/IconButton";
+import { gradeStudentHomeworkUseAI } from "@/lib/api/gradeStudentHomeworkUseAI";
 
 interface SubmissionDetailsModalProps {
     isOpen: boolean;
@@ -17,6 +18,8 @@ export default function SubmissionDetailsModal({ isOpen, onClose, submission, an
     const [feedback, setFeedback] = useState<string>(submission.feedback || '');
     const [showKey, setShowKey] = useState(false);
 
+    const [selectedPreviewImage, setSelectedPreviewImage] = useState<string | null>(null);
+
     useEffect(() => {
         if (submission) {
             setGrade(submission.grade || undefined);
@@ -24,91 +27,36 @@ export default function SubmissionDetailsModal({ isOpen, onClose, submission, an
         }
     }, [submission, isOpen]);
 
-    // This is the prompt that calls the Gemini API
     const handleAutoGrade = async () => {
-        setIsGrading(true);
-        setFeedback(''); // Clear previous feedback
+        const images = submission.submission_urls;
 
-        const systemPrompt = "You are an expert teacher's assistant. You grade student homework based on an answer key. You are precise, fair, and provide constructive feedback. You MUST return a JSON object with 'grade' (a number from 0-100) and 'feedback' (a string with 2-3 sentences of feedback).";
-
-        const userPrompt = `Please grade the attached student's homework image based on the provided answer key.
-        
-        --- ANSWER KEY ---
-        ${answerKey}
-        --- END ANSWER KEY ---
-        
-        Analyze the student's work in the image and provide a grade (0-100) and feedback.`;
-
-        // Get the Base64 data from the data URL
-        const base64ImageData = submission.submission_data?.split(',')[1];
-        if (!base64ImageData) {
-            setFeedback("Error: Submission image is missing.");
-            setIsGrading(false);
+        if (!images || images.length === 0) {
+            alert("No submission image uploaded.");
             return;
         }
 
-        const apiKey = ""; // API key will be injected
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+        if (!answerKey) {
+            alert("No answer key set.")
+            return;
+        }
 
-        // Define the JSON schema we want the AI to return
-        const schema = {
-            type: "OBJECT",
-            properties: {
-                "grade": { "type": "NUMBER" },
-                "feedback": { "type": "STRING" },
-            },
-            required: ["grade", "feedback"]
-        };
-
-        const payload = {
-            contents: [
-                {
-                    role: "user",
-                    parts: [
-                        { text: userPrompt },
-                        {
-                            inlineData: {
-                                mimeType: "image/jpeg", // Assuming jpeg, adjust if needed
-                                data: base64ImageData
-                            }
-                        }
-                    ]
-                }
-            ],
-            systemInstruction: {
-                parts: [{ text: systemPrompt }]
-            },
-            generationConfig: {
-                responseMimeType: "application/json",
-                responseSchema: schema
-            }
-        };
+        setIsGrading(true);
+        setFeedback('');
 
         try {
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
+            const res = await gradeStudentHomeworkUseAI(answerKey, images);
 
-            if (!response.ok) {
-                const errorBody = await response.text();
-                throw new Error(`API error: ${response.status} ${response.statusText} - ${errorBody}`);
-            }
+            if (res?.status === 200) {
+                const data = res.data;
 
-            const result = await response.json();
-            const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
-
-            if (jsonText) {
-                const parsedResult = JSON.parse(jsonText);
-                setGrade(parsedResult.grade);
-                setFeedback(parsedResult.feedback);
+                setGrade(data.grade);
+                setFeedback(data.feedback);
             } else {
-                setFeedback("Error: The AI returned an empty response.");
+                setFeedback("An error occurred while grading. Please check the console.");
             }
         } catch (error) {
             console.error("Gemini API call failed:", error);
-            setFeedback(`An error occurred while grading: ${(error as Error).message}`);
+            setFeedback(`An error occurred while grading: ${(error as Error)}`);
         } finally {
             setIsGrading(false);
         }
@@ -117,7 +65,6 @@ export default function SubmissionDetailsModal({ isOpen, onClose, submission, an
     const handleSave = () => {
         if (grade !== undefined && feedback) {
             onSaveGrade(grade, feedback);
-            onClose();
         } else {
             alert("Please generate or enter a grade and feedback before saving.");
         }
@@ -126,7 +73,7 @@ export default function SubmissionDetailsModal({ isOpen, onClose, submission, an
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center overlay">
             <div className="bg-white rounded-xl shadow-2xl w-full max-w-6xl m-4 transform transition-all duration-300 flex flex-col max-h-[95vh]">
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b">
@@ -138,8 +85,29 @@ export default function SubmissionDetailsModal({ isOpen, onClose, submission, an
                     {/* Student Submission Image */}
                     <div className="overflow-y-auto p-4 bg-gray-100">
                         <h3 className="text-lg font-semibold text-gray-700 mb-2">Student's Work</h3>
-                        {submission.submission_data ? (
-                            <img src={submission.submission_data} alt="Student submission" className="w-full h-auto rounded-md border" />
+                        {submission.submission_urls && submission.submission_urls.length > 0 ? (
+                            <>
+                                <div className="h-[300px]">
+                                    <img
+                                        src={selectedPreviewImage || submission.submission_urls[0].url}
+                                        alt="Student submission preview"
+                                        className="w-full h-full rounded-md object-contain border"
+                                    />
+                                </div>
+                                <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 mt-2 gap-1">
+                                    {submission.submission_urls?.map((item: ResultUpload) => (
+                                        <img
+                                            key={item.public_id}
+                                            src={item.url}
+                                            alt={`Student submission ${item.public_id}`}
+                                            className={`w-full h-[60px] rounded-md ${selectedPreviewImage === item.url ? 'border-2 border-blue-500' : ''}`}
+                                            onClick={() => setSelectedPreviewImage(item.url)}
+                                        />
+                                    ))}
+                                </div>
+                            </>
+
+
                         ) : (
                             <div className="flex flex-col items-center justify-center h-full text-gray-500">
                                 <FileImage size={48} />
@@ -152,15 +120,15 @@ export default function SubmissionDetailsModal({ isOpen, onClose, submission, an
                     <div className="overflow-y-auto p-6 flex flex-col space-y-4">
                         <button
                             onClick={handleAutoGrade}
-                            disabled={isGrading || !answerKey || !submission.submission_data}
-                            className="w-full flex items-center justify-center px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-indigo-700 transition-all shadow-md disabled:bg-gray-400 disabled:from-gray-400 disabled:cursor-not-allowed"
+                            disabled={isGrading || !answerKey || !submission.submission_urls}
+                            className="w-full cursor-pointer flex items-center justify-center px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-indigo-700 transition-all shadow-md disabled:bg-gray-400 disabled:from-gray-400 disabled:cursor-not-allowed"
                         >
                             {isGrading ? (
                                 <Loader2 size={20} className="animate-spin mr-2" />
                             ) : (
-                                <Sparkles size={20} className="mr-2" />
+                                <Sparkles size={20} className="mr-2 text-amber-300" />
                             )}
-                            {isGrading ? 'Grading...' : '✨ Auto-Grade with AI'}
+                            {isGrading ? 'Grading...' : 'Auto-Grade with AI'}
                         </button>
                         {!answerKey && <p className="text-xs text-center text-yellow-700">Set an answer key to enable AI grading.</p>}
 
@@ -205,7 +173,7 @@ export default function SubmissionDetailsModal({ isOpen, onClose, submission, an
                     <button type="button" onClick={onClose} className="px-4 py-2 bg-white border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
                         Cancel
                     </button>
-                    <button type="button" onClick={handleSave} disabled={isGrading || isSaving} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400">
+                    <button type="button" onClick={handleSave} disabled={isGrading || isSaving} className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400">
                         {isSaving ? <Loader2 size={16} className="animate-spin" /> : 'Save Grade'}
                     </button>
                 </div>

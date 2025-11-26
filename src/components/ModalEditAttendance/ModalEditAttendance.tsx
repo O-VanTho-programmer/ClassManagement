@@ -183,9 +183,9 @@ export function ModalEditAttendance({ studentAttendance, isOpen, onClose, onSave
                                                 </span>
                                             )}
 
-                                            {hw.status === "Late" && (
+                                            {hw.status === "Overdue" && (
                                                 <span className="px-2 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs font-medium">
-                                                    Late
+                                                    Overdue
                                                 </span>
                                             )}
 

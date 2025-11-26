@@ -1,17 +1,18 @@
-export async function saveGrade(studentId: string, homeworkId: string, grade: number, feedback: string): Promise<StudentWithHomework> {
-    console.log(`[API MOCK] Saving grade ${grade} for student ${studentId}`);
-    await new Promise(r => setTimeout(r, 500));
-    return {
-        id: studentId,
-        name: 'Mock Student',
-        birthday: null,
-        status: 'Studying',
-        student_homework_id: `sh_${studentId}`,
-        homework_status: 'Graded',
-        grade,
-        feedback,
-        submitted_date: new Date().toISOString(),
-        assigned_date: '',
-        due_date: '',
-    };
+import api from "@/lib/axios";
+
+export async function saveGrade(studentHomeworkId: string, grade: number, feedback: string) {
+    try {
+        const res = await api.post('save_grade_feedback_homework', {
+            studentHomeworkId,
+            grade,
+            feedback
+        });
+        
+        console.log("Grade and feedback saved", res.data);
+        return res.data;
+
+    } catch (error) {
+        console.log("Failed to save grade and feedback", error);
+        return null;
+    }
 };

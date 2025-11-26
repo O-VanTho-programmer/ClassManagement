@@ -12,6 +12,7 @@ export async function GET(req:Request) {
                 h.HubId as hub_id,
                 h.Title as title,
                 h.Content as content,
+                h.AnswerKey as answer_key,
                 DATE_FORMAT(h.CreatedDate, '%m/%d/%Y') as created_date,
                 h.CreatedByUserId as created_by_user_id,
                 u.name AS created_by_user_name
@@ -22,7 +23,9 @@ export async function GET(req:Request) {
             LIMIT 1;
         `;
 
-        const [homework] = await pool.query(queryGetHomeworkById, [homeworkId]);
+        const [row] : any[] = await pool.query(queryGetHomeworkById, [homeworkId]);
+
+        const homework = row[0];
 
         return NextResponse.json({message: "Success", homework}, {status: 200});
     } catch (error) {

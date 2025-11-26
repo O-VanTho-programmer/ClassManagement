@@ -45,10 +45,11 @@ type StudentWithAttendanceRecordList = Student & {
 type StudentWithHomework = Student & {
     student_homework_id: string,
     homework_status: string,
-    submission_data?: string,
+    submission_urls?: ResultUpload[],
     submitted_date: string,
     assigned_date: string,
     due_date: string,
+    is_graded: boolean,
     grade: number | 0,
-    feedback? : string
+    feedback? : string,
 }

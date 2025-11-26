@@ -1,17 +1,17 @@
-export async function saveStudentSubmission(studentId: string, homeworkId: string, submissionDataUrl: string): Promise<StudentWithHomework> {
-    console.log(`[API MOCK] Saving submission for student ${studentId}`);
-    await new Promise(r => setTimeout(r, 1000));
-    return {
-        id: studentId,
-        name: 'Mock Student',
-        birthday: null,
-        status: 'Studying',
-        student_homework_id: `sh_${studentId}`,
-        homework_status: 'Uploaded',
-        submission_data: submissionDataUrl,
-        submitted_date: new Date().toISOString(),
-        assigned_date: '',
-        due_date: '',
-        grade: 0
-    };
-};
+import api from "@/lib/axios";
+
+export async function saveStudentSubmission(studentHomeworkId: string, dueDate: string, submissionDataUrls: ResultUpload[]): Promise<StudentWithHomework | null> {
+    try {
+        const res = await api.post('save_student_submission', {
+            studentHomeworkId,
+            dueDate,
+            submissionDataUrls
+        });
+
+        console.log("Saving submission", res.data);
+        return res.data;
+    } catch (error) {
+        console.log("Saving submission", error);
+        return null;
+    }
+}

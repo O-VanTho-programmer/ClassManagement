@@ -7,6 +7,7 @@ interface HomeworkInputDto {
 
 interface Homework extends HomeworkInputDto {
     id: string,
+    answer_key: string,
     created_date: string,
     created_by_user_name: string,
 }
@@ -38,8 +39,12 @@ interface ClassHomework{
     created_by_user_name: string,
 }
 
+interface ClassHomeworkWithClassName extends ClassHomework {
+    class_name: string,
+}
+
 interface ClassHomeworkForAttendacneRecord {
-    id: string,
+    id: string, 
     title: string,
     submitted_date: string,
     grade : string | "0",

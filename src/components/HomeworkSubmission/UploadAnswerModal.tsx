@@ -3,12 +3,15 @@ import React, { useState } from 'react'
 import SquareButton from '../SquareButton/SquareButton'
 import IconButton from '../IconButton/IconButton'
 import Button from '../Button/Button'
+import { allowedTypeFile } from '@/utils/Upload/allowedTypeFile'
+import { useAlert } from '../AlertProvider/AlertContext'
+import { useFileImg } from '@/hooks/useFileImg'
 
 type UploadAnswerModalProps = {
     isOpen: boolean
     onClose: () => void
     studentName: string
-    onUpload: (dataUrl: string) => void
+    onUpload: (files: File[]) => void
     isUploading: boolean
 }
 
@@ -19,24 +22,13 @@ export default function UploadAnswerModal({
     isUploading,
     onUpload
 }: UploadAnswerModalProps) {
-    const [file, setFile] = useState<File | null>(null);
-    const [preview, setPreview] = useState<string | null>(null);
+    const { showAlert } = useAlert();
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const f = e.target.files?.[0];
-        if (f) {
-            setFile(f);
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setPreview(reader.result as string);
-            };
-            reader.readAsDataURL(f);
-        }
-    };
+    const{ files, previews, handleFileChange} = useFileImg(showAlert);
 
     const handleUpload = () => {
-        if (preview) {
-            onUpload(preview);
+        if (files) {
+            onUpload(files);
         }
     };
 
@@ -53,16 +45,20 @@ export default function UploadAnswerModal({
 
                 <div className="mt-6">
                     <label htmlFor="file-upload" className="w-full h-48 flex flex-col items-center justify-center border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
-                        {preview ? (
-                            <img src={preview} alt="Submission preview" className="max-h-44 object-contain rounded-md" />
+                        {previews.length > 0 ? (
+                            <div className='flex'>
+                                {previews.map((preview, index) => (
+                                    <img src={preview} alt="Submission preview" className="max-h-44 object-contain rounded-md" />
+                                ))}
+                            </div>
                         ) : (
                             <div className="text-center text-gray-500">
                                 <FileImage size={40} className="mx-auto" />
-                                <span className="mt-2 block font-medium">Click to upload image or PDF</span>
-                                <span className="mt-1 block text-xs">PNG, JPG, or PDF</span>
+                                <span className="mt-2 block font-medium">Click to upload images</span>
+                                <span className="mt-1 block text-xs">PNG, JPG (multiple allowed)</span>
                             </div>
                         )}
-                        <input id="file-upload" name="file-upload" type="file" className="sr-only" onChange={handleFileChange} accept="image/png, image/jpeg, application/pdf" />
+                        <input id="file-upload" name="file-upload" accept="image/*" type="file" multiple className="sr-only" onChange={handleFileChange} />
                     </label>
                 </div>
 
@@ -76,12 +72,12 @@ export default function UploadAnswerModal({
                     <Button
                         color='blue'
                         onClick={handleUpload}
-                        disabled={!file || isUploading}
+                        disabled={!files || isUploading}
                         title='Upload'
                         isSaving={isUploading}
                     />
                 </div>
             </div>
         </div>
-    );
+    )
 }
