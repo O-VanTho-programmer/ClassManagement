@@ -6,9 +6,10 @@ interface SelectionWithLabelProps {
     label: string, 
     options: Option[], 
     initialValue: string
+    onChange? : (value: string) => void
 }
 
-export default function SelectionWithLabel ({ label, options, initialValue } : SelectionWithLabelProps) {
+export default function SelectionWithLabel ({ label, options, initialValue, onChange } : SelectionWithLabelProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedOption, setSelectedOption] = useState(
         options.find(opt => opt.value === initialValue) || options[0]
@@ -16,6 +17,7 @@ export default function SelectionWithLabel ({ label, options, initialValue } : S
 
     const handleSelect = (option: Option) => {
         setSelectedOption(option);
+        onChange && onChange(option.value);
         setIsOpen(false);
     };
 

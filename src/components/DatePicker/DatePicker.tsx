@@ -1,7 +1,7 @@
 'use client'
 
 import {LucideIcon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface DatePickerProps{
     isLabelAbsolute?: boolean,
@@ -13,8 +13,12 @@ interface DatePickerProps{
 }
 
 export default function DatePicker ({date, onChange, icon, label, isLabelAbsolute = true, size} : DatePickerProps) {
-    const [selectedDate, setSelectedDate] = useState(date ??'2025-09-25');
-
+    const [selectedDate, setSelectedDate] = useState(date);
+    
+    useEffect(() => {
+        setSelectedDate(date);
+    }, [date]);
+    
     const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setSelectedDate(event.target.value);
         onChange(event.target.value);

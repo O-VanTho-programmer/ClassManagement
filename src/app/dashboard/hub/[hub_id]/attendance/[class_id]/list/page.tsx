@@ -3,21 +3,42 @@
 import AttendanceListFilter from "@/components/AttendanceListFilter/AttendanceListFilter";
 import AttendanceListStudentTable from "@/components/AttendanceListStudentTable/AttendanceListStudentTable";
 import AttendanceSummary from "@/components/AttendanceSummary/AttendanceSummary";
+import { useGetAttendanceRecordsQuery } from "@/hooks/useGetAttendanceRecords";
 import { useGetClassById } from "@/hooks/useGetClassById";
-import { ClassData } from "@/types/ClassData";
 import calculateScheduledDays from "@/utils/calculateScheduledDays";
+import formatDateForCompare from "@/utils/Format/formatDateForCompare";
 import { Calendar, GraduationCap, Users } from "lucide-react";
 import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function AttendanceListPage() {
     const { class_id } = useParams();
-    const { data: classInfo, isLoading: isLoadingClass, isError: isErrorClass, error: errorClass } = useGetClassById(class_id as string);    
-    
-    if(classInfo == null || classInfo == undefined){
+    const { data: classInfo, isLoading: isLoadingClass, isError: isErrorClass, error: errorClass } = useGetClassById(class_id as string);
+    const { data: studentsList = [], isLoading, isError, error } = useGetAttendanceRecordsQuery(class_id as string);
+
+    const [selectedStartDate, setSelectedStartDate] = useState<string | undefined>(classInfo?.startDate);
+    const [selectedEndDate, setSelectedEndDate] = useState<string | undefined>(classInfo?.endDate);
+    const [selectedStudent, setSelectedStudent] = useState('all-students');
+    const [filteredStatus, setFilteredStatus] = useState('all-status');
+
+    useEffect(() => {
+        if (classInfo) {
+            setSelectedStartDate(formatDateForCompare(classInfo.startDate));
+            setSelectedEndDate(formatDateForCompare(classInfo.endDate));
+        }
+    }, [classInfo]);
+
+    if (classInfo == null || classInfo == undefined) {
         return null;
     }
 
-    // Tong so buoi hoc
+    const handleFilter = (startDate: string, endDate: string, selectedStudent: string, selectedStatus: string) => {
+        setSelectedStartDate(startDate);
+        setSelectedEndDate(endDate);
+        setSelectedStudent(selectedStudent);
+        setFilteredStatus(selectedStatus);
+    }
+
     const totalDays = calculateScheduledDays(classInfo.schedule, classInfo.startDate, classInfo.endDate);
 
     return (
@@ -39,9 +60,24 @@ export default function AttendanceListPage() {
             </div>
             {/*  */}
 
-            <AttendanceListFilter />
+            <AttendanceListFilter
+                class_id={class_id as string}
+                startDate={classInfo.startDate}
+                endDate={classInfo.endDate}
+                onFilter={handleFilter}
+            />
             <AttendanceSummary />
-            <AttendanceListStudentTable class_id= {classInfo.id}/>
+            <AttendanceListStudentTable
+                class_id={classInfo.id}
+                studentsList={studentsList || []}
+                isLoading={isLoadingClass}
+                isError={isErrorClass}
+                error={errorClass}
+                startDate={selectedStartDate}
+                endDate={selectedEndDate}
+                selectedStudent={selectedStudent}
+                filteredStatus={filteredStatus}
+            />
         </>
     )
 }

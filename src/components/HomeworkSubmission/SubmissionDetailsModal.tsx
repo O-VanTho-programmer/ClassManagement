@@ -170,7 +170,7 @@ export default function SubmissionDetailsModal({ isOpen, onClose, submission, an
 
                 {/* Footer */}
                 <div className="p-4 flex justify-end gap-3 border-t bg-gray-50 rounded-b-xl">
-                    <button type="button" onClick={onClose} className="px-4 py-2 bg-white border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                    <button type="button" onClick={onClose} className="px-4 py-2 cursor-pointer bg-white border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
                         Cancel
                     </button>
                     <button type="button" onClick={handleSave} disabled={isGrading || isSaving} className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400">

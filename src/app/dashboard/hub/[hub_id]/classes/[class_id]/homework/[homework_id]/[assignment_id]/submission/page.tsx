@@ -175,7 +175,7 @@ function HomeworkSubmissionPage() {
                     <button
                       onClick={() => handleOpenUpload(submission)}
                       disabled={submission.submission_urls && submission.submission_urls.length > 0}
-                      className="text-gray-600 hover:text-blue-700 cursor-pointer"
+                      className="text-gray-600 hover:text-blue-700 cursor-pointer disabled:hidden"
                       title="Upload Submission"
                     >
                       <Upload size={18} />

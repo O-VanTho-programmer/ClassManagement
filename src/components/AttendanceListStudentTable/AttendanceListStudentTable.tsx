@@ -1,6 +1,5 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import AttendanceListStudentTableRow from "../AttendanceListStudentTableRow/AttendanceListStudentTableRow";
-import { studentsAttendanceSample } from "@/data_sample/studentAttendanceSample";
 import { ModalEditAttendance } from "../ModalEditAttendance/ModalEditAttendance";
 import { newAttendanceRecordsApi } from "@/lib/api/newAttendanceRecord";
 import { useAlert } from "../AlertProvider/AlertContext";
@@ -8,16 +7,68 @@ import { useGetAttendanceRecordsQuery } from "@/hooks/useGetAttendanceRecords";
 import { useQueryClient } from "@tanstack/react-query";
 import LoadingState from "../QueryState/LoadingState";
 import ErrorState from "../QueryState/ErrorState";
+import formatDateForCompare from "@/utils/Format/formatDateForCompare";
 
-export default function AttendanceListStudentTable({ class_id }: { class_id: string }) {
+interface AttendanceListStudentTableProps {
+    class_id: string;
+    studentsList: StudentAttendance[];
+    isLoading: boolean;
+    isError: boolean;
+    error: any;
+    startDate?: string;
+    endDate?: string;
+    selectedStudent: string;
+    filteredStatus: string;
+}
 
-    const { data: fetchStudentAttendance, isLoading, isError, error } = useGetAttendanceRecordsQuery(class_id);
+export default function AttendanceListStudentTable({
+    class_id,
+    studentsList, isLoading, isError, error,
+    startDate,
+    endDate,
+    selectedStudent,
+    filteredStatus
+}: AttendanceListStudentTableProps) {
+
+    // const { data: studentsList, isLoading, isError, error } = useGetAttendanceRecordsQuery(class_id);
     const [editingStudent, setEditingStudent] = useState<StudentAttendance | null>(null);
     const [isSaving, setIsSaving] = useState(false);
     const { showAlert } = useAlert();
     const isModalOpen = !!editingStudent;
 
     const queryClient = useQueryClient();
+
+    const filterStudentAttendance = useMemo(() => {
+        if (!studentsList?.length) return [];
+
+        let filteredStudents = studentsList;
+
+        if (startDate) {
+            filteredStudents = filteredStudents.filter((student) => {
+                return formatDateForCompare(student.date) >= formatDateForCompare(startDate);
+            });
+        }
+
+        if (endDate) {
+            filteredStudents = filteredStudents.filter((student) => {
+                return formatDateForCompare(student.date) <= formatDateForCompare(endDate);
+            });
+        }
+
+        if (selectedStudent !== 'all-students') {
+            filteredStudents = filteredStudents.filter((student) => {
+                return student.id === selectedStudent;
+            });
+        }
+
+        if (filteredStatus !== "all-status") {
+            filteredStudents = filteredStudents.filter(student => {
+                return student.present === filteredStatus;
+            });
+        }
+
+        return filteredStudents;
+    }, [studentsList, startDate, endDate, selectedStudent, filteredStatus])
 
     const openModalEdit = (student: StudentAttendance) => {
         setEditingStudent(student);
@@ -83,7 +134,7 @@ export default function AttendanceListStudentTable({ class_id }: { class_id: str
                         </thead>
 
                         <tbody className="bg-white divide-y divide-gray-200">
-                            {fetchStudentAttendance?.map((student, index) => (
+                            {filterStudentAttendance?.map((student, index) => (
                                 <AttendanceListStudentTableRow isHasHomework={student.is_homework} key={index} student={student} openModalEdit={openModalEdit} />
                             ))}
                         </tbody>
@@ -91,16 +142,16 @@ export default function AttendanceListStudentTable({ class_id }: { class_id: str
                 </div>
             </div >
 
-            {editingStudent && (
+            {/* {editingStudent && (
                 <ModalEditAttendance
                     isOpen={isModalOpen}
                     onClose={handleCloseModal}
-                    student={editingStudent}
+                    studentAttendance={editingStudent}
                     onSave={handleSaveAttendance}
                     isSaving={isSaving}
-                    isHasHomework={editingStudent.is_homework}
+                    // classHomeworkList={null}
                 />
-            )}
+            )} */}
         </>
 
     )

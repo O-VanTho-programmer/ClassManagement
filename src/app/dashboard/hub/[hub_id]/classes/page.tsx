@@ -4,7 +4,7 @@ import ViewClass from "@/components/ViewClass/ViewClass";
 export default function ClassesPage() {
     return (
         <>
-            <ClassesCard/>
+            {/* <ClassesCard/> */}
             <ViewClass/>
         </>
     )
