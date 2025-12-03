@@ -11,13 +11,15 @@ type HomeworkListTableProps = {
     onSelectAssignHomeworkToClass: (homework: Homework) => void;
     onSelectEditHomework: (homework: Homework) => void;
     onSelectDeleteHomework: (homework: Homework) => void;
+    onViewHomeworkSubmissions: (homeworkId: string) => void;
 }
 
 export default function HomeworkListTable({
     isLoading, isError, error, homeworkList,
     onSelectAssignHomeworkToClass,
     onSelectEditHomework,
-    onSelectDeleteHomework
+    onSelectDeleteHomework,
+    onViewHomeworkSubmissions
 }: HomeworkListTableProps) {
     if (isLoading) return <LoadingState message='Loading homework list...' />;
     if (isError) return <ErrorState message={error.message} />;
@@ -42,17 +44,17 @@ export default function HomeworkListTable({
                                 <div className="text-sm font-medium text-gray-900">{hw.created_date}</div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                                <div className="text-sm font-medium text-gray-900">{hw.title}</div>
+                                <div onClick={() => onViewHomeworkSubmissions(hw.id)} className="cursor-pointer hover:underline hover:text-blue-600 text-sm font-medium text-gray-900">{hw.title}</div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{hw.created_by_user_name}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
-                                <button onClick={() => onSelectAssignHomeworkToClass(hw)} className="flex items-center justify-center gap-1.5 text-blue-600 hover:text-blue-900">
+                                <button onClick={() => onSelectAssignHomeworkToClass(hw)} className="cursor-pointer flex items-center justify-center gap-1.5 text-blue-600 hover:text-blue-900">
                                     <Send size={16} /> Assign
                                 </button>
-                                <button onClick={() => onSelectEditHomework(hw)} className="flex items-center justify-center gap-1.5 text-gray-600 hover:text-gray-900">
+                                <button onClick={() => onSelectEditHomework(hw)} className="cursor-pointer flex items-center justify-center gap-1.5 text-gray-600 hover:text-gray-900">
                                     <Edit2 size={16} /> Edit
                                 </button>
-                                <button onClick={() => onSelectDeleteHomework(hw)} className="flex items-center justify-center gap-1.5 text-red-600 hover:text-red-900">
+                                <button onClick={() => onSelectDeleteHomework(hw)} className="cursor-pointer flex items-center justify-center gap-1.5 text-red-600 hover:text-red-900">
                                     <Trash2 size={16} /> Delete
                                 </button>
                             </td>

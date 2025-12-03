@@ -1,7 +1,7 @@
 const getStatusByHomeworkDueDate = (dueDateStr: string): { text: string; color: string } => {
     const today = new Date();
     // We add T00:00:00 to ensure it's parsed as local time, not UTC
-    const dueDate = new Date(`${dueDateStr}T00:00:00`);
+    const dueDate = new Date(`${dueDateStr}`);
 
     // Normalize dates to midnight to compare just the day
     today.setHours(0, 0, 0, 0);

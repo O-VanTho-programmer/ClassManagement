@@ -1,9 +1,9 @@
 import getStatusByHomeworkDueDate from "@/utils/getStatusByHomeworkDueDate";
-import { Calendar, Clock, Edit, FileText, Send, View } from "lucide-react";
+import { Calendar, Clock, FileText, Send, View } from "lucide-react";
 import Button from "../Button/Button";
 
 interface HomeworkCardProps {
-    assignment: ClassHomework;
+    assignment: ClassHomeworkWithClassName;
     onViewDetails: (assignment: ClassHomework) => void;
     onEdit: (assignment: ClassHomework) => void;
     onViewSubmissions: (assignment: ClassHomework) => void;
@@ -21,6 +21,8 @@ export default function HomeworkCard({
     return (
         <div className="bg-white shadow-lg rounded-xl border border-gray-200 overflow-hidden transition-all hover:shadow-xl" >
             <div className="p-6" >
+                <p className="text-base font-bold italic text-blue-600 mb-3">{assignment.class_name}</p>
+
                 <div className="flex justify-between items-start mb-3" >
                     < h3 className="text-xl font-bold text-gray-900 pr-4" >
                         {assignment.title}
@@ -61,7 +63,7 @@ export default function HomeworkCard({
             </div>
 
             <div className="bg-gray-50 px-6 py-3 border-t border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between sm:space-x-3 space-y-2 sm:space-y-0" >
-                <Button color="orange" icon={Send} title="Submissions" onClick={() => onViewSubmissions(assignment)}/>
+                <Button color="orange" icon={Send} title="Submissions" onClick={() => onViewSubmissions(assignment)} />
                 <div className="flex items-center space-x-3 sm:space-x-1">
                     <Button color="blue" icon={FileText} title="View" onClick={() => onViewDetails(assignment)} />
                     <Button color="blue_off" icon={View} title="Edit" onClick={() => onEdit(assignment)} />

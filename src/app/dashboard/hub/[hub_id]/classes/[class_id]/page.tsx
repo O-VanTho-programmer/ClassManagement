@@ -14,7 +14,7 @@ import { useGetStudentListByClassId } from "@/hooks/useGetStudentListByClassId";
 import { addStudentIntoClassAPI } from "@/lib/api/addStudentIntoClassAPI";
 import { newStudentInHub } from "@/lib/api/newStudentInHub";
 import { useQueryClient } from "@tanstack/react-query";
-import { Album, AlbumIcon, CalendarCheck, Pen, QrCode } from "lucide-react";
+import { AlbumIcon, CalendarCheck, Pen } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 

@@ -3,6 +3,9 @@ import React, { useState, useEffect } from 'react'
 import { useAlert } from '../AlertProvider/AlertContext';
 import ReactQuill from 'react-quill-new';
 import { updateHomework } from '@/lib/api/updateHomework';
+import SquareButton from '../SquareButton/SquareButton';
+import { X } from 'lucide-react';
+import Button from '../Button/Button';
 
 type EditHomeworkModalProps = {
     curHomework: Homework;
@@ -73,14 +76,7 @@ export default function EditHomeworkModal({
                 {/* Header */}
                 <div className="flex justify-between items-center pb-4 border-b border-gray-200">
                     <h2 className="text-2xl font-bold text-gray-900">Edit Homework</h2>
-                    <button
-                        onClick={onClose}
-                        className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
-                    >
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
+                    <SquareButton onClick={onClose} color="gray" icon={X} />
                 </div>
 
                 {/* Form */}
@@ -98,7 +94,7 @@ export default function EditHomeworkModal({
                         />
                     </div>
 
-                    <div>
+                    <div className='max-w-3xl mx-auto'>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                             Content
                         </label>
@@ -114,12 +110,7 @@ export default function EditHomeworkModal({
 
                 {/* Actions */}
                 <div className="flex justify-end gap-4 pt-4 border-t border-gray-200">
-                    <button
-                        onClick={onClose}
-                        className="px-6 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                        Cancel
-                    </button>
+                    <Button title="Cancel" onClick={onClose} color="white" icon={X} />
                     <button
                         onClick={handleSubmit}
                         disabled={loading}

@@ -4,13 +4,13 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET(req:NextRequest) {
     try {
         const { searchParams } = req.nextUrl;
-        const assignmentId = searchParams.get("assignmentId");
+        const homeworkId = searchParams.get("homeworkId");
 
-        if (!assignmentId) {
-            return NextResponse.json({ message: "Assignment Id is required" }, { status: 400 });
+        if (!homeworkId) {
+            return NextResponse.json({ message: "Homework Id is required" }, { status: 400 });
         } 
 
-        const queryGetAssignmentById = `
+        const queryGetClassHomeworkByHomeworkId = `
             SELECT 
                 ch.ClassHomeworkId as class_homework_id,
                 ch.ClassId as class_id,
@@ -25,12 +25,10 @@ export async function GET(req:NextRequest) {
             JOIN homework h ON h.HomeworkId = ch.HomeworkId
             JOIN class c ON c.classId = ch.ClassId
             JOIN User u ON u.UserId = h.CreatedByUserId
-            WHERE ch.ClassHomeworkId = ?
+            WHERE ch.HomeworkId = ?
         `;
 
-        const [row] : any[] = await pool.query(queryGetAssignmentById, [assignmentId]);
-
-        const class_homework = row[0];
+        const [class_homework] : any[] = await pool.query(queryGetClassHomeworkByHomeworkId, [homeworkId]);
 
         return NextResponse.json({message: 'success', class_homework}, {status: 200})
     } catch (error) {

@@ -33,6 +33,10 @@ export default function HomeworkListPage() {
     });
   }, [homeworkList, searchTerm]);
 
+  const handleViewHomeworkSubmissions = (homeworkId: string) => {
+    router.push(`homework_list/${homeworkId}/submissions`)
+  }
+
   const handleSelectAssignHomeworkToClass = (homework: Homework) => {
     setSelectedHomework(homework);
     setIsAssignHomeworkToClassModalOpen(true);
@@ -72,6 +76,7 @@ export default function HomeworkListPage() {
           onSelectAssignHomeworkToClass={handleSelectAssignHomeworkToClass}
           onSelectEditHomework={handleSelectEditHomework}
           onSelectDeleteHomework={handleDeleteHomework}
+          onViewHomeworkSubmissions={handleViewHomeworkSubmissions}
         />
       </div>
 

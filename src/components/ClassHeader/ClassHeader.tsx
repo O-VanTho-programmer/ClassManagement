@@ -97,7 +97,8 @@ export default function ClassHeader({ classInfo }: ClassHeaderProps) {
                 onClick={() => setShowFullDetails(!showFullDetails)}
                 className="flex items-center justify-center text-xl text-gray-400 hover:bg-gray-300 focus:outline-none transition-all duration-300 cursor-pointer">
                 <span
-                    className="p-1 rounded-full">
+                    className="p-1 rounded-full text-sm flex items-center gap-2">
+                        {showFullDetails ? 'View Less' : 'View More'}
                     <ChevronDownIcon className={`w-4 h-4 text-gray-500 transition-transform duration-300 ${showFullDetails ? 'rotate-180' : ''}`} />
                 </span>
             </button>

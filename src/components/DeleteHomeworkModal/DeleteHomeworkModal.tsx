@@ -2,6 +2,8 @@ import { deleteHomework } from "@/lib/api/deleteHomeworkAPI";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, Loader2, Trash2, X } from "lucide-react";
 import { useAlert } from "../AlertProvider/AlertContext";
+import Button from "../Button/Button";
+import SquareButton from "../SquareButton/SquareButton";
 
 interface DeleteHomeworkModalProps {
     isOpen: boolean;
@@ -48,13 +50,7 @@ export default function DeleteHomeworkModal({
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b">
                     <h2 className="text-xl font-bold text-gray-800">Delete Homework</h2>
-                    <button
-                        onClick={onClose}
-                        disabled={mutation.isPending}
-                        className="p-2 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 disabled:opacity-50"
-                    >
-                        <X size={20} />
-                    </button>
+                    <SquareButton onClick={onClose} color="gray" icon={X} />
                 </div>
 
                 <div className="flex-grow overflow-y-auto p-6">
@@ -81,14 +77,7 @@ export default function DeleteHomeworkModal({
                 </div>
 
                 <div className="p-4 border-t bg-gray-50 rounded-b-xl flex justify-end gap-3">
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        disabled={mutation.isPending}
-                        className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors font-medium disabled:opacity-50"
-                    >
-                        Cancel
-                    </button>
+                    <Button title="Cancel" onClick={onClose} color="white" icon={X} />
                     <button
                         type="button"
                         onClick={handleDelete}
