@@ -5,7 +5,6 @@ import HomeworkCard from '@/components/HomeworkCard/HomeworkCard';
 import ViewClassHomeworkList from '@/components/ViewClassHomeworkList/ViewClassHomeworkList';
 import ViewHomeworkModal from '@/components/ViewHomeworkModal/ViewHomeworkModal';
 import { useGetClassHomeworkByClassId } from '@/hooks/useGetClassHomeworkByClassId';
-import { BookOpen, Loader2 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState } from 'react'
 
@@ -48,7 +47,7 @@ export default function ClassHomeworkPage() {
 
             <div className="">
                 <ViewClassHomeworkList
-                    assignments={assignments as ClassHomework[]}
+                    assignments={assignments as ClassHomeworkWithClassName[]}
                     isLoading={isLoading}
                     isError={isError}
                     handleViewDetails={handleViewDetails}
