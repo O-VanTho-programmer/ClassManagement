@@ -1,7 +1,8 @@
 import { Filter, X } from "lucide-react"
 import Button from "../Button/Button"
 import DatePicker from "../DatePicker/DatePicker"
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import formatDateForCompare from "@/utils/Format/formatDateForCompare";
 
 interface AttendanceGridFilterProps {
     startDate?: string,
@@ -11,8 +12,8 @@ interface AttendanceGridFilterProps {
 }
 
 export default function AttendanceGridFilter({ startDate, endDate, onFilter, onResetFilter }: AttendanceGridFilterProps) {
-    const [selectedStartDate, setSelectedStartDate] = useState(startDate);
-    const [selectedEndDate, setSelectedEndDate] = useState(endDate);
+    const [selectedStartDate, setSelectedStartDate] = useState(startDate || "");
+    const [selectedEndDate, setSelectedEndDate] = useState(endDate || "");
 
     const onChangeStartDate = (date: string) => {
         setSelectedStartDate(date);
@@ -32,8 +33,8 @@ export default function AttendanceGridFilter({ startDate, endDate, onFilter, onR
 
     return (
         <div className="bg-white shadow-md rounded-xl pt-10 p-6 flex items-center gap-2 mb-6">
-            <DatePicker size="smaller" label="Start date" onChange={onChangeStartDate} date={startDate} />
-            <DatePicker size="smaller" label="End date" onChange={onChangeEndDate} date={endDate} />
+            <DatePicker size="smaller" label="Start date" onChange={onChangeStartDate} date={formatDateForCompare(selectedStartDate)} />
+            <DatePicker size="smaller" label="End date" onChange={onChangeEndDate} date={formatDateForCompare(selectedEndDate)} />
 
             <div className="flex items-center gap-2">
                 <Button color="blue" icon={Filter} title="Filter" onClick={handleFilter} />

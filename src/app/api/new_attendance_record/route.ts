@@ -1,4 +1,5 @@
 import pool from "@/lib/db";
+import formatDateForCompare from "@/utils/Format/formatDateForCompare";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -26,13 +27,34 @@ export async function POST(req: Request) {
             return NextResponse.json({ message: "Student not found" }, { status: 404 });
         }
 
-        const dateType = new Date(date);
+        const dateString = formatDateForCompare(date);
 
-        const queryNewAttendanceRecord = `
-        INSERT INTO record_attendance (Present, Score, IsFinishHomework, Commemt, CreatedDate, StudentId, ClassId)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    `
-        await pool.query(queryNewAttendanceRecord, [present, score, is_finished_homework, comment, dateType, id, classId]);
+        const attendanceRecordExistQuery = `
+            SELECT * FROM record_attendance WHERE StudentId = ? AND AttendanceDate = ?
+            LIMIT 1;
+        `;
+
+        const [attendanceRecordExits]: any[] = await pool.query(attendanceRecordExistQuery, [id, dateString]);
+
+        if (attendanceRecordExits.length > 0) { 
+            const attendanceRecordId = attendanceRecordExits[0].RecordAttendanceId;
+
+            const queryUpdateAttendanceRecord = `
+                UPDATE record_attendance
+                SET Present = ?, Score = ?, Comment = ?, UpdatedDate = NOW()
+                WHERE RecordAttendanceId = ?
+            `;
+            
+            const [res] = await pool.query(queryUpdateAttendanceRecord, [present, score, comment, attendanceRecordId])
+            console.log(res);
+        } else {
+            const queryNewAttendanceRecord = `
+                INSERT INTO record_attendance (Present, Score, Comment, AttendanceDate, StudentId, ClassId)
+                VALUES (?, ?, ?, ?, ?, ?)
+            `
+
+            await pool.query(queryNewAttendanceRecord, [present, score, comment, dateString, id, classId]);
+        }
 
         return NextResponse.json({ message: "Success" }, { status: 200 });
     } catch (error) {

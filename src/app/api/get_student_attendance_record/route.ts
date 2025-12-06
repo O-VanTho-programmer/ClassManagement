@@ -1,5 +1,6 @@
 import pool from "@/lib/db";
 import { Schedule } from "@/types/Schedule";
+import formatDateForCompare from "@/utils/Format/formatDateForCompare";
 import generateDateRange from "@/utils/generateDateRange";
 import { NextResponse } from "next/server";
 
@@ -25,13 +26,13 @@ export async function GET(req: Request) {
             rd.Present as present,
             rd.Score as score,
             rd.IsFinishHomework as is_finished_homework,
-            rd.Commemt as comment,
-            DATE_FORMAT(rd.CreatedDate, '%Y-%m-%d')as date
+            rd.Comment as comment,
+            DATE_FORMAT(rd.AttendanceDate, '%Y-%m-%d')as date
         FROM class_student cs
         JOIN student s ON s.StudentId = cs.StudentId 
         LEFT JOIN record_attendance rd ON s.StudentId = rd.StudentId
         WHERE cs.ClassId = ?
-        ORDER BY rd.CreatedDate DESC;
+        ORDER BY rd.AttendanceDate DESC;
         `;
 
         const [attendanceRows]: any[] = await pool.query(attendanceQuery, [classId]);
@@ -55,6 +56,15 @@ export async function GET(req: Request) {
             if (row.present === "Present" || row.present === "Late") {
                 student.total_present += 1;
             }
+
+            student.records.push({
+                present: row.present,
+                score: row.score,
+                is_finished_homework: row.is_finished_homework,
+                comment: row.comment,
+                date: row.date,
+                assignments: []
+            });
         }
 
         // FETCH HOMEWORK SUBMISSIONS
@@ -100,6 +110,7 @@ export async function GET(req: Request) {
         }
 
         // MERGE HOMEWORK INTO ATTENDANCE RECORDS
+
         for (const [studentId, assignments] of assignmentMap) {
             const student = studentsMap.get(studentId);
             if (!student) continue;
@@ -110,12 +121,14 @@ export async function GET(req: Request) {
                 const dateRange = generateDateRange(hw.assigned_date, hw.due_date, scheduleObj);
 
                 for (const date of dateRange) {
-                    let record = records.find((r: any) => r.date === date);
+                    const formattedDate = formatDateForCompare(date);
 
+                    let record = records.find((r: any) => r.date === formattedDate);
+                    
                     if (!record) {
                         record = {
                             present: "Unchecked",
-                            date: date,
+                            date: formattedDate,
                             assignments: []
                         };
                         records.push(record);

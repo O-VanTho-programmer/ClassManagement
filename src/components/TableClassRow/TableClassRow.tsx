@@ -138,7 +138,7 @@ function TableClassRowForAttendance({ data, index }: TableClassRowProps) {
             </td>
             <td className="py-4 px-2 whitespace-nowrap text-gray-800">
                 <div className="flex justify-end gap-1">
-                    <Button color="blue_off" onClick={DirectToAttendanceList} icon={ListCheck} title="Attendance Logs" />
+                    {/* <Button color="blue_off" onClick={DirectToAttendanceList} icon={ListCheck} title="Attendance Logs" /> */}
                     <Button color="blue_off" onClick={TakeAttendance} icon={CalendarCheck} title="Take Attendance" />
                     <Button color="green_off" onClick={DirectToAttendanceReport} icon={ChartArea} title="Report" />
                 </div>

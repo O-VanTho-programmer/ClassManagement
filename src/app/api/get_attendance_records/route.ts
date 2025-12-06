@@ -6,10 +6,6 @@ export async function GET(req: Request) {
         const { searchParams } = new URL(req.url);
         const classId = searchParams.get("classId");
 
-        // Bu's Work
-        // Yêu cầu cho Bu
-        // Có ClassId => lấy dữ liệu của record_attendance và thông tin của học sinh tương ứng
-
         const queryGetStudentAttendance = `
             SELECT 
                 s.StudentId AS id,
@@ -17,7 +13,7 @@ export async function GET(req: Request) {
                 rd.Present as present,
                 rd.Score as score,
                 rd.IsFinishHomework as is_finished_homework,
-                rd.Commemt as comment,
+                rd.Comment as comment,
                 hd.IsHomework as is_homework,
                 DATE_FORMAT(rd.CreatedDate, '%m/%d/%Y') as date
             FROM record_attendance rd

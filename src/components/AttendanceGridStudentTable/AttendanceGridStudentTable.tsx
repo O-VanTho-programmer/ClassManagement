@@ -103,26 +103,27 @@ export default function AttendanceGridStudentTable({ hub_id, class_id, schedule,
             const res = await newAttendanceRecordsApi(updatedRecord, class_id);
 
             if (res?.status === 200) {
-                queryClient.setQueryData<StudentWithAttendanceRecordList[]>(["studentAttendanceRecords", class_id], (prevStudents = []) =>
-                    prevStudents.map(student => {
-                        if (student.id !== targetStudentId) {
-                            return student;
-                        }
+                queryClient.invalidateQueries({queryKey: ["studentAttendanceRecords", class_id]});
+                // queryClient.setQueryData<StudentWithAttendanceRecordList[]>(["studentAttendanceRecords", class_id], (prevStudents = []) =>
+                //     prevStudents.map(student => {
+                //         if (student.id !== targetStudentId) {
+                //             return student;
+                //         }
 
-                        // Find if the record already exists to update it, otherwise add it.
-                        const recordExists = student.records.some(r => r.date === updatedRecord.date);
-                        const newRecords = recordExists
-                            ? student.records.map(r => r.date === updatedRecord.date ? updatedRecord : r)
-                            : [...student.records, updatedRecord];
+                //         // Find if the record already exists to update it, otherwise add it.
+                //         const recordExists = student.records.some(r => r.date === updatedRecord.date);
+                //         const newRecords = recordExists
+                //             ? student.records.map(r => r.date === updatedRecord.date ? updatedRecord : r)
+                //             : [...student.records, updatedRecord];
 
-                        // Total attended sessions
-                        const newTotalPresentSessions = newRecords.filter(r =>
-                            r.present === 'Present' || r.present === 'Late'
-                        ).length;
+                //         // Total attended sessions
+                //         const newTotalPresentSessions = newRecords.filter(r =>
+                //             r.present === 'Present' || r.present === 'Late'
+                //         ).length;
 
-                        return { ...student, total_present: newTotalPresentSessions, records: newRecords };
-                    })
-                );
+                //         return { ...student, total_present: newTotalPresentSessions, records: newRecords };
+                //     })
+                // );
                 showAlert("Attendance saved successfully!", "success");
                 console.log(`Record saved for ${editingRecord.name} on ${updatedRecord.date}:`, updatedRecord);
                 handleCloseModal();
@@ -231,7 +232,7 @@ export default function AttendanceGridStudentTable({ hub_id, class_id, schedule,
                                     {/* Attendance Cells for each date - SCROLLABLE */}
                                     {dateRange.map(dateString => {
 
-                                        const record = student.recordsMap.get(dateString) || {
+                                        const record = student.recordsMap.get(formatDateForCompare(dateString)) || {
                                             present: 'Pending',
                                             score: null,
                                             assignments: [],

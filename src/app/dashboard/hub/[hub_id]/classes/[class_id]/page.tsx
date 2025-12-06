@@ -70,7 +70,7 @@ export default function Class() {
             title: "Attendance",
             descr: "Take attendance",
             bg_clr: 'green',
-            onClick: () => { router.push(`/dashboard/hub/${hub_id}/attendance/${class_id}`); },
+            onClick: () => { router.push(`/dashboard/hub/${hub_id}/attendance/${class_id}/grid`); },
         },
         {
             icon: Pen,

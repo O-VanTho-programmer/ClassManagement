@@ -53,10 +53,10 @@ export default function AttendanceListStudentTableRow({ student, openModalEdit, 
                 <p>{student.comment ?? "No comment"}</p>
             </td>
             <td className="py-4 px-2 whitespace-nowrap">
-                {!isHasHomework ? (
+                {/* {!isHasHomework ? (
                     <span className="inline-block w-6 text-gray-500 font-bold p-1">-</span>
                 ) : (
-                    student.is_finished_homework ? (
+                    student.is_homework ? (
                         <span className="inline-flex items-center justify-center w-6 h-6 bg-green-400 text-white rounded-full p-1 shadow-md">
                             <Check className="w-3 h-3" />
                         </span>
@@ -65,7 +65,7 @@ export default function AttendanceListStudentTableRow({ student, openModalEdit, 
                             <X className="w-3 h-3" />
                         </span>
                     )
-                )}
+                )} */}
             </td>
             <td className="py-4 px-2 whitespace-nowrap">
                 <SquareButton color="blue" icon={EditIcon} onClick={handleOpenModalEdit}/>
