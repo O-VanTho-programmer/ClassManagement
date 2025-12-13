@@ -4,15 +4,44 @@ import { NextResponse } from "next/server";
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 const gradingSchema: Schema = {
-    description: "Grading result",
+    description: "Grading result with detailed breakdown per question",
     type: SchemaType.OBJECT,
     properties: {
-        grade: { type: SchemaType.NUMBER, description: "A score from 0 to 100", nullable: false },
-        feedback: { type: SchemaType.STRING, description: "Constructive feedback.", nullable: false },
-        correct_count: { type: SchemaType.NUMBER },
-        total_questions: { type: SchemaType.NUMBER },
+        grade: {
+            type: SchemaType.NUMBER,
+            description: "Overall calculated score (0-100)",
+            nullable: false
+        },
+        feedback: {
+            type: SchemaType.STRING,
+            description: "Overall constructive feedback summary.",
+            nullable: false
+        },
+
+        questions: {
+            type: SchemaType.ARRAY,
+            description: "List of grades for each specific question found in the answer key",
+            items: {
+                type: SchemaType.OBJECT,
+                properties: {
+                    question_number: {
+                        type: SchemaType.NUMBER,
+                        description: "The number of the question (e.g., 1, 2, 3)"
+                    },
+                    grade: {
+                        type: SchemaType.NUMBER,
+                        description: "Points earned for this specific question (e.g., 8.5)"
+                    },
+                    max_grade: {
+                        type: SchemaType.NUMBER,
+                        description: "Maximum possible points for this specific question"
+                    },
+                },
+                required: ["question_number", "grade", "max_grade"],
+            },
+        },
     },
-    required: ["grade", "feedback"],
+    required: ["grade", "feedback", "questions"],
 };
 
 export async function POST(req: Request) {
@@ -33,20 +62,23 @@ export async function POST(req: Request) {
         });
 
         const promptText = `
-      You are a strict but fair teaching assistant.
+            You are a strict but fair teaching assistant.
       
-      TASK:
-      1. Analyze the attached images (these are multiple pages of ONE student's homework).
-      2. Compare all pages strictly against the provided ANSWER KEY below.
-      3. Detect if the student's answer is correct, incorrect, or partially correct.
-      4. Calculate a grade from 0 to 100 based on the number of correct answers vs total questions.
-      
-      --- ANSWER KEY START ---
-      ${answerKey}
-      --- ANSWER KEY END ---
-      
-      Provide the output in JSON format.
-    `;
+            TASK:
+            1. Analyze the attached student homework images.
+            2. Compare them against the Answer Key below.
+            3. For EACH question defined in the answer key:
+                - Determine if the answer is correct.
+                - Assign a specific score (decimal allowed, e.g. 8.5) based on correctness.
+                - Identify the max points for that question.
+            4. Calculate the total grade (0-100 scale).
+            
+            --- ANSWER KEY ---
+            ${answerKey}
+            --- END KEY ---
+            
+            Provide the output in JSON format with a 'questions' array containing 'question_number', 'grade', and 'max_grade'.
+        `;
 
         const imageParts = await Promise.all(
             images.map(async (img: { url: string }) => {
@@ -76,12 +108,16 @@ export async function POST(req: Request) {
             return NextResponse.json({ message: "No valid images provided" }, { status: 400 });
         }
 
-        // Pass text prompt AND all image parts
         const result = await model.generateContent([promptText, ...validImageParts]);
         const response = await result.response;
         const jsonResponse = JSON.parse(response.text());
 
-        return NextResponse.json({ message: "Success", ...jsonResponse }, { status: 200 });
+        const safeResponse = {
+            ...jsonResponse,
+            questions: Array.isArray(jsonResponse.questions) ? jsonResponse.questions : []
+        };
+
+        return NextResponse.json({ message: "Success", ...safeResponse }, { status: 200 });
 
     } catch (error: any) {
         console.error("AI Grading Error:", error);

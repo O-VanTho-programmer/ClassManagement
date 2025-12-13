@@ -56,8 +56,6 @@ function HomeworkSubmissionsPage() {
                 handleEdit={handleEdit}
                 handleViewSubmissions={handleViewSubmissions}
             />
-
-
         </div>
     )
 }

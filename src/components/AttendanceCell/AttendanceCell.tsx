@@ -28,7 +28,7 @@ export default function AttendanceCell ({ record, onEdit }: AttendanceCellProps)
             iconClass += " hover:bg-green-50";
             break;
         case 'Absent':
-            content = <Check className="w-4 h-4 text-red-500" />;
+            content = <X className="w-4 h-4 text-red-500" />;
             iconClass += " hover:bg-red-50";
             break;
         case 'Late':

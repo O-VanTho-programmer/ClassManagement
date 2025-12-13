@@ -52,3 +52,4 @@ interface ClassHomeworkForAttendacneRecord {
     assigned_date: string,
     due_date: string,
 }
+

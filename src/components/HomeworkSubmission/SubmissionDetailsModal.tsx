@@ -2,20 +2,24 @@ import { FileImage, Loader2, Sparkles, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import IconButton from "../IconButton/IconButton";
 import { gradeStudentHomeworkUseAI } from "@/lib/api/gradeStudentHomeworkUseAI";
+import { addStudentHomeworkQuestion } from "@/lib/api/addStudentHomeworkQuestion";
+import QuestionBreakDown from "./QuestionBreakDown";
 
 interface SubmissionDetailsModalProps {
     isOpen: boolean;
     onClose: () => void;
     submission: StudentWithHomework;
+    studentQuestionBreakdown: StudentHomeworkQuestion[] | null;
     answerKey: string;
     onSaveGrade: (grade: number, feedback: string) => void;
     isSaving: boolean;
 }
 
-export default function SubmissionDetailsModal({ isOpen, onClose, submission, answerKey, onSaveGrade, isSaving }: SubmissionDetailsModalProps) {
+export default function SubmissionDetailsModal({ isOpen, onClose, submission, answerKey, onSaveGrade, isSaving, studentQuestionBreakdown }: SubmissionDetailsModalProps) {
     const [isGrading, setIsGrading] = useState(false);
     const [grade, setGrade] = useState<number | undefined>(submission.grade);
     const [feedback, setFeedback] = useState<string>(submission.feedback || '');
+    const [gradeBooks, setGradeBooks] = useState<StudentHomeworkQuestionsInputDTO[]>(studentQuestionBreakdown || []);
     const [showKey, setShowKey] = useState(false);
 
     const [selectedPreviewImage, setSelectedPreviewImage] = useState<string | null>(null);
@@ -49,6 +53,7 @@ export default function SubmissionDetailsModal({ isOpen, onClose, submission, an
             if (res?.status === 200) {
                 const data = res.data;
 
+                setGradeBooks(data.questions);
                 setGrade(data.grade);
                 setFeedback(data.feedback);
             } else {
@@ -62,9 +67,16 @@ export default function SubmissionDetailsModal({ isOpen, onClose, submission, an
         }
     };
 
+    const handleUpdateGradeBooks = (index: number, grade: number) => {
+        const newGradeBooks = [...gradeBooks];
+        newGradeBooks[index].grade = grade;
+        setGradeBooks(newGradeBooks);
+    };
+
     const handleSave = () => {
         if (grade !== undefined && feedback) {
             onSaveGrade(grade, feedback);
+            addStudentHomeworkQuestion(submission.student_homework_id, gradeBooks);
         } else {
             alert("Please generate or enter a grade and feedback before saving.");
         }
@@ -153,6 +165,10 @@ export default function SubmissionDetailsModal({ isOpen, onClose, submission, an
                                 className="mt-1 w-full p-3 border border-gray-300 rounded-md shadow-sm"
                             />
                         </div>
+
+                        {gradeBooks.length > 0 && (
+                           <QuestionBreakDown gradeBooks={gradeBooks} updateQuestionGrade={handleUpdateGradeBooks}/>
+                        )}
 
                         {/* Answer Key Accordion */}
                         <div>

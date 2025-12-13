@@ -51,5 +51,29 @@ type StudentWithHomework = Student & {
     due_date: string,
     is_graded: boolean,
     grade: number | 0,
-    feedback? : string,
+    feedback?: string,
+}
+
+type StudentHomeworkQuestion = StudentHomeworkQuestionsInputDTO & {
+    student_homework_question_id: string,
+}
+
+type StudentHomeworkQuestions = {
+    student_id: string,
+    student_name: string,
+    total_score: number | null;
+    homework_status: string;
+    feedback: string | null;
+    questions: StudentHomeworkQuestion[]; //ith question, grade of ith question
+}
+
+type StudentHomeworkQuestionsInputDTO = {
+    question_number: number,
+    grade: number,
+    max_grade: number,
+}
+
+type StudentHomeworkQuestionResponseDTO = {
+    total_question: number,
+    students_homework_question: StudentHomeworkQuestions[],
 }
