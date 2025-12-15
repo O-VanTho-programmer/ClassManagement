@@ -1,10 +1,15 @@
 'use client';
 
-import React from 'react';
-import { Loader2, Edit, Eye } from 'lucide-react';
+import React, { useState } from 'react';
+import { Edit, Loader2, Sparkles } from 'lucide-react';
 import LoadingState from '../QueryState/LoadingState';
 import ErrorState from '../QueryState/ErrorState';
 import IconButton from '../IconButton/IconButton';
+import Button from '../Button/Button';
+import { addStudentHomeworkQuestion } from '@/lib/api/addStudentHomeworkQuestion';
+import { gradeStudentHomeworkUseAI } from '@/lib/api/gradeStudentHomeworkUseAI';
+import { saveGrade } from '@/lib/api/HomeworkSubmission/saveGrade';
+import { QueryClient, useQueryClient } from '@tanstack/react-query';
 
 interface TableDetailStudentSubmissionsProps {
     studentSubmissionsList: StudentWithHomework[],
@@ -13,7 +18,9 @@ interface TableDetailStudentSubmissionsProps {
     isError: boolean,
     error?: string | null,
     total_question: number,
-    students_homework_questions:StudentHomeworkQuestions[],
+    students_homework_questions: StudentHomeworkQuestions[],
+    answerKey: string,
+    class_homework_id: string,
 }
 
 export default function TableDetailStudentSubmissions({
@@ -24,6 +31,8 @@ export default function TableDetailStudentSubmissions({
     error,
     total_question,
     students_homework_questions,
+    class_homework_id,
+    answerKey,
 }: TableDetailStudentSubmissionsProps) {
 
     if (isLoading) {
@@ -34,11 +43,13 @@ export default function TableDetailStudentSubmissions({
         return <ErrorState message={error || 'Error loading gradebook'} />
     }
 
+    const queryClient = useQueryClient();
+
     const questionColumns = Array.from({ length: total_question }, (_, i) => i + 1);
 
     const onOpenGrader = (studentId: string) => {
         const selectedStudentSubmission = studentSubmissionsList.find(student => student.id == studentId);
-        
+
         if (selectedStudentSubmission === undefined) {
             return;
         }
@@ -46,9 +57,62 @@ export default function TableDetailStudentSubmissions({
         handleOpenGrader(selectedStudentSubmission);
     }
 
+    const [isGrading, setIsGrading] = useState<boolean>(false);
+    const [gradingStudent, setGradingStudent] = useState<string>('');
+
+    const handleGradeAll = async () => {
+        if (!answerKey) {
+            alert("Please set an Answer Key first.");
+            return;
+        }
+
+        setIsGrading(true);
+
+        try {
+            for (let studentView of students_homework_questions) {
+
+                const submission = studentSubmissionsList.find(s => s.id === studentView.student_id);
+
+                if (!submission || !submission.submission_urls || submission.submission_urls.length === 0) {
+                    continue;
+                }
+
+                setGradingStudent(studentView.student_id);
+
+                try {
+                    const aiRes = await gradeStudentHomeworkUseAI(answerKey, submission.submission_urls);
+
+                    if (aiRes?.status === 200 && aiRes.data) {
+                        const { grade, feedback, questions } = aiRes.data;
+                        await saveGrade(submission.student_homework_id, grade, feedback);
+                        await addStudentHomeworkQuestion(submission.student_homework_id, questions);
+                    
+                        queryClient.invalidateQueries({queryKey: ['student_homework_question_by_class_homework_id', class_homework_id]})
+                    }
+                } catch (err) {
+                    console.error(`Failed to grade student ${studentView.student_name}`, err);
+                }
+            }
+        } catch (error) {
+            console.error("Batch grading failed", error);
+            alert("An error occurred during batch grading.");
+        } finally {
+            setIsGrading(false);
+            setGradingStudent('');
+        }
+    }
+
     return (
         <div className="p-8 bg-gray-50 min-h-screen">
-            <h1 className="text-2xl font-bold text-gray-900 mb-6">Homework Gradebook</h1>
+            <div className='flex justify-between items-center mb-4'>
+                <h1 className="text-2xl font-bold text-gray-900 mb-6">Homework Gradebook</h1>
+                <Button style='bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-indigo-700 transition-all shadow-md disabled:bg-gray-400 disabled:from-gray-400 disabled:cursor-not-allowed'
+                    color='blue' title='Grade All' onClick={handleGradeAll}
+                    disabled={isGrading}
+                    isSaving={isGrading}
+                    icon={isGrading ? Loader2 : Sparkles}
+                />
+            </div>
 
             <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
                 <div className="overflow-x-auto">
@@ -73,56 +137,113 @@ export default function TableDetailStudentSubmissions({
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                            {students_homework_questions.map((student) => (
-                                <tr key={student.student_id} className="hover:bg-gray-50">
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 sticky left-0 bg-white">
-                                        {student.student_name}
-                                        <div className={`text-xs mt-1 font-normal ${student.homework_status === 'Finished' ? 'text-green-600' :
-                                            student.homework_status === 'Late' ? 'text-orange-600' : 'text-gray-400'
-                                            }`}>
-                                            {student.homework_status}
-                                        </div>
-                                    </td>
+                            {students_homework_questions.map((student) => {
+                                const isGradingThisStudent = gradingStudent === student.student_id;
 
-                                    {/* Total Score */}
-                                    <td className="px-4 py-4 text-center">
-                                        {student.total_score !== null ? (
-                                            <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                {student.total_score}
-                                            </span>
-                                        ) : (
-                                            <span className="text-gray-300">-</span>
-                                        )}
-                                    </td>
+                                let statusColor = "bg-gray-100 text-gray-600";
+                                let statusText = student.homework_status;
 
-                                    {/* Question Scores */}
-                                    {student.questions.length > 0 ? (
-                                        student.questions.map((q, idx) => {
-                                            const grade = q.grade;
+                                if (isGradingThisStudent) {
+                                    statusColor = "bg-indigo-50 text-indigo-600 border border-indigo-100 animate-pulse";
+                                    statusText = "AI Grading...";
+                                } else {
+                                    switch (student.homework_status) {
+                                        case 'Finished':
+                                        case 'Graded':
+                                            statusColor = 'bg-green-100 text-green-700';
+                                            break;
+                                        case 'Late':
+                                            statusColor = 'bg-orange-100 text-orange-700';
+                                            break;
+                                        case 'Missed':
+                                            statusColor = 'bg-red-100 text-red-700';
+                                            break;
+                                        case 'Submitted':
+                                        case 'Uploaded':
+                                            statusColor = 'bg-blue-100 text-blue-700';
+                                            break;
+                                    }
+                                }
+
+                                return (
+                                    <tr
+                                        key={student.student_id}
+                                        className={`transition-colors duration-200 ${isGradingThisStudent ? 'bg-indigo-50/20' : 'hover:bg-gray-50'}`}
+                                    >
+                                        {/* --- Student Name & Status --- */}
+                                        <td className="px-6 py-4 whitespace-nowrap sticky left-0 bg-inherit z-10">
+                                            <div className="flex flex-col">
+                                                <span className="text-sm font-medium text-gray-900">{student.student_name}</span>
+                                                <div className="mt-1">
+                                                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${statusColor}`}>
+                                                        {statusText}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </td>
+
+                                        <td className="px-4 py-4 text-center">
+                                            {isGradingThisStudent ? (
+                                                <div className="w-10 h-6 bg-gray-200 rounded animate-pulse mx-auto" />
+                                            ) : (
+                                                student.total_score !== null ? (
+                                                    <span className={`inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-bold ${Number(student.total_score) >= 50 ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'
+                                                        }`}>
+                                                        {student.total_score}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-gray-300">-</span>
+                                                )
+                                            )}
+                                        </td>
+
+                                        {/* --- Question Scores (Dynamic Columns) --- */}
+                                        {Array.from({ length: total_question }, (_, i) => i + 1).map((qNum) => {
+                                            // Find data for this specific column #
+                                            const questionData = student.questions.find(q => q.question_number === qNum);
+
                                             return (
-                                                <td key={idx} className="px-3 py-4 text-center text-sm text-gray-700 border-l border-gray-100">
-                                                    {grade !== undefined ? grade + "/" + q.max_grade : <span className="text-gray-300 text-xs">--</span>}
+                                                <td key={qNum} className="px-3 py-4 text-center text-sm border-l border-gray-100">
+                                                    {isGradingThisStudent ? (
+                                                        <div className="w-8 h-4 bg-gray-200 rounded animate-pulse mx-auto opacity-70" />
+                                                    ) : (
+                                                        questionData ? (
+                                                            <div className="flex flex-col items-center">
+                                                                <span className="font-medium text-gray-700">{questionData.grade}</span>
+                                                                <span className="text-[10px] text-gray-400">/{questionData.max_grade}</span>
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-gray-300 text-xs">--</span>
+                                                        )
+                                                    )}
                                                 </td>
                                             );
-                                        })) : (
-                                        Array.from({ length: total_question }).map((_, idx) => (
-                                            <td key={idx} className="px-3 py-4 text-center text-sm text-gray-700 border-l border-gray-100">
-                                                <span className="text-gray-300 text-xs">--</span>
-                                            </td>
-                                        ))
-                                    )}
+                                        })}
 
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        {student.homework_status === 'Pending' || student.homework_status === 'Missed' ? (
-                                            <span className="text-gray-400 text-xs italic">No Submission</span>
-                                        ) : (
-                                            <div className="flex justify-end gap-2">
-                                                <IconButton className='text-blue-600 hover:text-blue-900' icon={Edit} size={18} onClick={() => onOpenGrader(student.student_id)} />
-                                            </div>
-                                        )}
-                                    </td>
-                                </tr>
-                            ))}
+                                        {/* --- Actions --- */}
+                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            {isGradingThisStudent ? (
+                                                <span className="text-indigo-500 text-xs flex items-center justify-end gap-1">
+                                                    <Loader2 size={14} className="animate-spin" /> Processing
+                                                </span>
+                                            ) : (
+                                                student.homework_status === 'Pending' || student.homework_status === 'Missed' ? (
+                                                    <span className="text-gray-400 text-xs italic cursor-default">No Submission</span>
+                                                ) : (
+                                                    <div className="flex justify-end gap-2">
+                                                        <IconButton
+                                                            className='text-blue-600 hover:text-blue-900 hover:bg-blue-50'
+                                                            icon={Edit}
+                                                            size={18}
+                                                            onClick={() => onOpenGrader(student.student_id)}
+                                                        />
+                                                    </div>
+                                                )
+                                            )}
+                                        </td>
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </table>
                 </div>

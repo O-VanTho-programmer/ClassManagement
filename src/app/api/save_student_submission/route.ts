@@ -8,7 +8,8 @@ export async function POST(req: Request) {
 
         const dueDateHomework = new Date(dueDate);
         const currentDate = new Date();
-        let statusSubmission = 'Submitted';
+        
+        let statusSubmission = 'Submitted'; 
 
         if (dueDateHomework < currentDate) {
             statusSubmission = 'Overdue';
@@ -22,16 +23,21 @@ export async function POST(req: Request) {
 
         const [existedSubmission]: any = await pool.query(queryExistedSubmission, [studentHomeworkId]);
 
-        if (existedSubmission.length > 0) {
-            const oldImagesUrl = JSON.parse(existedSubmission[0].UploadSubmission);
+        if (existedSubmission.length > 0 && existedSubmission[0].UploadSubmission) {
+            try {
+                const oldImagesUrl = JSON.parse(existedSubmission[0].UploadSubmission);
 
-            oldImagesUrl.forEach(async (item: any) => {
-                const publicId = item.public_id;
-
-                if (publicId) {
-                    await deleteCloudImage(publicId);
+                if (Array.isArray(oldImagesUrl)) {
+                    await Promise.all(oldImagesUrl.map(async (item: any) => {
+                        const publicId = item.public_id;
+                        if (publicId) {
+                            await deleteCloudImage(publicId);
+                        }
+                    }));
                 }
-            });
+            } catch (parseError) {
+                console.error("Error parsing old submission JSON:", parseError);
+            }
         }
 
         const jsonUrlsList = JSON.stringify(submissionDataUrls);
@@ -40,15 +46,17 @@ export async function POST(req: Request) {
             UPDATE student_homework 
             SET 
                 UploadSubmission = ?,
-                Status = ?
+                Status = ?,
+                SubmittedDate = NOW()
             WHERE StudentHomeworkId = ?
         `;
 
         const [result] = await pool.query(querySaveStudentSubmission, [jsonUrlsList, statusSubmission, studentHomeworkId]);
 
-        return NextResponse.json({ message: "Success", result }, { status: 200 })
-    } catch (error) {
-        console.log(error);
-        return NextResponse.json({ message: "Error", error }, { status: 500 })
+        return NextResponse.json({ message: "Success", result }, { status: 200 });
+
+    } catch (error: any) {
+        console.error("Save Submission Error:", error);
+        return NextResponse.json({ message: "Error", error: error.message }, { status: 500 });
     }
 }

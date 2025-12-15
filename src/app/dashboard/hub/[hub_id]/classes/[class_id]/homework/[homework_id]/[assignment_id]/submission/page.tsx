@@ -1,5 +1,6 @@
 'use client';
 
+import { useAlert } from '@/components/AlertProvider/AlertContext';
 import Button from '@/components/Button/Button';
 import SetAnswerKeyModal from '@/components/HomeworkSubmission/SetAnswerKeyModal';
 import SubmissionDetailsModal from '@/components/HomeworkSubmission/SubmissionDetailsModal';
@@ -13,7 +14,6 @@ import { useGetHomeworkById } from '@/hooks/useGetHomeworkById';
 import { useGetStudentHomeworkQuestionByClassHomeworkId } from '@/hooks/useGetStudentHomeworkQuestionByStudentHomeworkId';
 import { useGetStudentListByAssignmentId } from '@/hooks/useGetStudentListByAssignmentId';
 import { useUploadSubmissionMutation } from '@/hooks/useUploadSubmission';
-import { addStudentHomeworkQuestion } from '@/lib/api/addStudentHomeworkQuestion';
 import { getUrlImageByUploadOnCloudiary } from '@/lib/api/getUrlImageByUploadOnCloudiary';
 import { saveAnswerKey } from '@/lib/api/HomeworkSubmission/saveAnswerKey';
 import { saveGrade } from '@/lib/api/HomeworkSubmission/saveGrade';
@@ -25,6 +25,7 @@ import React, { useEffect, useState } from 'react'
 
 function HomeworkSubmissionPage() {
 
+  const { showAlert } = useAlert();
   const { homework_id, assignment_id } = useParams();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -50,6 +51,7 @@ function HomeworkSubmissionPage() {
     mutationFn: (newKey: string) => saveAnswerKey(homework_id as string, newKey),
     onSuccess: (savedKey) => {
       setAnswerKey(savedKey);
+      showAlert("Answer key saved successfully", 'success');
       queryClient.invalidateQueries({ queryKey: ['homework', homework_id] });
       setKeyModalOpen(false);
     },
@@ -67,7 +69,7 @@ function HomeworkSubmissionPage() {
     onSuccess: (updatedSubmission) => {
       if (updatedSubmission) {
         queryClient.invalidateQueries({ queryKey: ['get_student_list_by_assignment_id', assignment_id] })
-
+        showAlert("Grade saved successfully", 'success');
         setGradingModalOpen(false);
       } else {
         alert('Error saving grade');
@@ -145,6 +147,8 @@ function HomeworkSubmissionPage() {
             error={studentHomeworkQuestionError?.message}
             total_question={studentHomeworkQuestion?.total_question || 5}
             students_homework_questions={studentHomeworkQuestion?.students_homework_questions || []}
+            answerKey={answerKey}
+            class_homework_id={assignment_id as string}
           />
         )}
       </div>

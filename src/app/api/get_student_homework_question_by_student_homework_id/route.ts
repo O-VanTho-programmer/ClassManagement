@@ -10,6 +10,7 @@ export async function GET(req: Request) {
             SELECT     
                 s.StudentId as student_id, 
                 s.Name as student_name,
+                sh.StudentHomeworkId as student_homework_id,
                 sh.Grade as total_score,
                 COALESCE(sh.Status, 'Pending') as status,
                 sh.Feedback as feedback,

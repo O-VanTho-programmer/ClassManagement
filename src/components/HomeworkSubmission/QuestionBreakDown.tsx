@@ -35,9 +35,9 @@ export default function QuestionBreakDown({ gradeBooks, updateQuestionGrade }: Q
                                         <span className="text-gray-400 text-xs">/ {q.max_grade}</span>
                                     </div>
                                 </td>
-                                {/* <td className="px-4 py-3 text-gray-600 italic">
-                                    {q.comment || "No comment."}
-                                </td> */}
+                                <td className="px-4 py-3 text-gray-600 italic">
+                                    {q.feed_back || "No comment."}
+                                </td>
                             </tr>
                         ))}
                     </tbody>

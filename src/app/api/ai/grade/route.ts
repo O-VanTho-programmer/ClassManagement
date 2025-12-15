@@ -36,6 +36,10 @@ const gradingSchema: Schema = {
                         type: SchemaType.NUMBER,
                         description: "Maximum possible points for this specific question"
                     },
+                    feed_back: {
+                        type: SchemaType.STRING,
+                        description: "Feedback for this specific question"
+                    }
                 },
                 required: ["question_number", "grade", "max_grade"],
             },
@@ -71,6 +75,7 @@ export async function POST(req: Request) {
                 - Determine if the answer is correct.
                 - Assign a specific score (decimal allowed, e.g. 8.5) based on correctness.
                 - Identify the max points for that question.
+                - Give feedback for that answer.
             4. Calculate the total grade (0-100 scale).
             
             --- ANSWER KEY ---

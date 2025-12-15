@@ -61,9 +61,10 @@ type StudentHomeworkQuestion = StudentHomeworkQuestionsInputDTO & {
 type StudentHomeworkQuestions = {
     student_id: string,
     student_name: string,
-    total_score: number | null;
-    homework_status: string;
-    feedback: string | null;
+    student_homework_id: string,
+    total_score: number | null,
+    homework_status: string,
+    feedback: string | null,
     questions: StudentHomeworkQuestion[]; //ith question, grade of ith question
 }
 
@@ -71,6 +72,7 @@ type StudentHomeworkQuestionsInputDTO = {
     question_number: number,
     grade: number,
     max_grade: number,
+    feed_back: string,
 }
 
 type StudentHomeworkQuestionResponseDTO = {

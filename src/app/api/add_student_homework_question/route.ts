@@ -24,12 +24,13 @@ export async function POST(req: Request) {
                 studentHomeworkId,
                 q.question_number,
                 q.grade,
-                q.max_grade
+                q.max_grade,
+                q.feed_back
             ]);
 
             await connection.query(
                 `INSERT INTO student_homework_question 
-                (StudentHomeworkId, QuestionNumber, Grade, MaxGrade) 
+                (StudentHomeworkId, QuestionNumber, Grade, MaxGrade, FeedBack) 
                 VALUES ?`,
                 [values]
             );
