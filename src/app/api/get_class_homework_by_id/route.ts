@@ -24,7 +24,7 @@ export async function GET(req:NextRequest) {
             FROM class_homework ch
             JOIN homework h ON h.HomeworkId = ch.HomeworkId
             JOIN class c ON c.classId = ch.ClassId
-            JOIN User u ON u.UserId = h.CreatedByUserId
+            JOIN user u ON u.UserId = h.CreatedByUserId
             WHERE ch.ClassHomeworkId = ?
         `;
 

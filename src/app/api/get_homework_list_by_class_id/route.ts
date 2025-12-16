@@ -18,7 +18,7 @@ export async function GET(req:Request) {
                 u.Name as created_by_user_name
             FROM class_homework ch
             JOIN homework h ON h.HomeworkId = ch.HomeworkId
-            JOIN User u ON u.UserId = h.CreatedByUserId
+            JOIN user u ON u.UserId = h.CreatedByUserId
             WHERE ch.ClassId = ?
             ORDER BY ch.DueDate ASC;    
         `;
