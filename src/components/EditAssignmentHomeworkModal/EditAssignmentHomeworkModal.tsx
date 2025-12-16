@@ -4,13 +4,17 @@ import { Calendar, Clock, Loader2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react'
 import Button from '../Button/Button';
 import DeleteConfirmHomeworkAssignment from '../DeleteConfirmHomeworkAssignment/DeleteConfirmHomeworkAssignment';
+import DatePicker from '../DatePicker/DatePicker';
+import formatDateForCompare from '@/utils/Format/formatDateForCompare';
+import { useAlert } from '../AlertProvider/AlertContext';
 
 type EditAssignmentHomeworkModalProps = {
     isOpen: boolean;
     onClose: () => void;
     assignment: ClassHomework | null;
     initialAssignedDate: string;
-    initialdueDate: string;
+    initialDueDate: string;
+    class_id: string;
 }
 
 export default function EditAssignmentHomeworkModal({
@@ -18,25 +22,26 @@ export default function EditAssignmentHomeworkModal({
     onClose,
     assignment,
     initialAssignedDate,
-    initialdueDate,
+    initialDueDate,
+    class_id,
 }: EditAssignmentHomeworkModalProps) {
     const queryClient = useQueryClient();
+    const {showAlert} = useAlert();
 
     const [assignedDate, setAssignedDate] = useState(initialAssignedDate);
-    const [dueDate, setDueDate] = useState(initialdueDate);
+    const [dueDate, setDueDate] = useState(initialDueDate);
     const [selectedAssignment, setSelectedAssignment] = useState<ClassHomework | null>(null);
     const [isDeleteOpen, setDeleteOpen] = useState(false);
 
     const mutationUpdateHomeworkAssignmentDate = useMutation({
-        mutationFn: () => updateClassHomeworkDate(assignment!.class_homework_id, assignedDate, dueDate),
+        mutationFn: () => updateClassHomeworkDate(assignment!.class_homework_id, formatDateForCompare(assignedDate), formatDateForCompare(dueDate)),
         onSuccess: () => {
-
-            queryClient.invalidateQueries({ queryKey: ['classHomework', assignment?.class_id] });
-            alert('Assignment dates updated!');
+            queryClient.invalidateQueries({ queryKey: ['homework_by_class_id', class_id] });
+            showAlert('Assignment dates updated!', 'success');
             onClose();
         },
         onError: (error) => {
-            alert(`Error updating dates: ${error.message}`);
+            showAlert(`Error updating dates: ${error.message}`, 'error');
         }
     });
 
@@ -58,41 +63,33 @@ export default function EditAssignmentHomeworkModal({
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center overlay transition-opacity duration-300">
             <div className="bg-white rounded-xl shadow-2xl w-full max-w-xl p-6 m-4 transform transition-all duration-300 scale-100 flex flex-col max-h-[90vh]">
-                <div className="flex items-center justify-between pb-4 border-b">
+                <div className="flex items-center justify-between pb-4 border-b border-gray-300">
                     <h2 className="text-2xl font-bold text-gray-800">Edit Assignment</h2>
                     <p className="text-sm text-gray-600">"{assignment.title}"</p>
                 </div>
 
-                <div className="flex-grow overflow-y-auto mt-6">
+                <div className="flex-grow overflow-y-auto my-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                <Calendar size={14} className="inline mr-1.5" />
-                                Assigned Date
-                            </label>
-                            <input
-                                type="date"
-                                value={assignedDate}
-                                onChange={(e) => setAssignedDate(e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                <Clock size={14} className="inline mr-1.5" />
-                                Due Date
-                            </label>
-                            <input
-                                type="date"
-                                value={dueDate}
-                                onChange={(e) => setDueDate(e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                            />
-                        </div>
+                        <DatePicker
+                            label='Assigned Date'
+                            onChange={(date) => setAssignedDate(date)}
+                            date={formatDateForCompare(assignedDate)}
+                            icon={Clock}
+                            isLabelAbsolute={false}
+                        />
+
+                        <DatePicker
+                            label='Due Date'
+                            onChange={(date) => setDueDate(date)}
+                            date={formatDateForCompare(dueDate)}
+                            icon={Clock}
+                            isLabelAbsolute={false}
+                        />
+
                     </div>
                 </div>
 
-                <div className="pt-6 flex justify-between gap-3 border-t">
+                <div className="pt-6 flex justify-between gap-3 border-t border-gray-300">
                     <Button onClick={handleDelete} title='Delete' color='red_off' />
                     <div className='flex items-center gap-1'>
                         <Button onClick={onClose} title='Cancel' color='white' />

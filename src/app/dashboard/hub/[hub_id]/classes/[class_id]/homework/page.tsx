@@ -5,6 +5,7 @@ import HomeworkCard from '@/components/HomeworkCard/HomeworkCard';
 import ViewClassHomeworkList from '@/components/ViewClassHomeworkList/ViewClassHomeworkList';
 import ViewHomeworkModal from '@/components/ViewHomeworkModal/ViewHomeworkModal';
 import { useGetClassHomeworkByClassId } from '@/hooks/useGetClassHomeworkByClassId';
+import formatDateForCompare from '@/utils/Format/formatDateForCompare';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState } from 'react'
 
@@ -67,10 +68,11 @@ export default function ClassHomeworkPage() {
             {selectedAssignment && isEditOpen && (
                 <EditAssignmentHomeworkModal
                     initialAssignedDate={selectedAssignment.assigned_date}
-                    initialdueDate={selectedAssignment.due_date}
+                    initialDueDate={selectedAssignment.due_date}
                     isOpen={isEditOpen}
                     onClose={handleCloseModals}
                     assignment={selectedAssignment}
+                    class_id={class_id as string}
                 />
             )}
         </div>

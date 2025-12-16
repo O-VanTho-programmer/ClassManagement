@@ -28,7 +28,7 @@ export async function GET(req: Request) {
             JOIN student s ON s.StudentId = cs.StudentId
             LEFT JOIN student_homework sh ON sh.ClassHomeworkId = ch.ClassHomeworkId AND sh.StudentId = s.StudentId
             LEFT JOIN student_homework_question shq ON shq.StudentHomeworkId = sh.StudentHomeworkId
-            WHERE ch.ClassHomeworkId = 3
+            WHERE ch.ClassHomeworkId = ?
             GROUP BY s.StudentId, s.Name, sh.Grade, sh.Status, sh.Feedback
             ORDER BY s.Name ASC;
         `;
