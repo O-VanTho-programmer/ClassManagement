@@ -19,7 +19,7 @@ export default function TableStudentRow(student: StudentWithEnrollment) {
             </td>
 
             <td className="py-4 px-2 whitespace-nowrap text-gray-800">
-                <Badge bg_clr="bg-blue-500" title={student.birthday} />
+                <Badge bg_clr="bg-blue-500" title={student.birthday || "--:--"} />
             </td>
             <td className="py-4 px-2 whitespace-nowrap text-gray-800">
                 <Badge bg_clr="bg-yellow-500" title={student.enroll_date} />
