@@ -302,7 +302,7 @@ export default function AssignHomeworkToClassModal({
                         <button
                             onClick={handleSubmit}
                             disabled={!isFormValid || mutation.isPending}
-                            className="flex-1 sm:flex-none px-6 py-2.5 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed shadow-md shadow-indigo-200 transition-all flex items-center justify-center gap-2"
+                            className="cursor-pointer flex-1 sm:flex-none px-6 py-2.5 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed shadow-md shadow-indigo-200 transition-all flex items-center justify-center gap-2"
                         >
                             {mutation.isPending && <Loader2 size={18} className="animate-spin" />}
                             {mutation.isPending ? 'Assigning...' : 'Confirm Assignment'}

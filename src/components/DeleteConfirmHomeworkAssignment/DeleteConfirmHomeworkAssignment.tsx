@@ -3,6 +3,7 @@ import React from 'react'
 import { useAlert } from '../AlertProvider/AlertContext';
 import { AlertTriangle, Loader2, Trash2, X } from 'lucide-react';
 import { deleteClassHomework } from '@/lib/api/deleteClassHomeworkAPI';
+import IconButton from '../IconButton/IconButton';
 
 type DeleteConfirmHomeworkAssignmentProps = {
     isOpen: boolean;
@@ -47,13 +48,11 @@ function DeleteConfirmHomeworkAssignment({
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b">
                     <h2 className="text-xl font-bold text-gray-800">Aware</h2>
-                    <button
+                    <IconButton
+                        icon={X}
                         onClick={onClose}
-                        disabled={mutation.isPending}
-                        className="p-2 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 disabled:opacity-50"
-                    >
-                        <X size={20} />
-                    </button>
+                        size={20}
+                    />
                 </div>
 
                 <div className="flex-grow overflow-y-auto p-6">

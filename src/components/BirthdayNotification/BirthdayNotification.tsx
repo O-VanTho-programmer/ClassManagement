@@ -34,7 +34,7 @@ export default function BirthdayNotification() {
                             <h2 className="text-xl font-semibold text-slate-800">
                                 Học sinh sinh nhật trong 7 ngày tới
                             </h2>
-                            <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600 focus:outline-none transition-colors duration-200">
+                            <button onClick={() => setIsModalOpen(false)} className="cursor-pointer text-slate-400 hover:text-slate-600 focus:outline-none transition-colors duration-200">
                                 <XIcon className="h-6 w-6" />
                             </button>
                         </div>
@@ -44,7 +44,7 @@ export default function BirthdayNotification() {
                         </div>
 
                         <div className="flex justify-center">
-                            <button onClick={() => setIsModalOpen(false)} className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+                            <button onClick={() => setIsModalOpen(false)} className="cursor-pointer px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
                                 Đóng
                             </button>
                         </div>

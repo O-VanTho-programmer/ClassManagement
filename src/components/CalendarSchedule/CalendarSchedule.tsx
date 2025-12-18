@@ -131,7 +131,7 @@ export default function CalendarSchedule({
                     My Weekly Schedule
                 </h2>
                 <div className="flex items-center space-x-2">
-                    <button onClick={goToPreviousWeek} className="p-2 rounded-full text-gray-500 hover:bg-gray-100">
+                    <button onClick={goToPreviousWeek} className="cursor-pointer p-2 rounded-full text-gray-500 hover:bg-gray-100">
                         <ChevronLeft size={20} />
                     </button>
                     <span className="text-sm font-medium text-gray-700 w-48 text-center">
@@ -139,7 +139,7 @@ export default function CalendarSchedule({
                         {' - '}
                         {weekDays[6].toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                     </span>
-                    <button onClick={goToNextWeek} className="p-2 rounded-full text-gray-500 hover:bg-gray-100">
+                    <button onClick={goToNextWeek} className="cursor-pointer p-2 rounded-full text-gray-500 hover:bg-gray-100">
                         <ChevronRight size={20} />
                     </button>
                 </div>
@@ -205,7 +205,7 @@ export default function CalendarSchedule({
                                                 >
                                                     <button
                                                         onClick={() => onEventClick(event)}
-                                                        className="w-full h-full text-left p-2 overflow-hidden bg-blue-100 hover:bg-blue-200 border border-blue-300 text-blue-800 rounded-lg shadow-sm"
+                                                        className="cursor-pointer w-full h-full text-left p-2 overflow-hidden bg-blue-100 hover:bg-blue-200 border border-blue-300 text-blue-800 rounded-lg shadow-sm"
                                                     >
                                                         <p className="text-xs font-bold truncate">{event.name}</p>
                                                         <p className="text-xs truncate">{session.startTime} - {session.endTime}</p>

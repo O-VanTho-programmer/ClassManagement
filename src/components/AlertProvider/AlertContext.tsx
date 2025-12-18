@@ -186,7 +186,7 @@ const AlertItem: React.FC<AlertItemProps> = ({
           <div className="flex-shrink-0 ml-3">
             <button
               onClick={onRemove}
-              className="inline-flex text-white hover:text-gray-100 focus:outline-none focus:text-gray-100 transition-colors duration-200"
+              className="cursor-pointer inline-flex text-white hover:text-gray-100 focus:outline-none focus:text-gray-100 transition-colors duration-200"
             >
               <X size={16} />
             </button>

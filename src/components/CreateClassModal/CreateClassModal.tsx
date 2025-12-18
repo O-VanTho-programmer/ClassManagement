@@ -5,6 +5,7 @@ import { useState, useMemo } from "react";
 import Selection, { Option } from "../Selection/Selection";
 import SquareButton from "../SquareButton/SquareButton";
 import { X } from "lucide-react";
+import Button from "../Button/Button";
 
 // Teacher type from API response
 interface Teacher {
@@ -297,7 +298,7 @@ export default function CreateClassModal({ isOpen, onClose, onSubmit, hubId }: C
                                             className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors[`schedule-endTime-${index}`] ? 'border-red-500' : 'border-gray-300'}`}
                                         />
                                         {formData.schedule.length > 1 && (
-                                            <button type="button" onClick={() => removeScheduleSlot(index)} className="text-red-500 hover:text-red-700 transition-colors">
+                                            <button type="button" onClick={() => removeScheduleSlot(index)} className="cursor-pointer text-red-500 hover:text-red-700 transition-colors">
                                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                             </button>
                                         )}
@@ -401,16 +402,15 @@ export default function CreateClassModal({ isOpen, onClose, onSubmit, hubId }: C
 
                     {/* Actions */}
                     <div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
-                        <button
-                            type="button"
+                        <Button
                             onClick={onClose}
-                            className="px-6 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                        >
-                            Cancel
-                        </button>
+                            title="Cancel"
+                            color="white"
+                        />
+
                         <button
                             type="submit"
-                            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                            className="cursor-pointer px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
                         >
                             Create Class
                         </button>

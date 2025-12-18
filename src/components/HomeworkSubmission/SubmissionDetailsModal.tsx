@@ -4,6 +4,7 @@ import IconButton from "../IconButton/IconButton";
 import { addStudentHomeworkQuestion } from "@/lib/api/addStudentHomeworkQuestion";
 import QuestionBreakDown from "./QuestionBreakDown";
 import { useAutoGradeWithAI } from "@/hooks/useAutoGradeWithAI";
+import Button from "../Button/Button";
 
 interface SubmissionDetailsModalProps {
     isOpen: boolean;
@@ -170,9 +171,11 @@ export default function SubmissionDetailsModal({
 
                 {/* Footer */}
                 <div className="p-4 flex justify-end gap-3 border-t bg-gray-50 rounded-b-xl">
-                    <button onClick={onClose} className="px-4 py-2 bg-white border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
-                        Cancel
-                    </button>
+                    <Button
+                        title="Cancel"
+                        onClick={onClose}
+                        color="white"
+                    />
                     <button
                         onClick={handleSave}
                         disabled={isGrading || isSaving || isSavingQuestions}

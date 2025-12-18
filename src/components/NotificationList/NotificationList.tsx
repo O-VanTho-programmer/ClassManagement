@@ -41,8 +41,8 @@ const NotificationList = ({ title = "Thông báo", notificationsData, isOpen, on
         <div ref={ref} className="absolute min-w-3xs md:min-w-sm rounded-lg shadow-lg overflow-hidden bg-white right-0">
             <div className="flex justify-between items-center p-4 border-b border-gray-200">
                 <h3 className="font-bold text-gray-800">{title}</h3>
-                <button className="text-blue-500 hover:text-blue-700 text-sm">
-                    Đọc tất cả
+                <button className="cursor-pointer text-blue-500 hover:text-blue-700 text-sm">
+                    Read All
                 </button>
             </div>
 

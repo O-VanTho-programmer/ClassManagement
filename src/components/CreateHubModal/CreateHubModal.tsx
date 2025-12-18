@@ -115,7 +115,7 @@ export default function CreateHubModal({ isOpen, onClose, onSubmit }: CreateHubM
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-6 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                            className="cursor-pointer px-6 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                         >
                             Cancel
                         </button>

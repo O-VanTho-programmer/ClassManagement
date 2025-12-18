@@ -59,7 +59,7 @@ export default function LayoutDashboardHub({ children }: { children: React.React
             <div className="flex h-screen">
                 {/* Mobile menu button */}
                 <div className="fixed top-4 left-4 z-50 md:hidden">
-                    <button onClick={toggleNav} className="p-2 rounded-full bg-slate-800 text-white shadow-lg focus:outline-none focus:ring-2 focus:ring-slate-400">
+                    <button onClick={toggleNav} className="cursor-pointer p-2 rounded-full bg-slate-800 text-white shadow-lg focus:outline-none focus:ring-2 focus:ring-slate-400">
                         <MenuIcon className="h-6 w-6" />
                     </button>
                 </div>

@@ -164,7 +164,7 @@ export default function Login() {
             type="submit"
             className="w-full flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-lg shadow-md
                        hover:bg-blue-700 transition-colors duration-200 font-semibold text-lg
-                       disabled:opacity-50 disabled:cursor-not-allowed"
+                       disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             disabled={loading}
           >
             {loading ? (

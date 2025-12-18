@@ -64,7 +64,7 @@ export default function CreateHomework({ hubId, currentUserId }: { hubId: string
             <button
                 onClick={handleSubmit}
                 disabled={loading}
-                className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                className="cursor-pointer bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
             >
                 {loading ? 'Creating...' : 'Create Homework'}
             </button>

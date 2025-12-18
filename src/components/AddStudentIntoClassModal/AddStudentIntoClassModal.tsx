@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import SearchBar from "../SearchBar/SearchBar";
 import DatePicker from "../DatePicker/DatePicker";
 import { X } from "lucide-react";
+import IconButton from "../IconButton/IconButton";
+import Button from "../Button/Button";
 
 interface AddStudentIntoClassModalProps {
     allStudentList: Student[] | undefined | null
@@ -36,10 +38,10 @@ export default function AddStudentIntoClassModal({
     const safeStudentsInClass = studentsAlreadyInClass ?? [];
 
     const filteredStudents = useMemo(() => {
-        return safeStudentList.filter(student => 
+        return safeStudentList.filter(student =>
             student.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
             !safeStudentsInClass.some(s => s.id === student.id)
-        ); 
+        );
     }, [safeStudentList, safeStudentsInClass, searchTerm]);
 
     if (!isOpen) {
@@ -72,28 +74,27 @@ export default function AddStudentIntoClassModal({
     return (
         <div className="fixed inset-0 flex items-center justify-center p-4 z-50">
             <div className="absolute inset-0 overlay bg-opacity-50" onClick={onClose}></div>
-            
+
             <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] z-10 flex flex-col">
                 {/* Modal Header */}
                 <div className="flex justify-between items-center p-6 border-b border-gray-200">
                     <h2 className="text-2xl font-bold text-gray-900">Add Students to Class</h2>
-                    <button
+                    <IconButton
                         onClick={onClose}
-                        className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
-                    >
-                        <X size={24} />
-                    </button>
+                        icon={X}
+                        size={20}
+                    />
                 </div>
 
                 {/* Search and Select All */}
                 <div className="p-6 border-b border-gray-200">
                     <SearchBar search_width_style="header-dashboard" />
                     <div className="mt-4">
-                        <DatePicker 
-                            date={enrollDate} 
-                            isLabelAbsolute={false} 
-                            label="Enroll Date" 
-                            onChange={setEnrollDate} 
+                        <DatePicker
+                            date={enrollDate}
+                            isLabelAbsolute={false}
+                            label="Enroll Date"
+                            onChange={setEnrollDate}
                         />
                     </div>
                     <div className="flex items-center mt-4">
@@ -117,8 +118,8 @@ export default function AddStudentIntoClassModal({
                             <div
                                 key={student.id}
                                 className={`flex items-center p-3 rounded-lg border transition-all cursor-pointer ${selectedStudents.includes(student.id)
-                                        ? 'bg-blue-50 border-blue-500 ring-2 ring-blue-200'
-                                        : 'bg-white border-gray-200 hover:bg-gray-50'
+                                    ? 'bg-blue-50 border-blue-500 ring-2 ring-blue-200'
+                                    : 'bg-white border-gray-200 hover:bg-gray-50'
                                     }`}
                                 onClick={() => handleSelectStudent(student.id)}
                             >
@@ -140,18 +141,16 @@ export default function AddStudentIntoClassModal({
 
                 {/* Modal Footer */}
                 <div className="flex justify-end gap-4 p-6 border-t border-gray-200 bg-gray-50 rounded-b-xl">
-                    <button
-                        type="button"
+                    <Button
+                        title="Cancel"
                         onClick={onClose}
-                        className="px-6 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
-                    >
-                        Cancel
-                    </button>
+                        color="white"
+                    />
                     <button
                         type="button"
                         onClick={handleSubmit}
                         disabled={selectedStudents.length === 0}
-                        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:bg-gray-300 disabled:cursor-not-allowed"
+                        className="cursor-pointer px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:bg-gray-300 disabled:cursor-not-allowed"
                     >
                         Add {selectedStudents.length > 0 ? `(${selectedStudents.length})` : ''} Students
                     </button>
