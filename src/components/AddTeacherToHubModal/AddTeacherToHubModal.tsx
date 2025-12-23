@@ -75,7 +75,7 @@ export default function AddTeacherToHubModal({
 
     return (
         // <div className="fixed inset-0 z-50 flex items-center justify-center overlay transition-opacity duration-300">
-        <div className="bg-white rounded-xl w-full max-w-xl p-6 transform transition-all duration-300 scale-100 flex flex-col max-h-[70vh]">
+        <div className="bg-white rounded-xl w-full p-6 transform transition-all duration-300 scale-100 flex flex-col max-h-[70vh]">
             <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-gray-800">Add Teacher to Hub</h2>
                 {/* <button onClick={handleClose} className="p-2 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600">

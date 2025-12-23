@@ -1,40 +1,28 @@
 'use client';
 
 import Button from "@/components/Button/Button";
-import ManagementTeacherModal from "@/components/ManageTeacherModal/ManagementModal";
-// import EditTeacherModal from "@/components/EditTeacherModal/EditTeacherModal";
 import SearchBar from "@/components/SearchBar/SearchBar";
 import TeacherListTable from "@/components/TeacherListTable/TeacherListTable";
 import { useGetTeachersWorkload } from "@/hooks/useGetTeacherWorkload";
 import { UserPlus } from "lucide-react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
 export default function TeacherPage() {
     const { hub_id } = useParams();
+    const router = useRouter();
 
     const [searchTerm, setSearchTerm] = useState('');
     const [isAddModalOpen, setAddModalOpen] = useState(false);
-    const [selectedTeacherForEdit, setSelectedTeacherForEdit] = useState<TeacherInHub | null>(null);
 
     const { data: teachers = [], isLoading, isError, error } = useGetTeachersWorkload(hub_id as string);
 
-    // --- Memoized Filtering ---
     const filteredTeachers = useMemo(() => {
         return teachers.filter(teacher =>
             teacher.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             teacher.email.toLowerCase().includes(searchTerm.toLowerCase())
         );
     }, [teachers, searchTerm]);
-
-
-    const handleOpenEditModal = (selectedTeacher: TeacherInHub) => {
-        setSelectedTeacherForEdit(selectedTeacher);
-    };
-
-    const handleCloseEditModal = () => {
-        setSelectedTeacherForEdit(null);
-    };
 
     return (
         <div className="bg-gray-50 min-h-screen">
@@ -48,7 +36,7 @@ export default function TeacherPage() {
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
 
-                <Button onClick={() => setAddModalOpen(true)} color="blue" icon={UserPlus} title="Add & Permission" />
+                <Button onClick={() => {router.push("teacher/add_and_permisson")}} color="blue" icon={UserPlus} title="Add & Permission" />
             </div>
 
             {/* Main Content Table */}
@@ -58,18 +46,18 @@ export default function TeacherPage() {
                 isLoading={isLoading}
                 isError={isError}
                 error={error}
-                handleOpenEditModal={handleOpenEditModal}
+                handleOpenEditModal={() => {}}
                 />
             </div>
 
-            {/* Modals */}
+            {/* Modals
            <ManagementTeacherModal
            isOpen={isAddModalOpen}
            onClose={() => setAddModalOpen(false)}
            hub_id={hub_id as string}
            teachers={teachers}
            isLoadingTeachers={isLoading}
-           />
+           /> */}
 
             {/* {selectedTeacherId && (
                 <EditTeacherModal

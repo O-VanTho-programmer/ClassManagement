@@ -8,6 +8,7 @@ interface Teacher {
 
 interface TeacherInHub extends Teacher {
     role_hub: 'Master' | 'Member' | 'Owner',
+    permissions: string[],
 }
 
 type TeacherWorkload = TeacherInHub & {
