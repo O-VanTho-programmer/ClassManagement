@@ -25,7 +25,7 @@ export async function PUT(req: Request) {
 
 
         await connection.query(`
-            DELETE FROM hub_role_permission WHERE HubRoleId = ?
+            DELETE FROM hub_permissions WHERE HubRoleId = ?
         `, [hubRoleId]);
 
         if (!selectedPermissions || selectedPermissions.length == 0) {
@@ -43,7 +43,7 @@ export async function PUT(req: Request) {
         const hubRoleIdWithPermissionIds = permissionsRows.map((row: any) => [hubRoleId, row.PermissionId]);
 
         await connection.query(`
-            INSERT INTO hub_role_permission (HubRoleId, PermissionId) VALUES ?
+            INSERT INTO hub_permissions (HubRoleId, PermissionId) VALUES ?
         `, [hubRoleIdWithPermissionIds]);
 
         await connection.commit();
@@ -57,7 +57,7 @@ export async function PUT(req: Request) {
         return NextResponse.json({ message: "Error updating permissions" }, { status: 500 });
     } finally {
         if (connection) {
-            connection.release();
+            connection.release();   
         }
     }
 }

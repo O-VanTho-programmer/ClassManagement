@@ -4,6 +4,7 @@ interface Teacher {
     email: string,
     phone?: string,
     address?: string,
+    is_owner?: boolean,
 }
 
 interface TeacherInHub extends Teacher {

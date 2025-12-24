@@ -6,6 +6,7 @@ import { updateTeacherAPI } from '@/lib/api/updateTeacher';
 import { updateTeacherRoleInHub } from '@/lib/api/updateTeacherRoleInHub';
 import Button from '../Button/Button';
 import EditPermissionOfMemberModal from '../EditPermissionOfMemberModal/EditPermissionOfMemberModal';
+import { updateUserPermissionInHub } from '@/lib/api/updateUserPermissionInHub';
 
 type EditRoleOfTeacherProps = {
     // isOpen: boolean;
@@ -61,7 +62,7 @@ export default function EditRoleOfTeacher({
 
     const handlePermissionChange = (selectedPermissions: string[], teacherId: string, hubId: string) => {
         console.log(selectedPermissions, teacherId, hubId);
-        
+        updateUserPermissionInHub(selectedPermissions, teacherId, hubId);
     }
 
     const filteredTeachers = useMemo(() => {

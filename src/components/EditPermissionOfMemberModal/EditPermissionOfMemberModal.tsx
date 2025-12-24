@@ -1,5 +1,5 @@
 import { useGetPermissions } from '@/hooks/useGetPermissions';
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import IconButton from '../IconButton/IconButton';
 import { Loader2, Save, Shield, X } from 'lucide-react';
 import { getCategoryPermissions } from '@/lib/getCategoryPermissions';
@@ -26,6 +26,14 @@ export default function EditPermissionOfMemberModal({
     const { data: allPermissions = [], isLoading: isLoadingPermission } = useGetPermissions();
     const [selectedPermissions, setSelectedPermissions] = useState<Set<string>>(new Set(teacher.permissions || []));
     const [isSaving, setIsSaving] = useState(false);
+
+    useEffect(() => {
+        if (teacher.is_owner || teacher.role_hub.match('Owner') || teacher.role_hub.match('Master')) {
+            setSelectedPermissions(new Set(allPermissions.map((p: Permission) => p.Code)));
+        } else {
+            setSelectedPermissions(new Set(teacher.permissions || []));
+        }
+    }, [teacher]);
 
     const groupedPermissions = useMemo(() => {
         const groups: Record<string, Permission[]> = {};
@@ -65,7 +73,7 @@ export default function EditPermissionOfMemberModal({
         setIsSaving(true);
 
         try {
-            onSave(Array.from(selectedPermissions), teacher.id);
+            await onSave(Array.from(selectedPermissions), teacher.id);
         } catch (error) {
             console.log(error, "error");
             alert("Failed to save permissions.");

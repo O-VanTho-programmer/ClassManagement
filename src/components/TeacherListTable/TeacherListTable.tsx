@@ -89,7 +89,8 @@ export default function TeacherListTable({
                                         id: teacher.id,
                                         name: teacher.name,
                                         email: teacher.email,
-                                        role_hub: teacher.role_hub
+                                        role_hub: teacher.role_hub,
+                                        permissions: teacher.permissions || [],
                                     })}
                                     className="flex items-center text-blue-600 hover:text-blue-900">
                                     <Edit size={16} className="mr-1" /> Edit
