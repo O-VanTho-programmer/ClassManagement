@@ -1,5 +1,6 @@
 import pool from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
+import { checkPermission, PERMISSIONS } from "@/lib/permissions";
 
 export async function GET(req: NextRequest) {
     try {
@@ -8,6 +9,12 @@ export async function GET(req: NextRequest) {
 
         if (!hubId) {
             return NextResponse.json({ message: "hub Id is required" }, { status: 400 });
+        }
+        
+        // Check permission
+        const permissionCheck = await checkPermission(req, PERMISSIONS.VIEW_TEACHER, hubId);
+        if (permissionCheck instanceof NextResponse) {
+            return permissionCheck;
         }
 
         const queryGetTeacherListByHubId = `

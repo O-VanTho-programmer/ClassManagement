@@ -1,10 +1,17 @@
 import pool from "@/lib/db";
 import { NextResponse } from "next/server";
+import { checkPermission, PERMISSIONS } from "@/lib/permissions";
 
 export async function GET(req:Request) {
     try {
         const { searchParams } = new URL(req.url);
         const hubId = searchParams.get("hubId");
+        
+        // Check permission
+        const permissionCheck = await checkPermission(req, PERMISSIONS.VIEW_STUDENT, hubId);
+        if (permissionCheck instanceof NextResponse) {
+            return permissionCheck;
+        }
 
         const queryGetStudentListByHubId = `
             SELECT DISTINCT

@@ -1,9 +1,16 @@
 import pool from "@/lib/db";
 import { NextResponse } from "next/server";
+import { checkPermission, PERMISSIONS } from "@/lib/permissions";
 
 export async function PUT(req: Request) {
     try {
         const { teacherId, hubId, role } = await req.json();
+        
+        // Check permission - need EDIT_MEMBER to update teacher roles
+        const permissionCheck = await checkPermission(req, PERMISSIONS.EDIT_MEMBER, hubId, { hubId });
+        if (permissionCheck instanceof NextResponse) {
+            return permissionCheck;
+        }
 
         if (!teacherId || !hubId || !role) {
             return NextResponse.json({ message: "Missing required fields: teacherId, hubId, or role" }, { status: 400 });

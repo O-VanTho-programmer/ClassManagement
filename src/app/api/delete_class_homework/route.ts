@@ -1,5 +1,6 @@
 import pool from "@/lib/db";
 import { NextResponse } from "next/server";
+import { checkPermission, PERMISSIONS } from "@/lib/permissions";
 
 export async function DELETE(req: Request) {
     try {
@@ -11,6 +12,26 @@ export async function DELETE(req: Request) {
                 { message: "classHomeworkId is required" },
                 { status: 400 }
             );
+        }
+        
+        // Get hubId from classHomeworkId
+        const [classHomework]: any[] = await pool.query(`
+            SELECT ch.ClassId, h.HubId 
+            FROM class_homework ch
+            JOIN homework h ON ch.HomeworkId = h.HomeworkId
+            WHERE ch.ClassHomeworkId = ?
+        `, [classHomeworkId]);
+        
+        if (classHomework.length === 0) {
+            return NextResponse.json({ message: "Class homework not found" }, { status: 404 });
+        }
+        
+        const hubId = classHomework[0].HubId;
+        
+        // Check permission
+        const permissionCheck = await checkPermission(req, PERMISSIONS.ASSIGN_HOMEWORK, hubId);
+        if (permissionCheck instanceof NextResponse) {
+            return permissionCheck;
         }
 
         const queryDeleteClassHomework = `

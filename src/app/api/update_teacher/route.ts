@@ -1,9 +1,16 @@
 import pool from "@/lib/db";
 import { NextResponse } from "next/server";
+import { checkPermission, PERMISSIONS } from "@/lib/permissions";
 
 export async function PUT(req: Request) {
     try {
         const { teacher, hubId } = await req.json();
+        
+        // Check permission - need EDIT_MEMBER to update teacher info
+        const permissionCheck = await checkPermission(req, PERMISSIONS.EDIT_MEMBER, hubId, { hubId });
+        if (permissionCheck instanceof NextResponse) {
+            return permissionCheck;
+        }
 
         const {
             id,

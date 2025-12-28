@@ -1,9 +1,17 @@
 import pool from "@/lib/db";
 import { NextResponse } from "next/server";
+import { checkPermission, PERMISSIONS } from "@/lib/permissions";
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
+    
+    // Check permission
+    const permissionCheck = await checkPermission(req, PERMISSIONS.CREATE_CLASS, body.hubId, body);
+    if (permissionCheck instanceof NextResponse) {
+      return permissionCheck;
+    }
+    const { user } = permissionCheck;
     const {
       name,
       teacher,

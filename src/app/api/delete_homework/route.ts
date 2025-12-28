@@ -1,5 +1,6 @@
 import pool from "@/lib/db";
 import { NextResponse } from "next/server";
+import { checkPermission, PERMISSIONS, getHubIdFromHomeworkId } from "@/lib/permissions";
 
 export async function DELETE(req: Request) {
     try {
@@ -11,6 +12,17 @@ export async function DELETE(req: Request) {
                 { message: "homeworkId is required" },
                 { status: 400 }
             );
+        }
+        
+        // Get hubId from homeworkId and check permission
+        const hubId = await getHubIdFromHomeworkId(homeworkId);
+        if (!hubId) {
+            return NextResponse.json({ message: "Homework not found" }, { status: 404 });
+        }
+        
+        const permissionCheck = await checkPermission(req, PERMISSIONS.DELETE_HOMEWORK, hubId);
+        if (permissionCheck instanceof NextResponse) {
+            return permissionCheck;
         }
 
         const queryDeleteHomework = `

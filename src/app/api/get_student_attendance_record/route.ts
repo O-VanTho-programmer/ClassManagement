@@ -3,11 +3,23 @@ import { Schedule } from "@/types/Schedule";
 import formatDateForCompare from "@/utils/Format/formatDateForCompare";
 import generateDateRange from "@/utils/generateDateRange";
 import { NextResponse } from "next/server";
+import { checkPermission, PERMISSIONS, getHubIdFromClassId } from "@/lib/permissions";
 
 export async function GET(req: Request) {
     try {
         const { searchParams } = new URL(req.url);
         const classId = searchParams.get("classId");
+        
+        // Get hubId from classId and check permission
+        const hubId = await getHubIdFromClassId(classId || "");
+        if (!hubId) {
+            return NextResponse.json({ message: "Class not found" }, { status: 404 });
+        }
+        
+        const permissionCheck = await checkPermission(req, PERMISSIONS.VIEW_ATTENDANCE, hubId);
+        if (permissionCheck instanceof NextResponse) {
+            return permissionCheck;
+        }
         const schedule = searchParams.get("schedule");
 
         if (!classId || !schedule) {

@@ -1,9 +1,16 @@
 import pool from "@/lib/db";
 import { NextResponse } from "next/server";
+import { checkPermission, PERMISSIONS } from "@/lib/permissions";
 
 export async function POST(req:Request) {
     try {
         const {teacherId, hubId} = await req.json();
+        
+        // Check permission - need EDIT_MEMBER to add teachers
+        const permissionCheck = await checkPermission(req, PERMISSIONS.EDIT_MEMBER, hubId, { hubId });
+        if (permissionCheck instanceof NextResponse) {
+            return permissionCheck;
+        }
 
         const queryAddTeacherToHub = `
             INSERT INTO hub_role (UserId, HubId, Role, IsOwner)

@@ -182,7 +182,7 @@ export default function Login() {
           {isLogin ? "Don't have an account?" : "Already have an account?"}{' '}
           <button
             onClick={() => setIsLogin(!isLogin)}
-            className="text-blue-600 hover:text-blue-800 font-medium focus:outline-none focus:underline"
+            className="cursor-pointer text-blue-600 hover:text-blue-800 font-medium focus:outline-none focus:underline"
             disabled={loading}
           >
             {isLogin ? 'Sign up here' : 'Login here'}

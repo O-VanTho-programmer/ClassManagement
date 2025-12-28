@@ -1,9 +1,16 @@
 import cloudinary from "@/lib/cloudinary/cloudinary";
 import { UploadApiResponse } from "cloudinary";
 import { NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/curentUser";
 
 export async function POST(req: Request) {
     try {
+        // Check authentication - any authenticated user can upload files
+        const user = await getCurrentUser();
+        if (!user) {
+            return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+        }
+        
         const formData = await req.formData();
 
         const files = formData.getAll("files") as File[];

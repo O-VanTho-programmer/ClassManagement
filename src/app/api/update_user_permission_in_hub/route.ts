@@ -1,10 +1,17 @@
 import pool from "@/lib/db";
 import { NextResponse } from "next/server";
+import { checkPermission, PERMISSIONS } from "@/lib/permissions";
 
 export async function PUT(req: Request) {
     let connection;
     try {
         const { selectedPermissions, teacherId, hubId } = await req.json();
+        
+        // Check permission - need EDIT_MEMBER to update permissions
+        const permissionCheck = await checkPermission(req, PERMISSIONS.EDIT_MEMBER, hubId, { hubId });
+        if (permissionCheck instanceof NextResponse) {
+            return permissionCheck;
+        }
 
         if (!teacherId || !hubId) {
             return NextResponse.json({ message: "Missing info" }, { status: 400 });

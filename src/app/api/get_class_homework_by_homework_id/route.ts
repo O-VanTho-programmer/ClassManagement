@@ -1,10 +1,22 @@
 import pool from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
+import { checkPermission, PERMISSIONS, getHubIdFromHomeworkId } from "@/lib/permissions";
 
 export async function GET(req:NextRequest) {
     try {
         const { searchParams } = req.nextUrl;
         const homeworkId = searchParams.get("homeworkId");
+        
+        // Get hubId from homeworkId and check permission
+        const hubId = await getHubIdFromHomeworkId(homeworkId || "");
+        if (!hubId) {
+            return NextResponse.json({ message: "Homework not found" }, { status: 404 });
+        }
+        
+        const permissionCheck = await checkPermission(req, PERMISSIONS.VIEW_HOMEWORK, hubId);
+        if (permissionCheck instanceof NextResponse) {
+            return permissionCheck;
+        }
 
         if (!homeworkId) {
             return NextResponse.json({ message: "Homework Id is required" }, { status: 400 });

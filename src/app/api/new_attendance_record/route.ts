@@ -1,10 +1,22 @@
 import pool from "@/lib/db";
 import formatDateForCompare from "@/utils/Format/formatDateForCompare";
 import { NextResponse } from "next/server";
+import { checkPermission, PERMISSIONS, getHubIdFromClassId } from "@/lib/permissions";
 
 export async function POST(req: Request) {
     try {
         const { newRecord, classId } = await req.json();
+        
+        // Get hubId from classId and check permission
+        const hubId = await getHubIdFromClassId(classId);
+        if (!hubId) {
+            return NextResponse.json({ message: "Class not found" }, { status: 404 });
+        }
+        
+        const permissionCheck = await checkPermission(req, PERMISSIONS.TAKE_ATTENDANCE, hubId);
+        if (permissionCheck instanceof NextResponse) {
+            return permissionCheck;
+        }
         const {
             // Student
             id,

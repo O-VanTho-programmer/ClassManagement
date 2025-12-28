@@ -1,10 +1,22 @@
 import pool from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/curentUser";
 
 export async function GET(req: NextRequest) {
     try {
+        // Check authentication - users can only view their own classes
+        const user = await getCurrentUser();
+        if (!user) {
+            return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+        }
+        
         const { searchParams } = req.nextUrl;
         const userId = searchParams.get("userId");
+        
+        // Users can only view their own classes
+        if (userId !== user.userId) {
+            return NextResponse.json({ message: "Forbidden: You can only view your own classes" }, { status: 403 });
+        }
 
         if (!userId) {
             return NextResponse.json({ message: "userId is required" }, { status: 400 });

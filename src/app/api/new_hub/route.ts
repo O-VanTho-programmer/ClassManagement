@@ -1,8 +1,15 @@
 import pool from "@/lib/db";
 import { NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/curentUser";
 
 export async function POST(req: Request) {
     try {
+        // Check authentication - any authenticated user can create a hub
+        const user = await getCurrentUser();
+        if (!user) {
+            return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+        }
+        
         const body = await req.json();
         const {
             name,

@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI, SchemaType, Schema } from "@google/generative-ai";
 import { NextResponse } from "next/server";
+import { checkPermission, PERMISSIONS } from "@/lib/permissions";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
@@ -51,7 +52,15 @@ const gradingSchema: Schema = {
 export async function POST(req: Request) {
     try {
         // CHANGED: Expect 'images' as an array of strings
-        const { answerKey, images } = await req.json();
+        const { answerKey, images, hubId } = await req.json();
+        
+        // Check permission - need GRADE_HOMEWORK to use AI grading
+        if (hubId) {
+            const permissionCheck = await checkPermission(req, PERMISSIONS.GRADE_HOMEWORK, hubId, { hubId });
+            if (permissionCheck instanceof NextResponse) {
+                return permissionCheck;
+            }
+        }
 
         if (!answerKey || !images || !Array.isArray(images) || images.length === 0) {
             return NextResponse.json({ message: "Missing data or invalid image format" }, { status: 400 });

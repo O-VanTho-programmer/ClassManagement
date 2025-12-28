@@ -1,5 +1,6 @@
 import pool from "@/lib/db";
 import { NextResponse } from "next/server";
+import { checkPermission, PERMISSIONS } from "@/lib/permissions";
 
 export async function POST(req: Request) {
     try {
@@ -9,6 +10,12 @@ export async function POST(req: Request) {
             content,
             created_by_user_id
         } = await req.json();
+        
+        // Check permission
+        const permissionCheck = await checkPermission(req, PERMISSIONS.CREATE_HOMEWORK, hub_id, { hub_id });
+        if (permissionCheck instanceof NextResponse) {
+            return permissionCheck;
+        }
 
         const query = `
         INSERT INTO homework (HubId, Title, Content, CreatedByUserId)

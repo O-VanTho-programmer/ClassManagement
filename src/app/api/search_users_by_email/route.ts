@@ -1,8 +1,15 @@
 import pool from "@/lib/db";
 import { NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/curentUser";
 
 export async function GET(req: Request) {
     try {
+        // Check authentication - only authenticated users can search
+        const user = await getCurrentUser();
+        if (!user) {
+            return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+        }
+        
         const { searchParams } = new URL(req.url);
         const email = searchParams.get("email");
 

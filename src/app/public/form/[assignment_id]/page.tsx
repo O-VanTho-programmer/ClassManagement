@@ -4,7 +4,6 @@ import { useAlert } from '@/components/AlertProvider/AlertContext';
 import ErrorState from '@/components/QueryState/ErrorState';
 import LoadingState from '@/components/QueryState/LoadingState';
 import { useFileImg } from '@/hooks/useFileImg';
-import { useGetClassHomeworkByClassId } from '@/hooks/useGetClassHomeworkByClassId';
 import { useGetClassHomeworkById } from '@/hooks/useGetClassHomeworkById';
 import { useGetStudentListByAssignmentId } from '@/hooks/useGetStudentListByAssignmentId';
 import { useUploadSubmissionMutation } from '@/hooks/useUploadSubmission';

@@ -1,10 +1,22 @@
 import pool from "@/lib/db";
 import { NextResponse } from "next/server";
+import { checkPermission, PERMISSIONS, getHubIdFromClassId } from "@/lib/permissions";
 
 export async function GET(req: Request){
     try {
         const { searchParams } = new URL(req.url);
         const classId = searchParams.get("classId");
+        
+        // Get hubId from classId and check permission
+        const hubId = await getHubIdFromClassId(classId || "");
+        if (!hubId) {
+            return NextResponse.json({ message: "Class not found" }, { status: 404 });
+        }
+        
+        const permissionCheck = await checkPermission(req, PERMISSIONS.VIEW_STUDENT, hubId);
+        if (permissionCheck instanceof NextResponse) {
+            return permissionCheck;
+        }
 
         const queryGetStudentListByClassId = `
             SELECT 

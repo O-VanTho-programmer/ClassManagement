@@ -1,10 +1,31 @@
 import pool from "@/lib/db";
 import { NextResponse } from "next/server";
+import { checkPermission, PERMISSIONS } from "@/lib/permissions";
 
 export async function GET(req: Request) {
     try {
         const { searchParams } = new URL(req.url);
         const classHomeworkId = searchParams.get("classHomeworkId");
+        
+        // Get hubId from classHomeworkId
+        const [classHomework]: any[] = await pool.query(`
+            SELECT h.HubId 
+            FROM class_homework ch
+            JOIN homework h ON ch.HomeworkId = h.HomeworkId
+            WHERE ch.ClassHomeworkId = ?
+        `, [classHomeworkId]);
+        
+        if (classHomework.length === 0) {
+            return NextResponse.json({ message: "Class homework not found" }, { status: 404 });
+        }
+        
+        const hubId = classHomework[0].HubId;
+        
+        // Check permission
+        const permissionCheck = await checkPermission(req, PERMISSIONS.VIEW_HOMEWORK, hubId);
+        if (permissionCheck instanceof NextResponse) {
+            return permissionCheck;
+        }
 
         const getStudentHomeworkQuestionByStudentHomeworkId = `
             SELECT     
