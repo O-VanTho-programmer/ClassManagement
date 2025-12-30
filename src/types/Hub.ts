@@ -14,3 +14,5 @@ export interface HubAddDto{
     includedTeachers: string[];
     owner: string,
 }
+
+export type HubRole = 'Master' | 'Member' | 'Owner' | 'Teacher' | 'Assistant';

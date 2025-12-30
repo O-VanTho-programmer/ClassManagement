@@ -7,9 +7,10 @@ import EditHomeworkModal from '@/components/EditHomeworkModal/EditHomeworkModal'
 import HomeworkListTable from '@/components/HomeworkListTable/HomeworkListTable';
 import SearchBar from '@/components/SearchBar/SearchBar';
 import { useGetHomeworkListQuery } from '@/hooks/useGetHomeworkListQuery';
+import { useHasPermission } from '@/hooks/useHasPermission';
 import { Plus } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
-import React, { use, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 
 export default function HomeworkListPage() {
   const { hub_id } = useParams();
@@ -26,6 +27,8 @@ export default function HomeworkListPage() {
   const [isAssignHomeworkToClassModalOpen, setIsAssignHomeworkToClassModalOpen] = useState(false);
   const [isEditHomeworkModalOpen, setIsEditHomeworkModalOpen] = useState(false);
   const [isDeleteHomeworkModalOpen, setIsDeleteHomeworkModalOpen] = useState(false);
+
+  const {hasPermission: canCreateHomework} = useHasPermission(hub_id as string, "CREATE_HOMEWORK");
 
   const filteredHomeworkList = useMemo(() => {
     return homeworkList.filter((hw) => {
@@ -64,7 +67,7 @@ export default function HomeworkListPage() {
           onChange={(e) => setSearchTerm(e.target.value)}
         />
 
-        <Button color='blue' icon={Plus} title='Create Homework' onClick={onCreateHomework} />
+        <Button color='blue' style={!canCreateHomework ? 'hide' : ''} icon={Plus} title='Create Homework' onClick={onCreateHomework} />
       </div>
 
       <div className="bg-white rounded-xl shadow-lg">

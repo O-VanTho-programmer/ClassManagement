@@ -4,13 +4,14 @@ import IconButton from '../IconButton/IconButton';
 import { Loader2, Save, Shield, X } from 'lucide-react';
 import { getCategoryPermissions } from '@/lib/getCategoryPermissions';
 import Button from '../Button/Button';
+import { useAlert } from '../AlertProvider/AlertContext';
 
 type EditPermissionOfMemberModalProps = {
     isOpen: boolean;
     onClose: () => void;
     hubId: string;
     teacher: TeacherInHub;
-    onSave: (selectedPermissions: string[], teacherId: string) => void;
+    onSave: (selectedPermissions: string[], teacherId: string) => Promise<any>;
 }
 
 export default function EditPermissionOfMemberModal({
@@ -22,6 +23,8 @@ export default function EditPermissionOfMemberModal({
 }: EditPermissionOfMemberModalProps) {
 
     if (!isOpen) return null;
+
+    const { showAlert } = useAlert();
 
     const { data: allPermissions = [], isLoading: isLoadingPermission } = useGetPermissions();
     const [selectedPermissions, setSelectedPermissions] = useState<Set<string>>(new Set(teacher.permissions || []));
@@ -73,10 +76,17 @@ export default function EditPermissionOfMemberModal({
         setIsSaving(true);
 
         try {
-            await onSave(Array.from(selectedPermissions), teacher.id);
+            const res = await onSave(Array.from(selectedPermissions), teacher.id);
+
+            if (res?.status === 200) {
+                showAlert("Permissions saved successfully.", 'success');
+                teacher.permissions = Array.from(selectedPermissions);
+            }else {
+                showAlert("Failed to save permissions.", 'warning');
+            }
         } catch (error) {
             console.log(error, "error");
-            alert("Failed to save permissions.");
+            showAlert("Failed to save permissions.", 'error');
         } finally {
             setIsSaving(false);
         }
@@ -84,7 +94,7 @@ export default function EditPermissionOfMemberModal({
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center overlay transition-opacity duration-300">
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg m-4 transform max-h-96 transition-all duration-300 scale-100 flex flex-col">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg m-4 transform max-h-[600px] transition-all duration-300 scale-100 flex flex-col">
                 <div className="flex items-center justify-between p-5 border-b border-gray-100 bg-white z-10">
                     <div>
                         <h2 className="text-lg font-bold text-gray-900 flex items-center">

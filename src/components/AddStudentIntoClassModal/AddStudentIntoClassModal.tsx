@@ -22,6 +22,10 @@ export default function AddStudentIntoClassModal({
     onClose,
     onSubmit,
 }: AddStudentIntoClassModalProps) {
+    if (!isOpen) {
+        return null;
+    }
+
     const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [enrollDate, setEnrollDate] = useState(new Date().toISOString().split('T')[0]);
@@ -43,10 +47,6 @@ export default function AddStudentIntoClassModal({
             !safeStudentsInClass.some(s => s.id === student.id)
         );
     }, [safeStudentList, safeStudentsInClass, searchTerm]);
-
-    if (!isOpen) {
-        return null;
-    }
 
     if (allStudentList == null || allStudentList == undefined) return null;
 

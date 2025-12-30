@@ -11,6 +11,7 @@ export const PERMISSIONS = {
   EDIT_CLASS: "EDIT_CLASS",
   VIEW_CLASS: "VIEW_CLASS",
   DELETE_CLASS: "DELETE_CLASS",
+  VIEW_ALL_CLASS: "VIEW_ALL_CLASS",
   
   // Student Management
   CREATE_STUDENT: "CREATE_STUDENT",
@@ -63,17 +64,12 @@ async function isHubOwnerOrMaster(userId: string, hubId: string): Promise<boolea
   }
 }
 
-/**
- * Get user permissions for a specific hub
- */
 export async function getUserHubPermissions(userId: string, hubId: string): Promise<string[]> {
   try {
-    // Check if user is owner/master (has all permissions)
     if (await isHubOwnerOrMaster(userId, hubId)) {
       return ["Owner"]; // Special permission that grants all access
     }
 
-    // Get specific permissions
     const [permissions]: any[] = await pool.query(`
       SELECT p.Code
       FROM hub_role hr
@@ -89,9 +85,6 @@ export async function getUserHubPermissions(userId: string, hubId: string): Prom
   }
 }
 
-/**
- * Check if user has a specific permission in a hub
- */
 export async function hasPermission(
   userId: string,
   hubId: string,
@@ -104,7 +97,6 @@ export async function hasPermission(
     return true;
   }
 
-  // Check if user has required permission(s)
   const requiredPermissions = Array.isArray(requiredPermission) 
     ? requiredPermission 
     : [requiredPermission];
@@ -140,12 +132,10 @@ export async function checkPermission(
     // Extract hubId from request if not provided
     let finalHubId = hubId;
     if (!finalHubId) {
-      // Try to get from pre-parsed body first
       if (requestBody) {
         finalHubId = requestBody.hubId || requestBody.hub_id;
       }
       
-      // If still not found, try URL search params
       if (!finalHubId) {
         const searchParams = new URL(req.url).searchParams;
         finalHubId = searchParams.get("hubId") || searchParams.get("hub_id");

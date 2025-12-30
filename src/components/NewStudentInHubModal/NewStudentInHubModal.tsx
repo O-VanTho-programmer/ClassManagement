@@ -17,6 +17,10 @@ export default function NewStudentInHubModal({
     onClose,
     onSubmit
 }: NewStudentInHubModalProps) {
+    
+    if (!isOpen) {
+        return null;
+    }
 
     const initialFormData: StudentInputDto = {
         name: '',
@@ -45,10 +49,6 @@ export default function NewStudentInHubModal({
         )
     }, [availableClassDatas, classSearchTerm]);
 
-    if (!isOpen) {
-        return null;
-    }
-
     const validateForm = () => {
         const newErrors: Record<string, string> = {};
         if (!formData.name.trim()) newErrors.name = "Student's name is required.";
@@ -75,7 +75,7 @@ export default function NewStudentInHubModal({
     };
 
     const handleEnrollDateChange = (classId: string, enrollDate: string) => {
-        setSelectedClasses(prev => 
+        setSelectedClasses(prev =>
             prev.map(c => c.classId === classId ? { ...c, enrollDate } : c)
         );
     };
@@ -84,9 +84,9 @@ export default function NewStudentInHubModal({
         if (selectedClasses.length === filteredAvailableClassList.length) {
             setSelectedClasses([]);
         } else {
-            setSelectedClasses(filteredAvailableClassList.map(c => ({ 
-                classId: c.id, 
-                enrollDate: new Date().toISOString().split('T')[0] 
+            setSelectedClasses(filteredAvailableClassList.map(c => ({
+                classId: c.id,
+                enrollDate: new Date().toISOString().split('T')[0]
             })));
         }
     };
@@ -159,13 +159,13 @@ export default function NewStudentInHubModal({
                                 {filteredAvailableClassList.map(cls => {
                                     const isSelected = selectedClasses.some(c => c.classId === cls.id);
                                     const selectedClass = selectedClasses.find(c => c.classId === cls.id);
-                                    
+
                                     return (
                                         <div
                                             key={cls.id}
                                             className={`p-3 rounded-lg border ${isSelected ? 'bg-blue-50 border-blue-500' : 'hover:bg-gray-50'}`}
                                         >
-                                            <div 
+                                            <div
                                                 className="flex items-center cursor-pointer"
                                                 onClick={() => handleSelectClass(cls.id)}
                                             >
@@ -177,14 +177,14 @@ export default function NewStudentInHubModal({
                                                 />
                                                 <p className="ml-3 font-medium text-gray-800">{cls.name}</p>
                                             </div>
-                                            
+
                                             {isSelected && (
                                                 <div className="mt-3 ml-7">
-                                                    <DatePicker 
-                                                        date={selectedClass?.enrollDate || ''} 
-                                                        isLabelAbsolute={false} 
-                                                        label="Enroll Date" 
-                                                        onChange={(date) => handleEnrollDateChange(cls.id, date)} 
+                                                    <DatePicker
+                                                        date={selectedClass?.enrollDate || ''}
+                                                        isLabelAbsolute={false}
+                                                        label="Enroll Date"
+                                                        onChange={(date) => handleEnrollDateChange(cls.id, date)}
                                                     />
                                                 </div>
                                             )}

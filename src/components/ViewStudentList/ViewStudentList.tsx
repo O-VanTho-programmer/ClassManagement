@@ -4,6 +4,8 @@ import Button from "../Button/Button";
 import { ListPlus, UserPlus } from "lucide-react";
 import LoadingState from "../QueryState/LoadingState";
 import ErrorState from "../QueryState/ErrorState";
+import { useParams } from "next/navigation";
+import { useHasPermission } from "@/hooks/useHasPermission";
 
 interface ViewStudentListProps {
     studentDatas: StudentWithEnrollment[] | [] | undefined ;
@@ -29,6 +31,10 @@ export default function ViewStudentList({
         <ErrorState message={error?.message || "Something went wrong while loading your students. Please try again."} onRetry={() => window.location.reload()} />
     }
 
+    const {hub_id} = useParams();
+    const {hasPermission: canCreateStudent} = useHasPermission(hub_id as string, "CREATE_STUDENT");
+    const {hasPermission: canAddStudentIntoClass} = useHasPermission(hub_id as string, "ADD_STUDENT_CLASS");
+
     return (
         <div className="mt-8">
             <div className="bg-white rounded-lg shadow-lg py-6">
@@ -36,8 +42,8 @@ export default function ViewStudentList({
                     <h3 className="font-semibold text-base">Students List ({studentDatas.length})</h3>
                     <div className="flex flex-wrap items-center gap-1">
                         <SearchBar search_width_style="medium" />
-                        <Button color="orange" onClick={newStudent} icon={UserPlus} title="New Student" />
-                        <Button color="blue" onClick={addStudentIntoClass} icon={ListPlus} title="Add Student" />
+                        <Button style={!canCreateStudent ? 'hide' : ''} color="orange" onClick={newStudent} icon={UserPlus} title="New Student" />
+                        <Button style={!canAddStudentIntoClass ? 'hide' : ''} color="blue" onClick={addStudentIntoClass} icon={ListPlus} title="Add Student" />
                     </div>
                 </div>
 

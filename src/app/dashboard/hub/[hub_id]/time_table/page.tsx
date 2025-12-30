@@ -3,7 +3,6 @@
 import ErrorState from '@/components/QueryState/ErrorState';
 import LoadingState from '@/components/QueryState/LoadingState';
 import TimeTable from '@/components/TimeTable/TimeTable'
-import { mockClassListData } from '@/data_sample/classDataMock'
 import { useGetClassesByHubIdQuery } from '@/hooks/useGetClassesByHubIdQuery';
 import { useParams } from 'next/navigation';
 import React from 'react'

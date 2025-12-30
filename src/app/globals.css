@@ -98,5 +98,30 @@ html, body {
   transition: background-color 0.2s;
 }
 .btn-secondary:hover {
-  background-color: #F9FAFB;
+    background-color: #F9FAFB;
+}
+
+/* Permission-based visibility and interaction styles */
+.hide {
+    display: none !important;
+}
+
+.disable {
+    pointer-events: none !important;
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+}
+
+.disable button,
+.disable a,
+.disable input,
+.disable select,
+.disable textarea {
+    pointer-events: none !important;
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+}
+
+.disable:hover {
+    opacity: 0.5 !important;
 }

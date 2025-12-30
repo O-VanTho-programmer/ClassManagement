@@ -36,10 +36,10 @@ export async function DELETE(req: Request) {
 
         const queryDeleteClassHomework = `
             DELETE FROM class_homework
-            WHERE ClassHomeworkId = ${classHomeworkId};
+            WHERE ClassHomeworkId = ?;
         `;
 
-        const [result] = await pool.query(queryDeleteClassHomework);
+        const [result] = await pool.query(queryDeleteClassHomework, [classHomeworkId]);
 
         return NextResponse.json(
             { message: "Homework is unassigned from class successfully" },

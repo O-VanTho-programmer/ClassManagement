@@ -2,11 +2,12 @@ import { Loader2, X } from 'lucide-react';
 import React, { useMemo, useState } from 'react'
 import SearchBar from '../SearchBar/SearchBar';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { updateTeacherAPI } from '@/lib/api/updateTeacher';
+// import { updateTeacherAPI } from '@/lib/api/updateTeacher';
 import { updateTeacherRoleInHub } from '@/lib/api/updateTeacherRoleInHub';
 import Button from '../Button/Button';
 import EditPermissionOfMemberModal from '../EditPermissionOfMemberModal/EditPermissionOfMemberModal';
 import { updateUserPermissionInHub } from '@/lib/api/updateUserPermissionInHub';
+import { HubRole } from '@/types/Hub';
 
 type EditRoleOfTeacherProps = {
     // isOpen: boolean;
@@ -35,7 +36,7 @@ export default function EditRoleOfTeacher({
 
 
     const updateRoleMutation = useMutation({
-        mutationFn: ({ teacher, newRole }: { teacher: TeacherInHub, newRole: 'Master' | 'Member' | 'Owner' }) => {
+        mutationFn: ({ teacher, newRole }: { teacher: TeacherInHub, newRole: HubRole }) => {
             return updateTeacherRoleInHub(teacher.id, hubId, newRole);
         },
         onSuccess: () => {
@@ -47,7 +48,7 @@ export default function EditRoleOfTeacher({
         }
     });
 
-    const handleRoleChange = (teacher: TeacherInHub, newRole: 'Master' | 'Member' | 'Owner') => {
+    const handleRoleChange = (teacher: TeacherInHub, newRole: HubRole) => {
         if (currentUserRole !== 'Master' && currentUserRole !== 'Owner') {
             alert("You do not have permission to change roles.");
             return;
@@ -60,9 +61,11 @@ export default function EditRoleOfTeacher({
         updateRoleMutation.mutate({ teacher, newRole });
     };
 
-    const handlePermissionChange = (selectedPermissions: string[], teacherId: string, hubId: string) => {
+    const handlePermissionChange = async (selectedPermissions: string[], teacherId: string, hubId: string) => {
         console.log(selectedPermissions, teacherId, hubId);
-        updateUserPermissionInHub(selectedPermissions, teacherId, hubId);
+        const res = await updateUserPermissionInHub(selectedPermissions, teacherId, hubId);
+
+        return res;
     }
 
     const filteredTeachers = useMemo(() => {
@@ -81,9 +84,6 @@ export default function EditRoleOfTeacher({
             <div className="bg-white rounded-xl w-full p-6 transform transition-all duration-300 scale-100 flex flex-col max-h-[70vh] mb-4">
                 <div className="flex items-center justify-between">
                     <h2 className="text-2xl font-bold text-gray-800">Permission</h2>
-                    {/* <button onClick={handleClose} className="p-2 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600">
-                        <X size={20} />
-                    </button> */}
                 </div>
 
                 {/* Search Input */}
@@ -94,7 +94,6 @@ export default function EditRoleOfTeacher({
                         onChange={(e) => setSearchTerm(e.target.value)} />
                 </div>
 
-                {/* Results List */}
                 <div className="flex-grow overflow-y-auto mt-4">
                     {filteredTeachers && filteredTeachers.length > 0 && (
                         <ul className="divide-y divide-gray-200">
@@ -134,8 +133,10 @@ export default function EditRoleOfTeacher({
                                                         }
                                                         className="cursor-pointer appearance-none bg-gray-100 border border-gray-300 text-gray-700 text-sm py-1.5 pl-3 pr-8 rounded-md leading-tight focus:outline-none focus:bg-white focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed"
                                                     >
-                                                        <option className='cursor-pointer' value="Master">Master</option>
                                                         <option className='cursor-pointer' value="Member">Member</option>
+                                                        <option className='cursor-pointer' value="Assistant">Assistant</option>
+                                                        <option className='cursor-pointer' value="Teacher">Teacher</option>
+                                                        <option className='cursor-pointer' value="Master">Master</option>
                                                     </select>
                                                 </div>
                                             </div>

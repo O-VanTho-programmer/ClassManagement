@@ -30,7 +30,7 @@ export default function ViewClassHomeworkList ({ assignments, isLoading, isError
         );
     }
 
-    if (assignments.length === 0) {
+    if (!assignments || assignments.length === 0) {
         return (
             <div className="p-10 text-center text-gray-500">
                 <BookOpen size={48} className="mx-auto mb-4 text-gray-400" />

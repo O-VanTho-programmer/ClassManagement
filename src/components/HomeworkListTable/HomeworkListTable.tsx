@@ -2,6 +2,8 @@ import { Edit2, Send, Trash2 } from 'lucide-react';
 import React from 'react'
 import LoadingState from '../QueryState/LoadingState';
 import ErrorState from '../QueryState/ErrorState';
+import { useParams } from 'next/navigation';
+import { useHasPermission } from '@/hooks/useHasPermission';
 
 type HomeworkListTableProps = {
     isLoading: boolean;
@@ -23,6 +25,11 @@ export default function HomeworkListTable({
 }: HomeworkListTableProps) {
     if (isLoading) return <LoadingState message='Loading homework list...' />;
     if (isError) return <ErrorState message={error.message} />;
+
+    const { hub_id } = useParams();
+    const { hasPermission: canAssignHomework } = useHasPermission(hub_id as string, "ASSIGN_HOMEWORK");
+    const { hasPermission: canEditHomework } = useHasPermission(hub_id as string, "EDIT_HOMEWORK");
+    const { hasPermission: canDeleteHomework } = useHasPermission(hub_id as string, "DELETE_HOMEWORK");
 
     return (
         <div className="overflow-x-auto">
@@ -48,13 +55,22 @@ export default function HomeworkListTable({
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{hw.created_by_user_name}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
-                                <button onClick={() => onSelectAssignHomeworkToClass(hw)} className="cursor-pointer flex items-center justify-center gap-1.5 text-blue-600 hover:text-blue-900">
+                                <button
+                                    onClick={() => onSelectAssignHomeworkToClass(hw)}
+                                    className={`cursor-pointer flex items-center justify-center gap-1.5 text-blue-600 hover:text-blue-900 ${!canAssignHomework ? 'hide' : ''}`}
+                                >
                                     <Send size={16} /> Assign
                                 </button>
-                                <button onClick={() => onSelectEditHomework(hw)} className="cursor-pointer flex items-center justify-center gap-1.5 text-gray-600 hover:text-gray-900">
+                                <button
+                                    onClick={() => onSelectEditHomework(hw)}
+                                    className={`cursor-pointer flex items-center justify-center gap-1.5 text-gray-600 hover:text-gray-900 ${!canEditHomework ? 'hide' : ''}`}
+                                >
                                     <Edit2 size={16} /> Edit
                                 </button>
-                                <button onClick={() => onSelectDeleteHomework(hw)} className="cursor-pointer flex items-center justify-center gap-1.5 text-red-600 hover:text-red-900">
+                                <button
+                                    onClick={() => onSelectDeleteHomework(hw)}
+                                    className={`cursor-pointer flex items-center justify-center gap-1.5 text-red-600 hover:text-red-900 ${!canDeleteHomework ? 'hide' : ''}`}
+                                >
                                     <Trash2 size={16} /> Delete
                                 </button>
                             </td>

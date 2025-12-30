@@ -25,6 +25,10 @@ interface CreateClassModalProps {
 
 export default function CreateClassModal({ isOpen, onClose, onSubmit, hubId }: CreateClassModalProps) {
 
+    if(!isOpen){
+        return null;
+    }
+
     const { data: teacherList = [], isLoading: isLoadingTeachers, isError: isErrorTeachers, error: teachersError } = useGetTeacherListByHubId(hubId);
 
     const [formData, setFormData] = useState<Omit<ClassData, 'id'>>({

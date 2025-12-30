@@ -1,6 +1,6 @@
 import { TableClassProps } from "../TableClass/TableClass";
 import ViewCardClassItem from "../ViewCardClassItem/ViewCardClassItem";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 export default function ViewCardClasses({ datas }: TableClassProps) {
     const router = useRouter();

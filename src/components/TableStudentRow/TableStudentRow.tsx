@@ -2,13 +2,18 @@ import { X } from "lucide-react";
 import Badge from "../Badge/Badge";
 import Button from "../Button/Button";
 import HeaderAvatar from "../HeaderAvatar/HeaderAvatar";
+import { useParams } from "next/navigation";
+import { useHasPermission } from "@/hooks/useHasPermission";
 
 type TableStudentRowProps = {
     student: StudentWithEnrollment
     onRemoveStudentFromClass: (student: StudentWithEnrollment) => void
 }
 
-export default function TableStudentRow({student, onRemoveStudentFromClass}: TableStudentRowProps) {
+export default function TableStudentRow({ student, onRemoveStudentFromClass }: TableStudentRowProps) {
+
+    const { hub_id } = useParams();
+    const { hasPermission: canRemoveStudentFromClass } = useHasPermission(hub_id as string, "REMOVE_STUDENT_CLASS");
 
     return (
         <tr className="border-b border-gray-200 text-sm">
@@ -34,7 +39,7 @@ export default function TableStudentRow({student, onRemoveStudentFromClass}: Tab
             </td>
             <td className="py-4 px-2 whitespace-nowrap text-gray-800">
                 <div className="flex justify-end gap-1">
-                    <Button color="red_off" onClick={() => onRemoveStudentFromClass(student)} icon={X} title="Remove from class" />
+                    <Button style={!canRemoveStudentFromClass ? 'hide' : ''} color="red_off" onClick={() => onRemoveStudentFromClass(student)} icon={X} title="Remove from class" />
                 </div>
             </td>
         </tr>
