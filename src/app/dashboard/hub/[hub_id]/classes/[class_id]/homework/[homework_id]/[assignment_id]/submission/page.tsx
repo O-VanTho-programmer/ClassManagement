@@ -13,6 +13,7 @@ import ToggleViewClassList from '@/components/ToggleViewClassList/ToggleViewClas
 import { useGetHomeworkById } from '@/hooks/useGetHomeworkById';
 import { useGetStudentHomeworkQuestionByClassHomeworkId } from '@/hooks/useGetStudentHomeworkQuestionByStudentHomeworkId';
 import { useGetStudentListByAssignmentId } from '@/hooks/useGetStudentListByAssignmentId';
+import { useHasPermission } from '@/hooks/useHasPermission';
 import { useUploadSubmissionMutation } from '@/hooks/useUploadSubmission';
 import { getUrlImageByUploadOnCloudiary } from '@/lib/api/getUrlImageByUploadOnCloudiary';
 import { saveAnswerKey } from '@/lib/api/HomeworkSubmission/saveAnswerKey';
@@ -77,6 +78,13 @@ function HomeworkSubmissionPage() {
     }
   });
 
+  // --- Permissons ---
+
+  const { hub_id } = useParams();
+  const {hasPermission: canGradeHomework} = useHasPermission(hub_id as string, 'GRADE_HOMEWORK');
+  const {hasPermission: canSetKeyAnswerHomework} = useHasPermission(hub_id as string, 'SET_KEY_ANSWER_HOMEWORK');
+  
+
   // --- Handlers ---
 
   const handleOpenUpload = (submission: StudentWithHomework) => {
@@ -85,11 +93,24 @@ function HomeworkSubmissionPage() {
   };
 
   const handleOpenGrader = (submission: StudentWithHomework) => {
+    if(!canGradeHomework){
+      showAlert("You don't have permission to grade homework", 'error');
+      return;
+    }
+
     setSelectedSubmission(submission);
     setGradingModalOpen(true);
 
     const studentHomeworkQuestionBreakdown = studentHomeworkQuestion?.students_homework_questions.find((shq) => shq.student_id === submission.id)
     setSelectedStudentHomeworkQuestion(studentHomeworkQuestionBreakdown || null);
+  };
+
+  const handleOpenSetKeyModal = () => {
+    if (!canSetKeyAnswerHomework) {
+      showAlert("You don't have permission to set answer key", 'error');
+      return;
+    }
+    setKeyModalOpen(true);
   };
 
   const [selectedSubmission, setSelectedSubmission] = useState<StudentWithHomework | null>(null);
@@ -118,7 +139,7 @@ function HomeworkSubmissionPage() {
 
       <div className='mt-4 md:flex gap-3'>
         <button
-          onClick={() => setKeyModalOpen(true)}
+          onClick={() => handleOpenSetKeyModal}
           className="cursor-pointer flex items-center px-4 py-2 bg-yellow-100 text-yellow-800 font-medium rounded-lg hover:bg-yellow-200 transition-colors"
         >
           <Key size={16} className="mr-2" />
