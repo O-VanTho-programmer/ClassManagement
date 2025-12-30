@@ -18,6 +18,7 @@ import { BookPlus } from "lucide-react";
 import QuickAssignHomeworkModal from "../QuickAssignHomeworkModal/QuickAssignHomeworkModal";
 import { useGetClassHomeworkByClassId } from "@/hooks/useGetClassHomeworkByClassId";
 import formatDateForCompare from "@/utils/Format/formatDateForCompare";
+import { useHasPermission } from "@/hooks/useHasPermission";
 
 interface AttendanceGridStudentTableProps {
     class_id: string,
@@ -28,6 +29,10 @@ interface AttendanceGridStudentTableProps {
 }
 
 export default function AttendanceGridStudentTable({ hub_id, class_id, schedule, startDate, endDate }: AttendanceGridStudentTableProps) {
+
+    const {hasPermission: canAssignHomework} = useHasPermission(hub_id, "ASSIGN_HOMEWORK");
+    const {hasPermission: canTakeAttendance} = useHasPermission(hub_id, "TAKE_ATTENDANCE");
+    const {hasPermission: canEditAttendance} = useHasPermission(hub_id, "EDIT_ATTENDANCE");
 
     const { data: fetchedStudentAttendanceRecords, isLoading, isError, error } = useGetStudentAttendanceRecordsQuery(class_id, schedule);
     const { data: assignmentList, isLoading: isAssignmentListLoading, isError: isAssignmentListError, error: assignmentListError } = useGetClassHomeworkByClassId(class_id);
@@ -70,6 +75,11 @@ export default function AttendanceGridStudentTable({ hub_id, class_id, schedule,
     const [editingRecord, setEditingRecord] = useState<StudentAttendance | null>(null);
 
     const handleEditClick = (record: AttendanceRecord, studentId: string, studentName: string) => {
+        if(!canTakeAttendance){
+            showAlert("You don't have permission to take attendance", "error");
+            return;
+        }
+
         setEditingRecord({
             id: studentId,
             name: studentName,
@@ -90,11 +100,21 @@ export default function AttendanceGridStudentTable({ hub_id, class_id, schedule,
     const [selectedDateForAssignHomework, setSelectedDateForAssignHomework] = useState<string | null>(null);
 
     const handleQuickAssignHomework = (date: string) => {
+        if(!canAssignHomework){
+            showAlert("You don't have permission to assign homework", "error");
+            return;
+        }
+
         setSelectedDateForAssignHomework(date);
         setOpenQuickAssignHomeworkModal(true);
     }
 
     const handleSaveAttendance = async (updatedRecord: StudentAttendance) => {
+        if(!canTakeAttendance){
+            showAlert("You don't have permission to take attendance", "error");
+            return;
+        }
+
         if (!editingRecord) return;
         const targetStudentId = editingRecord.id;
         setIsSaving(true);
