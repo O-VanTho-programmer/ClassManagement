@@ -8,6 +8,8 @@ import Button from '../Button/Button';
 import EditPermissionOfMemberModal from '../EditPermissionOfMemberModal/EditPermissionOfMemberModal';
 import { updateUserPermissionInHub } from '@/lib/api/updateUserPermissionInHub';
 import { HubRole } from '@/types/Hub';
+import { useAlert } from '../AlertProvider/AlertContext';
+import { useHasPermission } from '@/hooks/useHasPermission';
 
 type EditRoleOfTeacherProps = {
     // isOpen: boolean;
@@ -26,7 +28,11 @@ export default function EditRoleOfTeacher({
 }: EditRoleOfTeacherProps) {
 
     const queryClient = useQueryClient();
+
+    const {hasPermission: canEditRole} = useHasPermission(hubId, 'EDIT_MEMBER');
+
     const [searchTerm, setSearchTerm] = useState('');
+    const { showAlert } = useAlert();
 
     const [selectedTeacherForEdit, setSelectedTeacherForEdit] = useState<TeacherInHub | null>(null);
 
@@ -34,23 +40,22 @@ export default function EditRoleOfTeacher({
         setSelectedTeacherForEdit(teacher);
     };
 
-
     const updateRoleMutation = useMutation({
         mutationFn: ({ teacher, newRole }: { teacher: TeacherInHub, newRole: HubRole }) => {
             return updateTeacherRoleInHub(teacher.id, hubId, newRole);
         },
         onSuccess: () => {
-            console.log("Role updated successfully!");
+            showAlert("Role updated successfully!", 'success');
             queryClient.invalidateQueries({ queryKey: ['teachers_workload', hubId] });
         },
         onError: (error: Error, variables) => {
-            alert(`Failed to update role for ${variables.teacher.name}: ${error.message}`);
+            showAlert(`Failed to update role for ${variables.teacher.name}: ${error.message}`, 'error');
         }
     });
 
     const handleRoleChange = (teacher: TeacherInHub, newRole: HubRole) => {
-        if (currentUserRole !== 'Master' && currentUserRole !== 'Owner') {
-            alert("You do not have permission to change roles.");
+        if (!canEditRole) {
+            showAlert("You do not have permission to change roles.", 'error');
             return;
         }
 

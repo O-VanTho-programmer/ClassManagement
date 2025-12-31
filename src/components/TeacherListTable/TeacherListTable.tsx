@@ -2,12 +2,14 @@ import React from 'react'
 import LoadingState from '../QueryState/LoadingState';
 import ErrorState from '../QueryState/ErrorState';
 import { Book, Edit, Users } from 'lucide-react';
+import { useHasPermission } from '@/hooks/useHasPermission';
 
 type Props = {
     teacherDatas: TeacherWorkload[];
     isLoading: boolean;
     isError: boolean;
     error: any;
+    hudId: string;
     handleOpenEditModal: (teacher: TeacherInHub) => void;
 }
 
@@ -16,8 +18,27 @@ export default function TeacherListTable({
     isLoading,
     isError,
     error,
+    hudId,
     handleOpenEditModal,
 }: Props) {
+    const { hasPermission: canViewTeachers } = useHasPermission(hudId, 'VIEW_TEACHER');
+
+    if (!canViewTeachers) {
+        return (
+            <div className="flex items-center justify-center min-h-[250px]">
+                <div className="text-center">
+                    <h1 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h1>
+                    <p className="text-gray-600">
+                        You don't have permission to view this section.
+                    </p>
+                    <p className="text-sm text-gray-500 mt-2">
+                        Required permission: "VIEW TEACHER"
+                    </p>
+                </div>
+            </div>
+        )
+    }
+
     if (isLoading) return <LoadingState fullScreen message="Loading your hubs..." />;
     if (isError) return (
         <ErrorState

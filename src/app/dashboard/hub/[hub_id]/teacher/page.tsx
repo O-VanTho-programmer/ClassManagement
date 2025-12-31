@@ -1,9 +1,11 @@
 'use client';
 
+import { useAlert } from "@/components/AlertProvider/AlertContext";
 import Button from "@/components/Button/Button";
 import SearchBar from "@/components/SearchBar/SearchBar";
 import TeacherListTable from "@/components/TeacherListTable/TeacherListTable";
 import { useGetTeachersWorkload } from "@/hooks/useGetTeacherWorkload";
+import { useHasPermission } from "@/hooks/useHasPermission";
 import { UserPlus } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -11,6 +13,9 @@ import { useMemo, useState } from "react";
 export default function TeacherPage() {
     const { hub_id } = useParams();
     const router = useRouter();
+    const { showAlert } = useAlert();
+
+    const { hasPermission: canEditMember } = useHasPermission(hub_id as string, "EDIT_MEMBER");
 
     const [searchTerm, setSearchTerm] = useState('');
     const [isAddModalOpen, setAddModalOpen] = useState(false);
@@ -24,6 +29,15 @@ export default function TeacherPage() {
         );
     }, [teachers, searchTerm]);
 
+    const handleGoToManageMember = () => {
+        if (!canEditMember) {
+            showAlert("You don't have permission to edit member", 'error');
+            return;
+        }
+
+        router.push("teacher/add_and_permisson")
+    }
+
     return (
         <div className="bg-gray-50 min-h-screen">
             <h1 className="text-3xl font-bold text-gray-900 mb-6">Teacher Management</h1>
@@ -36,17 +50,18 @@ export default function TeacherPage() {
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
 
-                <Button onClick={() => {router.push("teacher/add_and_permisson")}} color="blue" icon={UserPlus} title="Add & Permission" />
+                <Button style={!canEditMember ? 'disable' : ''} onClick={handleGoToManageMember} color="blue" icon={UserPlus} title="Add & Permission" />
             </div>
 
             {/* Main Content Table */}
             <div className="bg-white rounded-xl shadow-lg">
                 <TeacherListTable
-                teacherDatas={filteredTeachers}
-                isLoading={isLoading}
-                isError={isError}
-                error={error}
-                handleOpenEditModal={() => {}}
+                    teacherDatas={filteredTeachers}
+                    isLoading={isLoading}
+                    isError={isError}
+                    error={error}
+                    handleOpenEditModal={() => { }}
+                    hudId={hub_id as string}
                 />
             </div>
 

@@ -139,7 +139,7 @@ function HomeworkSubmissionPage() {
 
       <div className='mt-4 md:flex gap-3'>
         <button
-          onClick={() => handleOpenSetKeyModal}
+          onClick={handleOpenSetKeyModal}
           className="cursor-pointer flex items-center px-4 py-2 bg-yellow-100 text-yellow-800 font-medium rounded-lg hover:bg-yellow-200 transition-colors"
         >
           <Key size={16} className="mr-2" />

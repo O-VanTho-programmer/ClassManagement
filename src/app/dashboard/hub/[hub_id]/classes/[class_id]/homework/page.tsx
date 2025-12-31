@@ -1,11 +1,10 @@
 'use client'
 
 import EditAssignmentHomeworkModal from '@/components/EditAssignmentHomeworkModal/EditAssignmentHomeworkModal';
-import HomeworkCard from '@/components/HomeworkCard/HomeworkCard';
+import PermissionGuardClient from '@/components/PermissionGuard/PermissionGuardClient';
 import ViewClassHomeworkList from '@/components/ViewClassHomeworkList/ViewClassHomeworkList';
 import ViewHomeworkModal from '@/components/ViewHomeworkModal/ViewHomeworkModal';
 import { useGetClassHomeworkByClassId } from '@/hooks/useGetClassHomeworkByClassId';
-import formatDateForCompare from '@/utils/Format/formatDateForCompare';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState } from 'react'
 
@@ -13,6 +12,7 @@ export default function ClassHomeworkPage() {
 
     const router = useRouter();
     const { class_id } = useParams();
+    const { hub_id } = useParams();
 
     const [isViewOpen, setViewOpen] = useState(false);
     const [isEditOpen, setEditOpen] = useState(false);
@@ -39,25 +39,30 @@ export default function ClassHomeworkPage() {
     const handleCloseModals = () => {
         setViewOpen(false);
         setEditOpen(false);
-        setSelectedAssignment(null); 
+        setSelectedAssignment(null);
     };
 
     return (
-        <div className="p-8 bg-gray-50 min-h-screen">
+        <div className="bg-gray-50 min-h-screen">
             <h1 className="text-3xl font-bold text-gray-900 mb-6">Class Homework</h1>
 
             <div className="">
-                <ViewClassHomeworkList
-                    assignments={assignments as ClassHomeworkWithClassName[]}
-                    isLoading={isLoading}
-                    isError={isError}
-                    handleViewDetails={handleViewDetails}
-                    handleEdit={handleEdit}
-                    handleViewSubmissions={handleViewSubmissions}
-                />
+                <PermissionGuardClient
+                    hubId={hub_id as string}
+                    requiredPermission={"VIEW_HOMEWORK"}
+                >
+                    <ViewClassHomeworkList
+                        assignments={assignments as ClassHomeworkWithClassName[]}
+                        isLoading={isLoading}
+                        isError={isError}
+                        handleViewDetails={handleViewDetails}
+                        handleEdit={handleEdit}
+                        handleViewSubmissions={handleViewSubmissions}
+                    />
+                </PermissionGuardClient>
             </div>
 
-            {selectedAssignment && isViewOpen &&(
+            {selectedAssignment && isViewOpen && (
                 <ViewHomeworkModal
                     isOpen={isViewOpen}
                     onClose={handleCloseModals}

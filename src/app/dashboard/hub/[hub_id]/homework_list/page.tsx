@@ -5,6 +5,7 @@ import Button from '@/components/Button/Button';
 import DeleteHomeworkModal from '@/components/DeleteHomeworkModal/DeleteHomeworkModal';
 import EditHomeworkModal from '@/components/EditHomeworkModal/EditHomeworkModal';
 import HomeworkListTable from '@/components/HomeworkListTable/HomeworkListTable';
+import PermissionGuardClient from '@/components/PermissionGuard/PermissionGuardClient';
 import SearchBar from '@/components/SearchBar/SearchBar';
 import { useGetHomeworkListQuery } from '@/hooks/useGetHomeworkListQuery';
 import { useHasPermission } from '@/hooks/useHasPermission';
@@ -21,14 +22,14 @@ export default function HomeworkListPage() {
   }
 
   const [searchTerm, setSearchTerm] = useState<string>("");
-  
+
   const { data: homeworkList = [], isLoading: isLoadingHomeworkList, isError: isErrorHomeworkList, error: errorHomeworkList } = useGetHomeworkListQuery(hub_id as string);
   const [selectedHomework, setSelectedHomework] = useState<Homework | null>(null);
   const [isAssignHomeworkToClassModalOpen, setIsAssignHomeworkToClassModalOpen] = useState(false);
   const [isEditHomeworkModalOpen, setIsEditHomeworkModalOpen] = useState(false);
   const [isDeleteHomeworkModalOpen, setIsDeleteHomeworkModalOpen] = useState(false);
 
-  const {hasPermission: canCreateHomework} = useHasPermission(hub_id as string, "CREATE_HOMEWORK");
+  const { hasPermission: canCreateHomework } = useHasPermission(hub_id as string, "CREATE_HOMEWORK");
 
   const filteredHomeworkList = useMemo(() => {
     return homeworkList.filter((hw) => {
@@ -71,16 +72,21 @@ export default function HomeworkListPage() {
       </div>
 
       <div className="bg-white rounded-xl shadow-lg">
-        <HomeworkListTable
-          isLoading={isLoadingHomeworkList}
-          isError={isErrorHomeworkList}
-          error={errorHomeworkList}
-          homeworkList={filteredHomeworkList as Homework[]}
-          onSelectAssignHomeworkToClass={handleSelectAssignHomeworkToClass}
-          onSelectEditHomework={handleSelectEditHomework}
-          onSelectDeleteHomework={handleDeleteHomework}
-          onViewHomeworkSubmissions={handleViewHomeworkSubmissions}
-        />
+        <PermissionGuardClient
+          hubId={hub_id as string}
+          requiredPermission={"VIEW_HOMEWORK"}
+        >
+          <HomeworkListTable
+            isLoading={isLoadingHomeworkList}
+            isError={isErrorHomeworkList}
+            error={errorHomeworkList}
+            homeworkList={filteredHomeworkList as Homework[]}
+            onSelectAssignHomeworkToClass={handleSelectAssignHomeworkToClass}
+            onSelectEditHomework={handleSelectEditHomework}
+            onSelectDeleteHomework={handleDeleteHomework}
+            onViewHomeworkSubmissions={handleViewHomeworkSubmissions}
+          />
+        </PermissionGuardClient>
       </div>
 
       {selectedHomework && isAssignHomeworkToClassModalOpen && (

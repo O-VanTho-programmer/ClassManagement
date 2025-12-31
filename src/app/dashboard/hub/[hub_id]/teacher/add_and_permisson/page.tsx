@@ -23,7 +23,7 @@ export default function ManagementTeacherModal() {
     return (
 
         <div className="bg-gray-50 min-h-screen">
-            <h1 className="text-3xl font-bold text-gray-900 mb-6">Teacher Management - Manage Member</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-6">Teacher Management <span className="text-base! text-gray-400 font-medium">- Manage Member</span></h1>
 
             <EditRoleOfTeacher
                 hubId={hub_id as string}

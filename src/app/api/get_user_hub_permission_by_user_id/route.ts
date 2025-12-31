@@ -26,7 +26,7 @@ export async function POST(req: Request) {
               p.Code,
               p.Description
             FROM hub_role hr
-            JOIN hub_permissions hp ON hr.HubId = hp.HubId
+            JOIN hub_permissions hp ON hr.HubRoleId = hp.HubRoleId
             JOIN permissions p ON hp.PermissionId = p.PermissionId
             WHERE hr.UserId = ? AND hr.HubId = ?
           `;

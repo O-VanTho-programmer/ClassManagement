@@ -11,7 +11,7 @@ function HomeworkSubmissionsPage() {
 
     const router = useRouter();
 
-    const { homework_id } = useParams();
+    const { homework_id, hub_id } = useParams();
     const { data: homeworkClass = [], isLoading, isError, error } = useGetClassHomeworkByHomeworkId(homework_id as string);
 
     const [selectedAssignment, setSelectedAssignment] = useState<ClassHomework | null>(null);
@@ -40,14 +40,13 @@ function HomeworkSubmissionsPage() {
         const classId = assignment.class_id;
         const homeworkId = assignment.homework_id;
         const assignmentId = assignment.class_homework_id;
-    
+
         router.push(`../../classes/${classId}/homework/${homeworkId}/${assignmentId}/submission`)
     };
 
     return (
         <div>
             <h1 className='text-2xl font-bold mb-4'>Homework Submissions</h1>
-
             <ViewClassHomeworkList
                 assignments={homeworkClass as ClassHomeworkWithClassName[]}
                 isLoading={isLoading}
@@ -56,6 +55,7 @@ function HomeworkSubmissionsPage() {
                 handleEdit={handleEdit}
                 handleViewSubmissions={handleViewSubmissions}
             />
+
         </div>
     )
 }

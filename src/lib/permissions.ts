@@ -1,6 +1,7 @@
 import pool from "@/lib/db";
 import { getCurrentUser } from "./curentUser";
 import { NextResponse } from "next/server";
+import { checkPermissions } from "./permission/checkPermissions";
 
 /**
  * Permission codes used in the system
@@ -92,17 +93,7 @@ export async function hasPermission(
   requiredPermission: PermissionCode | PermissionCode[]
 ): Promise<boolean> {
   const permissions = await getUserHubPermissions(userId, hubId);
-  
-  // Owner has all permissions
-  if (permissions.includes("Owner")) {
-    return true;
-  }
-
-  const requiredPermissions = Array.isArray(requiredPermission) 
-    ? requiredPermission 
-    : [requiredPermission];
-
-  return requiredPermissions.some(perm => permissions.includes(perm));
+  return checkPermissions(permissions, requiredPermission);
 }
 
 /**
