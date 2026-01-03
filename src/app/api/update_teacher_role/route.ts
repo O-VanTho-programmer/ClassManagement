@@ -2,7 +2,7 @@ import pool from "@/lib/db";
 import { NextResponse } from "next/server";
 import { checkPermission, PERMISSIONS } from "@/lib/permissions";
 import { HubRole } from "@/types/Hub";
-import { updateUserPermissionInHub } from "@/lib/api/updateUserPermissionInHub";
+import { updateUserPermissionInHubServer } from "@/lib/updateUserPermissionInHubServer";
 
 const ROLE_TEMPLATE = {
     'Member': [
@@ -92,7 +92,7 @@ export async function PUT(req: Request) {
         const permissions = ROLE_TEMPLATE[newRole] || [];
 
         if (permissions && permissions.length > 0) {
-            await updateUserPermissionInHub(permissions, teacherId, hubId);
+            await updateUserPermissionInHubServer(permissions, teacherId, hubId);
         }
 
         return NextResponse.json({ message: "Teacher role updated successfully", result }, { status: 200 });
