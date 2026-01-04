@@ -26,7 +26,7 @@ export default function EditAssignmentHomeworkModal({
     class_id,
 }: EditAssignmentHomeworkModalProps) {
     const queryClient = useQueryClient();
-    const {showAlert} = useAlert();
+    const { showAlert } = useAlert();
 
     const [assignedDate, setAssignedDate] = useState(initialAssignedDate);
     const [dueDate, setDueDate] = useState(initialDueDate);
@@ -109,9 +109,14 @@ export default function EditAssignmentHomeworkModal({
 
             {isDeleteOpen && selectedAssignment && (
                 <DeleteConfirmHomeworkAssignment
+                    class_id={class_id as string}
                     isOpen={isDeleteOpen}
                     onClose={() => setDeleteOpen(false)}
                     assignment={selectedAssignment}
+                    onDeleteSuccess={() => {
+                        onClose();
+                        setSelectedAssignment(null);
+                    }}
                 />
             )}
         </div>

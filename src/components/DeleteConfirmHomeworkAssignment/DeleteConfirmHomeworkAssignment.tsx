@@ -9,12 +9,16 @@ type DeleteConfirmHomeworkAssignmentProps = {
     isOpen: boolean;
     onClose: () => void;
     assignment: ClassHomework,
+    onDeleteSuccess: () => void;
+    class_id: string;
 }
 
 function DeleteConfirmHomeworkAssignment({
     isOpen,
     onClose,
+    onDeleteSuccess,
     assignment,
+    class_id,
 }: DeleteConfirmHomeworkAssignmentProps) {
 
     const queryClient = useQueryClient();
@@ -23,8 +27,9 @@ function DeleteConfirmHomeworkAssignment({
     const mutation = useMutation({
         mutationFn: (class_homework_id: string) => deleteClassHomework(class_homework_id),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['homework_by_class_id', assignment.class_id] });
+            queryClient.invalidateQueries({ queryKey: ['homework_by_class_id', class_id] });
             showAlert('Homework unassigned successfully.', 'success');
+            onDeleteSuccess();
             onClose();
         },
         onError: (error: Error) => {
