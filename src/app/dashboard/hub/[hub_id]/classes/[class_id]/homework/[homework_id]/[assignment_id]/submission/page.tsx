@@ -20,7 +20,7 @@ import { saveAnswerKey } from '@/lib/api/HomeworkSubmission/saveAnswerKey';
 import { saveGrade } from '@/lib/api/HomeworkSubmission/saveGrade';
 import { saveStudentSubmission } from '@/lib/api/HomeworkSubmission/saveStudentSubmission';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { FileQuestionMarkIcon, Key } from 'lucide-react';
+import { AlertCircle, CheckCircle, FileQuestionMarkIcon, Key } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
 
@@ -81,9 +81,9 @@ function HomeworkSubmissionPage() {
   // --- Permissons ---
 
   const { hub_id } = useParams();
-  const {hasPermission: canGradeHomework} = useHasPermission(hub_id as string, 'GRADE_HOMEWORK');
-  const {hasPermission: canSetKeyAnswerHomework} = useHasPermission(hub_id as string, 'SET_KEY_ANSWER_HOMEWORK');
-  
+  const { hasPermission: canGradeHomework } = useHasPermission(hub_id as string, 'GRADE_HOMEWORK');
+  const { hasPermission: canSetKeyAnswerHomework } = useHasPermission(hub_id as string, 'SET_KEY_ANSWER_HOMEWORK');
+
 
   // --- Handlers ---
 
@@ -93,7 +93,7 @@ function HomeworkSubmissionPage() {
   };
 
   const handleOpenGrader = (submission: StudentWithHomework) => {
-    if(!canGradeHomework){
+    if (!canGradeHomework) {
       showAlert("You don't have permission to grade homework", 'error');
       return;
     }
@@ -148,6 +148,18 @@ function HomeworkSubmissionPage() {
         <Button color='blue' onClick={() => { router.push(`/public/form/${assignment_id}`) }} style='w-fit h-fit' icon={FileQuestionMarkIcon} title='Copy Form' />
       </div>
 
+      {!answerKey ? (
+        <div className='mt-4 text-red-500 flex items-center gap-2'>
+          <AlertCircle size={16} className='text-red-500' />
+          <p className='text-sm'>No answer key set yet. Please set an answer key to grade the homework.</p>
+        </div>
+      ) : (
+        <div className='mt-4 text-green-500 flex items-center gap-2'>
+          <CheckCircle size={16} className='text-green-500' />
+          <p className='text-sm'>Answer key set. You can now grade the homework.</p>
+        </div>
+      )}
+
 
       <div className='flex justify-end mt-6'>
         <ToggleViewClassList isTableView={viewListSubmission} setIsTableView={setViewListSubmission} />
@@ -187,12 +199,23 @@ function HomeworkSubmissionPage() {
           isOpen={isUploadModalOpen}
           onClose={() => { setUploadModalOpen(false); setSelectedSubmission(null); }}
           studentName={selectedSubmission.name}
-          onUpload={(files,) => uploadMutation.mutate(
+          onUpload={(files) => uploadMutation.mutate(
             {
               files,
               student_homework_id: selectedSubmission!.student_homework_id,
               due_date: selectedSubmission!.due_date
-            })}
+            }, {
+              onSuccess: () => {
+                queryClient.invalidateQueries({ queryKey: ['student_homework_question_by_class_homework_id', assignment_id] });
+                showAlert("Answer uploaded successfully", 'success');
+                setUploadModalOpen(false);
+                setSelectedSubmission(null);
+              },
+              onError: (error: Error) => {
+                showAlert(`Error uploading answer: ${error.message}`, 'error');
+              }
+            })
+          }
           isUploading={uploadMutation.isPending}
         />
       )}

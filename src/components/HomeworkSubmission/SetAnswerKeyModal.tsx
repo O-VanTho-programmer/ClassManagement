@@ -51,8 +51,7 @@ export default function SetAnswerKeyModal({
                 <div className="pt-6 flex justify-end gap-3 border-t">
                     {/* --- FIX: Corrected "type.button" to "type='button'" --- */}
                     <Button
-                        onClick={handleSave}
-                        disabled={isSaving}
+                        onClick={onClose}
                         color='white'
                         title='Cancel'
                     />
@@ -60,7 +59,7 @@ export default function SetAnswerKeyModal({
                         color='blue'
                         onClick={handleSave}
                         disabled={isSaving}
-                        title='Save Key'
+                        title={isSaving ? 'Saving...' : 'Save Key'}
                         isSaving={isSaving}
                     />
                 </div>

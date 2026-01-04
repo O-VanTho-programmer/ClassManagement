@@ -81,7 +81,7 @@ export default function EditPermissionOfMemberModal({
             if (res?.status === 200) {
                 showAlert("Permissions saved successfully.", 'success');
                 teacher.permissions = Array.from(selectedPermissions);
-            }else {
+            } else {
                 showAlert("Failed to save permissions.", 'warning');
             }
         } catch (error) {
@@ -170,14 +170,13 @@ export default function EditPermissionOfMemberModal({
                 {/* Footer */}
                 <div className="p-5 border-t border-gray-100 bg-white flex justify-end gap-3 z-10">
                     <Button color='white' onClick={onClose} title='Cancle' />
-
+                    
                     <Button
-                        icon={isSaving ? Loader2 : Save}
-                        style={isSaving ? "animate-spin disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed" : ""}
                         title={isSaving ? "Saving..." : "Save Changes"}
                         onClick={handleSave}
                         disabled={isSaving}
                         color='blue'
+                        isSaving={isSaving}
                     />
                 </div>
             </div>

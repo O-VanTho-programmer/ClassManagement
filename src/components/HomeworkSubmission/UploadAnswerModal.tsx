@@ -48,7 +48,7 @@ export default function UploadAnswerModal({
                         {previews.length > 0 ? (
                             <div className='flex'>
                                 {previews.map((preview, index) => (
-                                    <img src={preview} alt="Submission preview" className="max-h-44 object-contain rounded-md" />
+                                    <img key={index} src={preview} alt="Submission preview" className="max-h-44 object-contain rounded-md" />
                                 ))}
                             </div>
                         ) : (

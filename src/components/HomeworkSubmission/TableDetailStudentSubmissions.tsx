@@ -9,7 +9,7 @@ import Button from '../Button/Button';
 import { addStudentHomeworkQuestion } from '@/lib/api/addStudentHomeworkQuestion';
 import { gradeStudentHomeworkUseAI } from '@/lib/api/gradeStudentHomeworkUseAI';
 import { saveGrade } from '@/lib/api/HomeworkSubmission/saveGrade';
-import { QueryClient, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface TableDetailStudentSubmissionsProps {
     studentSubmissionsList: StudentWithHomework[],
