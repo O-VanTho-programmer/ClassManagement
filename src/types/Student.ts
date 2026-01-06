@@ -54,6 +54,14 @@ type StudentWithHomework = Student & {
     feedback?: string,
 }
 
+type StudentWithHomeworkPublic = Student & {
+    student_homework_id: string;
+    homework_status: string;
+    submission_urls: ResultUpload[];
+    submitted_date: string;
+    is_graded: boolean;
+}
+
 type StudentHomeworkQuestion = StudentHomeworkQuestionsInputDTO & {
     student_homework_question_id: string,
 }

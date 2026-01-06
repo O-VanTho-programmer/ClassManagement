@@ -5,12 +5,12 @@ import IconButton from '@/components/IconButton/IconButton';
 import ErrorState from '@/components/QueryState/ErrorState';
 import LoadingState from '@/components/QueryState/LoadingState';
 import { useFileImg } from '@/hooks/useFileImg';
-import { useGetClassHomeworkById } from '@/hooks/useGetClassHomeworkById';
-import { useGetStudentListByAssignmentId } from '@/hooks/useGetStudentListByAssignmentId';
+import { useGetClassHomeworkByIdPublic } from '@/hooks/useGetClassHomeworkByIdPublic';
+import { useGetStudentListByAssignmentIdPublic } from '@/hooks/useGetStudentListByAssignmentIdPublic';
 import { useUploadSubmissionMutation } from '@/hooks/useUploadSubmission';
 import { getUrlImageByUploadOnCloudiary } from '@/lib/api/getUrlImageByUploadOnCloudiary';
 import { saveStudentSubmission } from '@/lib/api/HomeworkSubmission/saveStudentSubmission';
-import { AlertCircle, Copy, FileText, Loader2, Send, Trash2, Upload, User } from 'lucide-react';
+import {  Copy, FileText, Loader2, Send, Trash2, Upload, User } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation'
 import React, { useState, useMemo } from 'react'
 
@@ -18,8 +18,8 @@ function AssignmentForm() {
     const { assignment_id } = useParams();
     const router = useRouter();
 
-    const { data: assignment, isLoading: isAssignmentLoading, isError: isAssignmentError, error: assignmentError } = useGetClassHomeworkById(assignment_id as string);
-    const { data: studentLists, isLoading: isStudentListsLoading, isError: isStudentListsError, error: studentListsError } = useGetStudentListByAssignmentId(assignment_id as string);
+    const { data: assignment, isLoading: isAssignmentLoading, isError: isAssignmentError, error: assignmentError } = useGetClassHomeworkByIdPublic(assignment_id as string);
+    const { data: studentLists, isLoading: isStudentListsLoading, isError: isStudentListsError, error: studentListsError } = useGetStudentListByAssignmentIdPublic(assignment_id as string);
 
     const { showAlert } = useAlert();
 
@@ -33,7 +33,6 @@ function AssignmentForm() {
     // Combine existing submission URLs with new file previews
     const allPreviews = useMemo(() => {
         const existingSubmissions = selectedStudent?.submission_urls?.map(sub => sub.url) || [];
-        console.log(existingSubmissions, previews); 
         return [...existingSubmissions, ...previews];
     }, [selectedStudent, previews]);
 
@@ -68,7 +67,7 @@ function AssignmentForm() {
             })
 
         } catch (error) {
-            console.log(error);
+            showAlert("Internal server error", "error");
         }
     }
 
@@ -180,7 +179,6 @@ function AssignmentForm() {
                                                 onClick={() => {
                                                     // Adjust index to account for existing submissions
                                                     const newFileIndex = idx;
-                                                    console.log(newFileIndex);
                                                     handleRemoveFile(newFileIndex);
                                                 }}
                                                 className="absolute top-1 right-1 bg-red-500 cursor-pointer text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
