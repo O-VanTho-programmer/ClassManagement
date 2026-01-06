@@ -48,12 +48,6 @@ const timeToGridRow = (time: string): number => {
     return (minutesFromStart / 30) + 1;
 };
 
-const dayToGridCol = (day: string): number | null => {
-    const dayIndex = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].indexOf(day.trim());
-    if (dayIndex === -1) return null;
-    return dayIndex; // 0-indexed for array
-};
-
 const formatHeaderDate = (date: Date): { day: string, date: string } => {
     return {
         day: date.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase(),
@@ -96,7 +90,7 @@ export default function CalendarSchedule({
 
         for (const cls of classes) {
             if (!Array.isArray(cls.schedule)) continue;
-
+            
             for (const session of cls.schedule) {
                 const day = session.day.trim();
                 const rowStart = timeToGridRow(session.startTime);
@@ -118,6 +112,7 @@ export default function CalendarSchedule({
                 }
             }
         }
+
         return { eventsMap, coveredSlots };
     }, [classes]);
 
@@ -193,7 +188,6 @@ export default function CalendarSchedule({
                                     {/* Day Columns */}
                                     {dayNames.map(day => {
                                         const eventKey = `${day}-${time}`;
-
                                         // Case 1: An event STARTS in this slot
                                         if (eventsMap.has(eventKey)) {
                                             const { event, session, rowSpan } = eventsMap.get(eventKey)!;

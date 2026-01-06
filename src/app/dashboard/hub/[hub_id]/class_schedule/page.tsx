@@ -2,7 +2,6 @@
 
 import { useGetClassesByHubIdQuery } from '@/hooks/useGetClassesByHubIdQuery';
 import CalendarSchedule from '@/components/CalendarSchedule/CalendarSchedule'
-import { mockClassListData } from '@/data_sample/classDataMock';
 import React from 'react'
 import { useParams } from 'next/navigation';
 import LoadingState from '@/components/QueryState/LoadingState';
