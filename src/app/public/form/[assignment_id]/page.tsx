@@ -177,8 +177,9 @@ function AssignmentForm() {
                                         {!isExistingSubmission && (
                                             <button
                                                 onClick={() => {
-                                                    // Adjust index to account for existing submissions
-                                                    const newFileIndex = idx;
+                                                    // Offset index to match newly selected files array
+                                                    const existingSubmissionCount = selectedStudent?.submission_urls?.length || 0;
+                                                    const newFileIndex = idx - existingSubmissionCount;
                                                     handleRemoveFile(newFileIndex);
                                                 }}
                                                 className="absolute top-1 right-1 bg-red-500 cursor-pointer text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"

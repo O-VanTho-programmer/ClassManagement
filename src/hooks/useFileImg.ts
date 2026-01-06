@@ -23,11 +23,8 @@ export function useFileImg(showAlert: (message: string, type?: AlertType) => voi
 
     const handleRemoveFile = (index: number) => {
         if (!files) return;
-        const newFiles = [...files];
-        const newPreviews = [...previews];
-
-        newFiles.filter((_, i) => i !== index);
-        newPreviews.filter((_, i) => i !== index);
+        const newFiles = files.filter((_, i) => i !== index);
+        const newPreviews = previews.filter((_, i) => i !== index);
         setFiles(newFiles);
         setPreviews(newPreviews);
     }
