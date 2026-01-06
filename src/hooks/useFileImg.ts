@@ -1,7 +1,7 @@
 import { AlertType } from "@/components/AlertProvider/AlertContext";
 import { useState } from "react";
 
-export function useFileImg(showAlert: (message: string, type?: AlertType) => void) { 
+export function useFileImg(showAlert: (message: string, type?: AlertType) => void) {
     const [files, setFiles] = useState<File[] | null>(null);
     const [previews, setPreviews] = useState<string[]>([]);
 
@@ -22,16 +22,15 @@ export function useFileImg(showAlert: (message: string, type?: AlertType) => voi
     }
 
     const handleRemoveFile = (index: number) => {
-        if(!files) return;
+        if (!files) return;
         const newFiles = [...files];
         const newPreviews = [...previews];
 
         newFiles.filter((_, i) => i !== index);
         newPreviews.filter((_, i) => i !== index);
-
         setFiles(newFiles);
         setPreviews(newPreviews);
-    }        
+    }
 
     return { files, previews, handleFileChange, handleRemoveFile };
 }

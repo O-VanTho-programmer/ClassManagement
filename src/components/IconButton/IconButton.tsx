@@ -17,7 +17,7 @@ export default function IconButton({
     const Icon = icon;
 
     return (
-        <button onClick={onClick} className={`cursor-pointer ${className}`}>
+        <button onClick={onClick} className={`cursor-pointer w-fit h-fit ${className}`}>
             <Icon size={size} />
         </button>
     )
