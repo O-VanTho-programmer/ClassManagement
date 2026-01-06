@@ -1,4 +1,4 @@
-import { BellElectricIcon, CalendarClock, CalendarDays, ChevronLeftIcon, ChevronRightIcon, GraduationCapIcon, HomeIcon, SettingsIcon, StarIcon, XIcon } from "lucide-react";
+import { ChevronLeftIcon, ChevronRightIcon, XIcon } from "lucide-react";
 import NavigationSection from "../NavigationSection/NavigationSection";
 import { useParams } from "next/navigation";
 

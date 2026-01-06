@@ -1,32 +1,33 @@
-import { useGetTeacherListByHubId } from "@/hooks/useGetTeacherListByHubId";
 import { ClassData } from "@/types/ClassData";
 import { Schedule } from "@/types/Schedule";
-import { useState, useMemo } from "react";
-import Selection, { Option } from "../Selection/Selection";
-import SquareButton from "../SquareButton/SquareButton";
+import { useState, useMemo, useEffect } from "react";
 import { X } from "lucide-react";
-import Button from "../Button/Button";
+import Selection, { Option } from "@/components/Selection/Selection";
+import SquareButton from "@/components/SquareButton/SquareButton";
+import Button from "@/components/Button/Button";
 
-interface CreateClassModalProps {
+interface EditClassModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (classData: Omit<ClassData, 'id'>) => void;
-    hubId: string;
+    onSubmit: (classData: ClassData) => void;
+    editingClass: ClassData | null;
+    teacherList: Teacher[];
 }
 
-export default function CreateClassModal({ isOpen, onClose, onSubmit, hubId }: CreateClassModalProps) {
+export default function EditClassModal({ isOpen, onClose, onSubmit, editingClass, teacherList }: EditClassModalProps) {
+    const formatDateForInput = (dateString: string) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return dateString;
+        return date.toISOString().split('T')[0];
+    };
 
-    if(!isOpen){
-        return null;
-    }
-
-    const { data: teacherList = [], isLoading: isLoadingTeachers, isError: isErrorTeachers, error: teachersError } = useGetTeacherListByHubId(hubId);
-
-    const [formData, setFormData] = useState<Omit<ClassData, 'id'>>({
+    const initialFormState: ClassData = {
+        id: '',
         name: '',
         schedule: [{ day: 'Monday', startTime: '', endTime: '' }],
         studentCount: 0,
-        teacher: '',  //accept teacher Id
+        teacher: '',
         assistant: '',
         subject: '',
         tuition: '',
@@ -35,7 +36,28 @@ export default function CreateClassModal({ isOpen, onClose, onSubmit, hubId }: C
         status: 'Active',
         startDate: '',
         endDate: '',
-    });
+    };
+
+    const [formData, setFormData] = useState<ClassData>(initialFormState);
+    const [errors, setErrors] = useState<Record<string, string>>({});
+
+    useEffect(() => {
+        if (isOpen && editingClass) {
+            setFormData({
+                ...editingClass,
+                startDate: formatDateForInput(editingClass.startDate),
+                endDate: formatDateForInput(editingClass.endDate),
+                schedule: editingClass.schedule.length > 0 ? editingClass.schedule : [{ day: 'Monday', startTime: '', endTime: '' }],
+                teacher: teacherList.find(teacher => teacher.name.match(editingClass.teacher))?.id || '',
+                assistant: editingClass.assistant
+                    ? teacherList.find(teacher => teacher.name === editingClass.assistant)?.id ?? ''
+                    : '',
+            });
+        } else if (!isOpen) {
+            setFormData(initialFormState);
+            setErrors({});
+        }
+    }, [isOpen, editingClass]);
 
     const teacherOptions: Option[] = useMemo(() => {
         return teacherList.map((teacher: Teacher) => ({
@@ -44,7 +66,6 @@ export default function CreateClassModal({ isOpen, onClose, onSubmit, hubId }: C
         }));
     }, [teacherList]);
 
-    // Convert teacher list to options for assistant, excluding the selected teacher
     const assistantOptions: Option[] = useMemo(() => {
         return teacherList
             .filter((teacher: Teacher) => teacher.id !== formData.teacher)
@@ -53,8 +74,6 @@ export default function CreateClassModal({ isOpen, onClose, onSubmit, hubId }: C
                 value: teacher.id
             }));
     }, [teacherList, formData.teacher]);
-
-    const [errors, setErrors] = useState<Record<string, string>>({});
 
     const validateForm = () => {
         const newErrors: Record<string, string> = {};
@@ -80,7 +99,6 @@ export default function CreateClassModal({ isOpen, onClose, onSubmit, hubId }: C
             }
         });
 
-
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -89,23 +107,8 @@ export default function CreateClassModal({ isOpen, onClose, onSubmit, hubId }: C
         e.preventDefault();
         if (validateForm()) {
             onSubmit(formData);
-            // setFormData({
-            //     name: '',
-            //     schedule: [{ day: 'Monday', startTime: '', endTime: '' }],
-            //     studentCount: 0,
-            //     teacher: '',
-            //     assistant: '',
-            //     subject: '',
-            //     tuition: '',
-            //     tuitionType: 'Monthly',
-            //     base: '',
-            //     status: 'Active',
-            //     startDate: '',
-            //     endDate: '',
-            // });
+            onClose();
         }
-
-
     };
 
     const addScheduleSlot = () => {
@@ -134,18 +137,16 @@ export default function CreateClassModal({ isOpen, onClose, onSubmit, hubId }: C
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 overlay flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
                 {/* Header */}
                 <div className="flex justify-between items-center p-6 border-b border-gray-200">
-                    <h2 className="text-2xl font-bold text-gray-900">Create New Class</h2>
+                    <h2 className="text-2xl font-bold text-gray-900">Edit Class</h2>
                     <button
                         onClick={onClose}
-                        className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+                        className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer rounded-full p-1 hover:bg-gray-100"
                     >
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
+                        <X size={24} />
                     </button>
                 </div>
 
@@ -161,8 +162,7 @@ export default function CreateClassModal({ isOpen, onClose, onSubmit, hubId }: C
                                 type="text"
                                 value={formData.name}
                                 onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.name ? 'border-red-500' : 'border-gray-300'
-                                    }`}
+                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
                                 placeholder="Enter class name"
                             />
                             {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
@@ -176,8 +176,7 @@ export default function CreateClassModal({ isOpen, onClose, onSubmit, hubId }: C
                                 type="text"
                                 value={formData.subject}
                                 onChange={(e) => setFormData(prev => ({ ...prev, subject: e.target.value }))}
-                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.subject ? 'border-red-500' : 'border-gray-300'
-                                    }`}
+                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${errors.subject ? 'border-red-500' : 'border-gray-300'}`}
                                 placeholder="Enter subject"
                             />
                             {errors.subject && <p className="text-red-500 text-sm mt-1">{errors.subject}</p>}
@@ -187,59 +186,41 @@ export default function CreateClassModal({ isOpen, onClose, onSubmit, hubId }: C
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Teacher *
                             </label>
-                            {isLoadingTeachers ? (
-                                <div className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500">
-                                    Loading teachers...
-                                </div>
-                            ) : isErrorTeachers ? (
-                                <div className="w-full px-3 py-2 border border-red-300 rounded-lg bg-red-50 text-red-600 text-sm">
-                                    Error loading teachers
-                                </div>
-                            ) : (
-                                <>
-                                    <div className="w-full">
-                                        <Selection
-                                            value={formData.teacher}
-                                            placeholder="Select teacher"
-                                            options={teacherOptions}
-                                            onChange={(value) => setFormData(prev => {
-                                                // Clear assistant if it was set to the same teacher
-                                                const newAssistant = prev.assistant === value ? '' : prev.assistant;
-                                                return { ...prev, teacher: value, assistant: newAssistant };
-                                            })}
-                                        />
-                                    </div>
-                                    {errors.teacher && <p className="text-red-500 text-sm mt-1">{errors.teacher}</p>}
-                                </>
-                            )}
+                            <div className="w-full">
+                                <Selection
+                                    value={formData.teacher}
+                                    placeholder="Select teacher"
+                                    options={teacherOptions}
+                                    onChange={(value) => setFormData(prev => {
+                                        const newAssistant = prev.assistant === value ? '' : prev.assistant;
+                                        return { ...prev, teacher: value, assistant: newAssistant };
+                                    })}
+                                />
+                            </div>
+                            {errors.teacher && <p className="text-red-500 text-sm mt-1">{errors.teacher}</p>}
                         </div>
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Assistant
                             </label>
-                            {isLoadingTeachers ? (
-                                <div className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500">
-                                    Loading teachers...
-                                </div>
-                            ) : isErrorTeachers ? (
-                                <div className="w-full px-3 py-2 border border-red-300 rounded-lg bg-red-50 text-red-600 text-sm">
-                                    Error loading teachers
-                                </div>
-                            ) : (
-                                <div className="w-full flex items-center gap-1">
+                            <div className="w-full flex items-center gap-2">
+                                <div className="flex-grow">
                                     <Selection
-                                        value={formData.assistant}
+                                        value={formData.assistant || ''}
                                         placeholder="Select assistant (optional)"
                                         options={assistantOptions}
                                         onChange={(value) => setFormData(prev => ({ ...prev, assistant: value }))}
                                     />
-
-                                    {formData.assistant && (
-                                        <SquareButton color="blue" icon={X} onClick={() => setFormData(prev => ({ ...prev, assistant: '' }))} />
-                                    )}
                                 </div>
-                            )}
+                                {formData.assistant && (
+                                    <SquareButton
+                                        color="gray"
+                                        icon={X}
+                                        onClick={() => setFormData(prev => ({ ...prev, assistant: '' }))}
+                                    />
+                                )}
+                            </div>
                         </div>
                     </div>
 
@@ -252,19 +233,19 @@ export default function CreateClassModal({ isOpen, onClose, onSubmit, hubId }: C
                             <button
                                 type="button"
                                 onClick={addScheduleSlot}
-                                className="text-sm text-blue-600 hover:text-blue-700 font-medium cursor-pointer"
+                                className="text-sm text-blue-600 hover:text-blue-700 font-medium cursor-pointer flex items-center gap-1"
                             >
                                 + Add Time Slot
                             </button>
                         </div>
 
-                        <div className="space-y-3">
+                        <div className="space-y-3 bg-gray-50 p-4 rounded-lg border border-gray-200">
                             {formData.schedule.map((session, index) => (
-                                <div key={index} className="flex gap-3 items-start">
+                                <div key={index} className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
                                     <select
                                         value={session.day}
                                         onChange={(e) => updateScheduleSlot(index, 'day', e.target.value)}
-                                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full sm:w-1/3 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                                     >
                                         <option value="Monday">Monday</option>
                                         <option value="Tuesday">Tuesday</option>
@@ -275,29 +256,37 @@ export default function CreateClassModal({ isOpen, onClose, onSubmit, hubId }: C
                                         <option value="Sunday">Sunday</option>
                                     </select>
 
-                                    <div className="relative">
-                                        <input
-                                            type="time"
-                                            value={session.startTime}
-                                            onChange={(e) => updateScheduleSlot(index, 'startTime', e.target.value)}
-                                            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors[`schedule-startTime-${index}`] ? 'border-red-500' : 'border-gray-300'}`}
-                                        />
-                                        {errors[`schedule-startTime-${index}`] && <p className="text-red-500 text-xs mt-1 absolute">{errors[`schedule-startTime-${index}`]}</p>}
-                                    </div>
+                                    <div className="flex gap-2 w-full sm:w-2/3">
+                                        <div className="relative w-full">
+                                            <input
+                                                type="time"
+                                                value={session.startTime}
+                                                onChange={(e) => updateScheduleSlot(index, 'startTime', e.target.value)}
+                                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${errors[`schedule-startTime-${index}`] ? 'border-red-500' : 'border-gray-300'}`}
+                                            />
+                                            {errors[`schedule-startTime-${index}`] && <p className="text-red-500 text-xs mt-1 absolute">{errors[`schedule-startTime-${index}`]}</p>}
+                                        </div>
+                                        <span className="self-center text-gray-500">-</span>
+                                        <div className="relative w-full">
+                                            <input
+                                                type="time"
+                                                value={session.endTime}
+                                                onChange={(e) => updateScheduleSlot(index, 'endTime', e.target.value)}
+                                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${errors[`schedule-endTime-${index}`] ? 'border-red-500' : 'border-gray-300'}`}
+                                            />
+                                            {errors[`schedule-endTime-${index}`] && <p className="text-red-500 text-xs mt-1 absolute">{errors[`schedule-endTime-${index}`]}</p>}
+                                        </div>
 
-                                    <div className="relative flex items-center gap-2">
-                                        <input
-                                            type="time"
-                                            value={session.endTime}
-                                            onChange={(e) => updateScheduleSlot(index, 'endTime', e.target.value)}
-                                            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors[`schedule-endTime-${index}`] ? 'border-red-500' : 'border-gray-300'}`}
-                                        />
                                         {formData.schedule.length > 1 && (
-                                            <button type="button" onClick={() => removeScheduleSlot(index)} className="cursor-pointer text-red-500 hover:text-red-700 transition-colors">
-                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                            <button
+                                                type="button"
+                                                onClick={() => removeScheduleSlot(index)}
+                                                className="cursor-pointer text-red-500 hover:text-red-700 transition-colors p-2 hover:bg-red-50 rounded-lg"
+                                                title="Remove slot"
+                                            >
+                                                <X size={20} />
                                             </button>
                                         )}
-                                        {errors[`schedule-endTime-${index}`] && <p className="text-red-500 text-xs mt-1 absolute top-full left-0">{errors[`schedule-endTime-${index}`]}</p>}
                                     </div>
                                 </div>
                             ))}
@@ -314,8 +303,7 @@ export default function CreateClassModal({ isOpen, onClose, onSubmit, hubId }: C
                                 type="date"
                                 value={formData.startDate}
                                 onChange={(e) => setFormData(prev => ({ ...prev, startDate: e.target.value }))}
-                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.startDate ? 'border-red-500' : 'border-gray-300'
-                                    }`}
+                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${errors.startDate ? 'border-red-500' : 'border-gray-300'}`}
                             />
                             {errors.startDate && <p className="text-red-500 text-sm mt-1">{errors.startDate}</p>}
                         </div>
@@ -328,8 +316,7 @@ export default function CreateClassModal({ isOpen, onClose, onSubmit, hubId }: C
                                 type="date"
                                 value={formData.endDate}
                                 onChange={(e) => setFormData(prev => ({ ...prev, endDate: e.target.value }))}
-                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.endDate ? 'border-red-500' : 'border-gray-300'
-                                    }`}
+                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${errors.endDate ? 'border-red-500' : 'border-gray-300'}`}
                             />
                             {errors.endDate && <p className="text-red-500 text-sm mt-1">{errors.endDate}</p>}
                         </div>
@@ -341,7 +328,7 @@ export default function CreateClassModal({ isOpen, onClose, onSubmit, hubId }: C
                             <select
                                 value={formData.tuitionType}
                                 onChange={(e) => setFormData(prev => ({ ...prev, tuitionType: e.target.value as any }))}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                             >
                                 <option value="Monthly">Monthly</option>
                                 <option value="Quarter">Quarter</option>
@@ -358,7 +345,7 @@ export default function CreateClassModal({ isOpen, onClose, onSubmit, hubId }: C
                                 type="text"
                                 value={formData.tuition}
                                 onChange={(e) => setFormData(prev => ({ ...prev, tuition: e.target.value }))}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                                 placeholder="e.g., $200/month"
                             />
                         </div>
@@ -374,25 +361,24 @@ export default function CreateClassModal({ isOpen, onClose, onSubmit, hubId }: C
                                 type="text"
                                 value={formData.base}
                                 onChange={(e) => setFormData(prev => ({ ...prev, base: e.target.value }))}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                                 placeholder="e.g., Main Campus"
                             />
                         </div>
-                    </div>
 
-                    {/* Status */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Status
-                        </label>
-                        <select
-                            value={formData.status}
-                            onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as 'Active' | 'Finished' }))}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        >
-                            <option value="Active">Active</option>
-                            <option value="Finished">Finished</option>
-                        </select>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Status
+                            </label>
+                            <select
+                                value={formData.status}
+                                onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as 'Active' | 'Finished' }))}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                            >
+                                <option value="Active">Active</option>
+                                <option value="Finished">Finished</option>
+                            </select>
+                        </div>
                     </div>
 
                     {/* Actions */}
@@ -405,9 +391,9 @@ export default function CreateClassModal({ isOpen, onClose, onSubmit, hubId }: C
 
                         <button
                             type="submit"
-                            className="cursor-pointer px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                            className="cursor-pointer px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm hover:shadow-md"
                         >
-                            Create Class
+                            Save Changes
                         </button>
                     </div>
                 </form>

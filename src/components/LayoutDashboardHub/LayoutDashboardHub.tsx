@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import SideNavigation from "../SideNavigation/SideNavigation"
-import { MenuIcon, BellElectricIcon, CalendarClock, CalendarDays, GraduationCapIcon, HomeIcon, StarIcon, BookPlusIcon, BookUp2, HatGlasses } from "lucide-react";
+import { MenuIcon, BellElectricIcon, CalendarClock, CalendarDays, GraduationCapIcon, HomeIcon, StarIcon, BookPlusIcon, BookUp2, HatGlasses, BookCopy } from "lucide-react";
 import HeaderDashboard from "../HeaderDashboard/HeaderDashboard";
 import { usePathname } from "next/navigation";
 
@@ -30,9 +30,10 @@ export default function LayoutDashboardHub({ children }: { children: React.React
             ]
         },
         {
-            title: 'Teacher',
+            title: 'Management',
             items: [
-                { name: 'Teacher List', icon: HatGlasses, href: '/teacher' },
+                { name: 'Teacher', icon: HatGlasses, href: '/teacher' },
+                { name: 'Classes', icon: BookCopy, href: '/class_management' },
             ]
         },
     ];
