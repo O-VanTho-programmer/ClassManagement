@@ -5,6 +5,7 @@ import { X } from "lucide-react";
 import Selection, { Option } from "@/components/Selection/Selection";
 import SquareButton from "@/components/SquareButton/SquareButton";
 import Button from "@/components/Button/Button";
+import { useValidateClassInfoForm } from "@/hooks/useValidateClassInfoForm";
 
 interface EditClassModalProps {
     isOpen: boolean;
@@ -39,7 +40,6 @@ export default function EditClassModal({ isOpen, onClose, onSubmit, editingClass
     };
 
     const [formData, setFormData] = useState<ClassData>(initialFormState);
-    const [errors, setErrors] = useState<Record<string, string>>({});
 
     useEffect(() => {
         if (isOpen && editingClass) {
@@ -55,7 +55,6 @@ export default function EditClassModal({ isOpen, onClose, onSubmit, editingClass
             });
         } else if (!isOpen) {
             setFormData(initialFormState);
-            setErrors({});
         }
     }, [isOpen, editingClass]);
 
@@ -75,33 +74,7 @@ export default function EditClassModal({ isOpen, onClose, onSubmit, editingClass
             }));
     }, [teacherList, formData.teacher]);
 
-    const validateForm = () => {
-        const newErrors: Record<string, string> = {};
-
-        if (!formData.name.trim()) newErrors.name = 'Class name is required';
-        if (!formData.teacher) newErrors.teacher = 'Teacher is required';
-        if (!formData.subject.trim()) newErrors.subject = 'Subject is required';
-        if (!formData.startDate) newErrors.startDate = 'Start date is required';
-        if (!formData.endDate) newErrors.endDate = 'End date is required';
-        if (new Date(formData.startDate) >= new Date(formData.endDate)) {
-            newErrors.endDate = 'End date must be after start date';
-        }
-
-        formData.schedule.forEach((session, index) => {
-            if (!session.startTime) {
-                newErrors[`schedule-startTime-${index}`] = 'Start time is required';
-            }
-            if (!session.endTime) {
-                newErrors[`schedule-endTime-${index}`] = 'End time is required';
-            }
-            if (session.startTime && session.endTime && session.startTime >= session.endTime) {
-                newErrors[`schedule-endTime-${index}`] = 'End time must be after start time';
-            }
-        });
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
+    const { errors, validateForm } = useValidateClassInfoForm(formData);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();

@@ -30,8 +30,8 @@ export default function ClassManagementPageContent() {
         return <LoadingState message="Loading classes..." fullScreen={true} />
     }
 
-    const handleEditClassInfo = (updatedClass: ClassData) => {
-    
+    const handleSaveEditClassInfo = (updatedClass: ClassData) => {
+        
     }
 
     return (
@@ -143,7 +143,7 @@ export default function ClassManagementPageContent() {
                     onClose={() => setEditingClass(null)}
                     editingClass={editingClass}
                     teacherList={teachers}
-                    onSubmit={handleEditClassInfo}
+                    onSubmit={handleSaveEditClassInfo}
                 />
             )}
         </div>
