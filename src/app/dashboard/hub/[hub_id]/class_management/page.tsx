@@ -1,11 +1,13 @@
 'use client';
 
+import { useAlert } from "@/components/AlertProvider/AlertContext";
 import EditClassModal from "@/components/ClassManagement/EditClassModal/EditClassModal";
 import IconButton from "@/components/IconButton/IconButton";
 import LoadingState from "@/components/QueryState/LoadingState";
 import SearchBar from "@/components/SearchBar/SearchBar";
 import { useGetClassesByHubIdQuery } from "@/hooks/useGetClassesByHubIdQuery";
 import { useGetTeacherListByHubId } from "@/hooks/useGetTeacherListByHubId";
+import { useUpdateClassMutation } from "@/hooks/updateClassMutation";
 import { ClassData } from "@/types/ClassData";
 import { Edit, School } from "lucide-react";
 import { useParams } from "next/navigation";
@@ -13,11 +15,16 @@ import { useMemo, useState } from "react";
 
 export default function ClassManagementPageContent() {
     const { hub_id } = useParams();
+    const { showAlert } = useAlert();
+
     const [searchTerm, setSearchTerm] = useState('');
     const [editingClass, setEditingClass] = useState<ClassData | null>(null);
 
     const { data: classes = [], isLoading: isLoadingClasses } = useGetClassesByHubIdQuery(hub_id as string);
     const { data: teachers = [] } = useGetTeacherListByHubId(hub_id as string);
+    const updateClassMutation = useUpdateClassMutation(hub_id as string, () => {
+        setEditingClass(null);
+    });
 
     const filteredClasses = useMemo(() => {
         return classes.filter(c =>
@@ -30,8 +37,8 @@ export default function ClassManagementPageContent() {
         return <LoadingState message="Loading classes..." fullScreen={true} />
     }
 
-    const handleSaveEditClassInfo = (updatedClass: ClassData) => {
-        
+    const handleSaveEditClassInfo = async (classData: ClassData) => {
+        await updateClassMutation.mutateAsync({ updatedClass: classData });
     }
 
     return (
@@ -144,6 +151,7 @@ export default function ClassManagementPageContent() {
                     editingClass={editingClass}
                     teacherList={teachers}
                     onSubmit={handleSaveEditClassInfo}
+                    isSavingEdit={updateClassMutation.isPending}
                 />
             )}
         </div>

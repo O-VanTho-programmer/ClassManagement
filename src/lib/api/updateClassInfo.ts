@@ -1,9 +1,10 @@
 import { ClassData } from "@/types/ClassData";
 import api from "../axios";
 
-export async function newClassAPI (newClassData: Omit<ClassData, 'id'>, hubId: string) {
+export async function updateClassInfo(newClassData: ClassData, hubId: string) {
     try {
         const requestBody = {
+            id: newClassData.id,
             name: newClassData.name,
             teacher: newClassData.teacher,
             assistant: (newClassData.assistant && newClassData.assistant) || null,
@@ -17,11 +18,11 @@ export async function newClassAPI (newClassData: Omit<ClassData, 'id'>, hubId: s
             endDate: newClassData.endDate,
             hubId: hubId
         };
-        
-        const res = await api.post('new_class', requestBody);
+        const res = await api.put(`/update_class`, requestBody);
+        console.log(res);
         return res;
     } catch (error) {
-        console.error("Error creating class:", error);
+        console.error("Failed to update teacher:", error);
         throw error;
     }
 }

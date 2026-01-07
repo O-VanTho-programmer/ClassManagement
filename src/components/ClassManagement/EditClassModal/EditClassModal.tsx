@@ -10,12 +10,13 @@ import { useValidateClassInfoForm } from "@/hooks/useValidateClassInfoForm";
 interface EditClassModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (classData: ClassData) => void;
+    onSubmit: (classData: ClassData) => Promise<void>;
     editingClass: ClassData | null;
+    isSavingEdit: boolean;
     teacherList: Teacher[];
 }
 
-export default function EditClassModal({ isOpen, onClose, onSubmit, editingClass, teacherList }: EditClassModalProps) {
+export default function EditClassModal({ isOpen, onClose, onSubmit, editingClass, teacherList, isSavingEdit }: EditClassModalProps) {
     const formatDateForInput = (dateString: string) => {
         if (!dateString) return '';
         const date = new Date(dateString);
@@ -76,11 +77,10 @@ export default function EditClassModal({ isOpen, onClose, onSubmit, editingClass
 
     const { errors, validateForm } = useValidateClassInfoForm(formData);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (validateForm()) {
-            onSubmit(formData);
-            onClose();
+            await onSubmit(formData);
         }
     };
 
@@ -360,13 +360,19 @@ export default function EditClassModal({ isOpen, onClose, onSubmit, editingClass
                             onClick={onClose}
                             title="Cancel"
                             color="white"
+                            disabled={isSavingEdit}
                         />
 
                         <button
                             type="submit"
-                            className="cursor-pointer px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm hover:shadow-md"
+                            disabled={isSavingEdit}
+                            className={`px-6 py-2 bg-blue-600 text-white rounded-lg transition-colors font-medium shadow-sm hover:shadow-md ${
+                                isSavingEdit 
+                                    ? 'opacity-50 cursor-not-allowed' 
+                                    : 'cursor-pointer hover:bg-blue-700'
+                            }`}
                         >
-                            Save Changes
+                            {isSavingEdit ? 'Saving...' : 'Save Changes'}
                         </button>
                     </div>
                 </form>
