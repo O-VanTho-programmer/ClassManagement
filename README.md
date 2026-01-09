@@ -1,4 +1,4 @@
-# Class Management System
+# TutorDesk - Class Management System
 
 A comprehensive, full-stack class management application built with Next.js 15, TypeScript, and MySQL. This system enables educational institutions and teachers to efficiently manage teaching hubs, classes, students, attendance, homework, and teacher workloads with AI-powered automated grading capabilities.
 
