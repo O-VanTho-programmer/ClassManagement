@@ -1,10 +1,11 @@
 import pool from "@/lib/db";
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/curentUser";
+import type { PoolConnection } from "mysql2/promise";
 
 export async function POST(req: Request) {
+    let connection: PoolConnection | undefined;
     try {
-        // Check authentication - any authenticated user can create a hub
         const user = await getCurrentUser();
         if (!user) {
             return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -18,7 +19,10 @@ export async function POST(req: Request) {
             owner
         } = body;
 
-        const [newHubRow]: any = await pool.query(
+        connection = await pool.getConnection();
+        await connection.beginTransaction();
+
+        const [newHubRow]: any = await connection.query(
             `INSERT INTO hub (Name, Description)
              VALUES (?, ?)`,
             [name, description]
@@ -28,27 +32,31 @@ export async function POST(req: Request) {
 
         const queryHubRole = `
             INSERT INTO hub_role (HubId, UserId, Role, IsOwner)
-            VALUES (?, ?, ?)
+            VALUES (?, ?, ?, ?)
         `;
 
-        await pool.query(queryHubRole, [hubId, owner, "Owner", true]);
+        await connection.query(queryHubRole, [hubId, owner, "Owner", 1]);
 
         if (includedTeachers.length > 0) {
-            const [teachers]: any = await pool.query(
+            const [teachers]: any = await connection.query(
                 `SELECT UserId FROM user WHERE Email IN (?)`,
                 [includedTeachers]
             );
 
             await Promise.all(
                 teachers.map((teacher: any) =>
-                    pool.query(queryHubRole, [hubId, teacher.UserId, "Member"])
+                    connection!.query(queryHubRole, [hubId, teacher.UserId, "Member", 0])
                 )
             );
         }
 
+        await connection.commit();
         return NextResponse.json({ message: "Hub created successfully!" }, { status: 200 });
     } catch (error) {
         console.error("Error creating hub:", error);
+        if (connection) await connection.rollback();
         return NextResponse.json({ message: "Create hub failed" }, { status: 500 });
+    } finally {
+        if (connection) connection.release();
     }
 }

@@ -1,16 +1,19 @@
 import pool from "@/lib/db";
 import { NextResponse } from "next/server";
 import { checkPermission, PERMISSIONS } from "@/lib/permissions";
+import type { PoolConnection } from "mysql2/promise";
 
 export async function POST(req: Request) {
+  let connection: PoolConnection | undefined;
+
   try {
-    const body = await req.json();
-    
+    const body = await req.json();    
     // Check permission
     const permissionCheck = await checkPermission(req, PERMISSIONS.CREATE_CLASS, body.hubId, body);
     if (permissionCheck instanceof NextResponse) {
       return permissionCheck;
     }
+
     const { user } = permissionCheck;
     const {
       name,
@@ -45,7 +48,10 @@ export async function POST(req: Request) {
     const tuitionValue = (tuition && tuition) || null;
     const baseValue = (base && base) || null;
 
-    const [classResult]: any = await pool.query(
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    const [classResult]: any = await connection.query(
       `INSERT INTO class 
         (Name, StartDate, EndDate, TeacherUserId, AssistantUserId, Subject, Tuition, TuitionType, Base, Status, HubId)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -72,8 +78,10 @@ export async function POST(req: Request) {
     `;
 
     for (const s of schedule) {
-      await pool.query(scheduleSql, [s.day, s.startTime, s.endTime, classId]);
+      await connection.query(scheduleSql, [s.day, s.startTime, s.endTime, classId]);
     }
+
+    await connection.commit();
 
     return NextResponse.json({
       id: classId,
@@ -82,6 +90,9 @@ export async function POST(req: Request) {
 
   } catch (error) {
     console.error("Error creating class:", error);
+    if (connection) await connection.rollback();
     return NextResponse.json({ message: "Server error" }, { status: 500 });
+  } finally {
+    if (connection) connection.release();
   }
 }

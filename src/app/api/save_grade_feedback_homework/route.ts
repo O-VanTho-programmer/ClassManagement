@@ -1,13 +1,18 @@
 import pool from "@/lib/db";
 import { NextResponse } from "next/server";
 import { checkPermission, PERMISSIONS } from "@/lib/permissions";
+import type { PoolConnection } from "mysql2/promise";
 
 export async function POST(req: Request) {
+    let connection: PoolConnection | undefined;
     try {
         const { studentHomeworkId, grade, feedback } = await req.json();
-        
+
+        connection = await pool.getConnection();
+        await connection.beginTransaction();
+
         // Get hubId from studentHomeworkId
-        const [studentHomework]: any[] = await pool.query(`
+        const [studentHomework]: any[] = await connection.query(`
             SELECT h.HubId 
             FROM student_homework sh
             JOIN class_homework ch ON sh.ClassHomeworkId = ch.ClassHomeworkId
@@ -16,6 +21,7 @@ export async function POST(req: Request) {
         `, [studentHomeworkId]);
         
         if (studentHomework.length === 0) {
+            await connection.rollback();
             return NextResponse.json({ message: "Student homework not found" }, { status: 404 });
         }
         
@@ -24,6 +30,7 @@ export async function POST(req: Request) {
         // Check permission - need GRADE_HOMEWORK permission
         const permissionCheck = await checkPermission(req, PERMISSIONS.GRADE_HOMEWORK, hubId);
         if (permissionCheck instanceof NextResponse) {
+            await connection.rollback();
             return permissionCheck;
         }
 
@@ -33,11 +40,16 @@ export async function POST(req: Request) {
             WHERE StudentHomeworkId = ?
         `;
 
-        const [result] = await pool.query(querySaveGradeFeedbackSubmission, [grade, feedback, studentHomeworkId]);
+        const [result] = await connection.query(querySaveGradeFeedbackSubmission, [grade, feedback, studentHomeworkId]);
         
+        await connection.commit();
         return NextResponse.json({ message: "Success", result }, { status: 200 })
     } catch (error) {
         console.log(error);
+        if (connection) await connection.rollback();
         return NextResponse.json({ message: "Error", error }, { status: 500 })
+    } finally {
+        if (connection) connection.release();
     }
+
 }

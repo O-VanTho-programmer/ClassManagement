@@ -1,8 +1,10 @@
 import pool from "@/lib/db";
 import { checkPermission } from "@/lib/permissions";
 import { NextResponse } from "next/server";
+import type { PoolConnection } from "mysql2/promise";
 
 export async function PUT(req: Request) {
+    let connection: PoolConnection | undefined;
     try {
         const body = await req.json();
         const permissionCheck = await checkPermission(req, 'EDIT_CLASS', body.hubId);
@@ -45,13 +47,16 @@ export async function PUT(req: Request) {
         const tuitionValue = (tuition && tuition) || null;
         const baseValue = (base && base) || null;
 
+        connection = await pool.getConnection();
+        await connection.beginTransaction();
+
         const queryUpdateClassInfo = `
             UPDATE class
             SET Name = ?, StartDate = ?, EndDate = ?, TeacherUserId = ?, AssistantUserId = ?, Subject = ?, Tuition = ?, TuitionType = ?, Base = ?, Status = ?
             WHERE ClassId = ? AND HubId = ?
         `;
 
-        const [classResult] = await pool.query(queryUpdateClassInfo, [
+        await connection.query(queryUpdateClassInfo, [
             name,
             startDate,
             endDate,
@@ -66,12 +71,32 @@ export async function PUT(req: Request) {
             hubId
         ]);
 
+        // Delete existing schedules and insert new ones
+        await connection.query(
+            `DELETE FROM schedule WHERE ClassId = ?`,
+            [id]
+        );
+
+        const scheduleSql = `
+            INSERT INTO schedule (DaysOfWeek, StartTime, EndTime, ClassId)
+            VALUES (?, ?, ?, ?)
+        `;
+
+        for (const s of schedule) {
+            await connection.query(scheduleSql, [s.day, s.startTime, s.endTime, id]);
+        }
+
+        await connection.commit();
+
         return NextResponse.json({
             id: id,
             message: "Class updated successfully",
         }, {status: 200});
     } catch (error) {
         console.error("Error updating class:", error);
+        if (connection) await connection.rollback();
         return NextResponse.json({ message: "Server error" }, { status: 500 });
+    } finally {
+        if (connection) connection.release();
     }
 }

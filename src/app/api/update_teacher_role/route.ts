@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { checkPermission, PERMISSIONS } from "@/lib/permissions";
 import { HubRole } from "@/types/Hub";
 import { updateUserPermissionInHubServer } from "@/lib/updateUserPermissionInHubServer";
+import type { PoolConnection } from "mysql2/promise";
 
 const ROLE_TEMPLATE = {
     'Member': [
@@ -68,6 +69,7 @@ const ROLE_TEMPLATE = {
 }
 
 export async function PUT(req: Request) {
+    let connection: PoolConnection | undefined;
     try {
         const { teacherId, hubId, role } = await req.json();
 
@@ -81,24 +83,41 @@ export async function PUT(req: Request) {
             return NextResponse.json({ message: "Missing required fields: teacherId, hubId, or role" }, { status: 400 });
         }
 
+        connection = await pool.getConnection();
+        await connection.beginTransaction();
+
         const queryUpdateTeacherRole = `
             UPDATE hub_role
             SET Role = ?
             WHERE HubId = ? AND UserId = ?
         `;
 
-        const [result] = await pool.query(queryUpdateTeacherRole, [role, hubId, teacherId]);
+        await connection.query(queryUpdateTeacherRole, [role, hubId, teacherId]);
         const newRole: HubRole = role;
         const permissions = ROLE_TEMPLATE[newRole] || [];
 
         if (permissions && permissions.length > 0) {
+            // updateUserPermissionInHubServer uses its own transaction, so we need to handle it carefully
+            // Since it uses transactions internally, we'll commit our role update first, then update permissions
+            await connection.commit();
+            connection.release();
+            connection = undefined;
+            
             await updateUserPermissionInHubServer(permissions, teacherId, hubId);
+        } else {
+            await connection.commit();
         }
 
-        return NextResponse.json({ message: "Teacher role updated successfully", result }, { status: 200 });
+        return NextResponse.json({ message: "Teacher role updated successfully" }, { status: 200 });
     } catch (error) {
         console.error("[UPDATE_TEACHER_ROLE_ERROR]", error);
+        if (connection) {
+            await connection.rollback();
+            connection.release();
+        }
         const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
         return NextResponse.json({ message: "Internal Server Error", error: errorMessage }, { status: 500 });
+    } finally {
+        if (connection) connection.release();
     }
 }

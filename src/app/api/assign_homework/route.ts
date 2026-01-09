@@ -2,9 +2,10 @@ import pool from "@/lib/db";
 import { generateId } from "@/utils/generateId";
 import { NextResponse } from "next/server";
 import { checkPermission, PERMISSIONS, getHubIdFromClassId, getHubIdFromHomeworkId } from "@/lib/permissions";
+import type { PoolConnection } from "mysql2/promise";
 
 export async function POST(req: Request) {
-    let connection;
+    let connection: PoolConnection | undefined;
     try {
         const {
             homework_id,
@@ -25,7 +26,7 @@ export async function POST(req: Request) {
         }
 
         connection = await pool.getConnection();
-        connection.beginTransaction();
+        await connection.beginTransaction();
 
         const publicIdFrom = generateId(5);
 

@@ -1,14 +1,22 @@
 import pool from "@/lib/db";
 import { NextResponse } from "next/server";
 import { checkPermission, PERMISSIONS } from "@/lib/permissions";
+import type { PoolConnection } from "mysql2/promise";
 
 export async function POST(req: Request) {
-    let connection;
+    let connection: PoolConnection | undefined;
     try {
         const { studentHomeworkId, questions } = await req.json();
         
+        if (!studentHomeworkId || !questions) {
+            return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
+        }
+
+        connection = await pool.getConnection();
+        await connection.beginTransaction();
+        
         // Get hubId from studentHomeworkId
-        const [studentHomework]: any[] = await pool.query(`
+        const [studentHomework]: any[] = await connection.query(`
             SELECT h.HubId 
             FROM student_homework sh
             JOIN class_homework ch ON sh.ClassHomeworkId = ch.ClassHomeworkId
@@ -17,30 +25,23 @@ export async function POST(req: Request) {
         `, [studentHomeworkId]);
         
         if (studentHomework.length === 0) {
+            await connection.rollback();
             return NextResponse.json({ message: "Student homework not found" }, { status: 404 });
         }
         
         const hubId = studentHomework[0].HubId;
         
-        // Check permission - need GRADE_HOMEWORK to add question grades
         const permissionCheck = await checkPermission(req, PERMISSIONS.GRADE_HOMEWORK, hubId);
         if (permissionCheck instanceof NextResponse) {
+            await connection.rollback();
             return permissionCheck;
         }
-
-        if (!studentHomeworkId || !questions) {
-            return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
-        }
-
-        connection = await pool.getConnection();
-        await connection.beginTransaction();
 
         await connection.query(
             `DELETE FROM student_homework_question WHERE StudentHomeworkId = ?`,
             [studentHomeworkId]
         );
 
-        // 3. Bulk Insert new question grades
         if (Array.isArray(questions) && questions.length > 0) {
             const values = questions.map((q: StudentHomeworkQuestionsInputDTO) => [
                 studentHomeworkId,

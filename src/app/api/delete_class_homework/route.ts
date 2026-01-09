@@ -1,8 +1,10 @@
 import pool from "@/lib/db";
 import { NextResponse } from "next/server";
 import { checkPermission, PERMISSIONS } from "@/lib/permissions";
+import type { PoolConnection } from "mysql2/promise";
 
 export async function DELETE(req: Request) {
+    let connection: PoolConnection | undefined;
     try {
         const { searchParams } = new URL(req.url);
         const classHomeworkId = searchParams.get("class_homework_id");
@@ -14,8 +16,11 @@ export async function DELETE(req: Request) {
             );
         }
         
+        connection = await pool.getConnection();
+        await connection.beginTransaction();
+        
         // Get hubId from classHomeworkId
-        const [classHomework]: any[] = await pool.query(`
+        const [classHomework]: any[] = await connection.query(`
             SELECT ch.ClassId, h.HubId 
             FROM class_homework ch
             JOIN homework h ON ch.HomeworkId = h.HomeworkId
@@ -23,6 +28,7 @@ export async function DELETE(req: Request) {
         `, [classHomeworkId]);
         
         if (classHomework.length === 0) {
+            await connection.rollback();
             return NextResponse.json({ message: "Class homework not found" }, { status: 404 });
         }
         
@@ -31,15 +37,23 @@ export async function DELETE(req: Request) {
         // Check permission
         const permissionCheck = await checkPermission(req, PERMISSIONS.ASSIGN_HOMEWORK, hubId);
         if (permissionCheck instanceof NextResponse) {
+            await connection.rollback();
             return permissionCheck;
         }
 
-        const queryDeleteClassHomework = `
-            DELETE FROM class_homework
-            WHERE ClassHomeworkId = ?;
-        `;
+        // Delete related student_homework records first (cascade delete should handle this, but being explicit)
+        await connection.query(
+            `DELETE FROM student_homework WHERE ClassHomeworkId = ?`,
+            [classHomeworkId]
+        );
 
-        const [result] = await pool.query(queryDeleteClassHomework, [classHomeworkId]);
+        // Delete the class_homework record
+        await connection.query(
+            `DELETE FROM class_homework WHERE ClassHomeworkId = ?`,
+            [classHomeworkId]
+        );
+
+        await connection.commit();
 
         return NextResponse.json(
             { message: "Homework is unassigned from class successfully" },
@@ -48,9 +62,12 @@ export async function DELETE(req: Request) {
 
     } catch (error) {
         console.error("Error unassigning homework from class: ", error);
+        if (connection) await connection.rollback();
         return NextResponse.json(
             { message: "Error unassigning homework from class" },
             { status: 500 }
         );
+    } finally {
+        if (connection) connection.release();
     }
 }
