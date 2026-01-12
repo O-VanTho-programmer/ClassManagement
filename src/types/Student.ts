@@ -7,6 +7,11 @@ interface Student {
     status: StudentStatus,
 }
 
+interface StudentWithFaceDescriptor extends Student {
+    face_img_url: string,
+    face_descriptor: string,
+}
+
 interface StudentWithEnrollment extends Student {
     enroll_date: string,
 }

@@ -87,6 +87,10 @@ function HomeworkSubmissionPage() {
 
   // --- Handlers ---
 
+  const handleOpenFaceSecurity = () => {
+      router.push(`security_setting`);
+  }
+
   const handleOpenUpload = (submission: StudentWithHomework) => {
     setSelectedSubmission(submission);
     setUploadModalOpen(true);
@@ -131,7 +135,10 @@ function HomeworkSubmissionPage() {
   )
   return (
     <div className="p-8 bg-gray-50 min-h-screen">
-      <h1 className="text-3xl font-bold text-gray-900">{homeworkData?.title}</h1>
+      <div className='flex items-center justify-between'>
+        <h1 className="text-3xl font-bold text-gray-900">{homeworkData?.title}</h1>
+        <Button title='Face Security' color='blue' onClick={handleOpenFaceSecurity} />
+      </div>
       <p
         className="ml-4 mt-2 text-base text-gray-600 overflow-hidden max-h-[150px] relative"
         dangerouslySetInnerHTML={{ __html: homeworkData?.content || '' }}
@@ -205,16 +212,16 @@ function HomeworkSubmissionPage() {
               student_homework_id: selectedSubmission!.student_homework_id,
               due_date: selectedSubmission!.due_date
             }, {
-              onSuccess: () => {
-                queryClient.invalidateQueries({ queryKey: ['student_homework_question_by_class_homework_id', assignment_id] });
-                showAlert("Answer uploaded successfully", 'success');
-                setUploadModalOpen(false);
-                setSelectedSubmission(null);
-              },
-              onError: (error: Error) => {
-                showAlert(`Error uploading answer: ${error.message}`, 'error');
-              }
-            })
+            onSuccess: () => {
+              queryClient.invalidateQueries({ queryKey: ['student_homework_question_by_class_homework_id', assignment_id] });
+              showAlert("Answer uploaded successfully", 'success');
+              setUploadModalOpen(false);
+              setSelectedSubmission(null);
+            },
+            onError: (error: Error) => {
+              showAlert(`Error uploading answer: ${error.message}`, 'error');
+            }
+          })
           }
           isUploading={uploadMutation.isPending}
         />
