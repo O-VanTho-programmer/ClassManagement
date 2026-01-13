@@ -57,7 +57,9 @@ export default function FaceStudentsTableList({ students, assignmentId }: FaceSt
                                         className="h-10 w-10 rounded-full"
                                     />
                                 ) : (
-                                    <span>Not Registered</span>
+                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                        Not Registered
+                                    </span>
                                 )}
                             </td>
 
@@ -84,10 +86,10 @@ export default function FaceStudentsTableList({ students, assignmentId }: FaceSt
 
             {openFaceRegistry && (
                 <FaceRegistry
-                isOpen={openFaceRegistry}
-                onClose={handleCloseFaceRegistry}
-                student={selectedStudent as StudentWithFaceDescriptor}
-                onSuccess={handleFaceRegistrySuccess}
+                    isOpen={openFaceRegistry}
+                    onClose={handleCloseFaceRegistry}
+                    student={selectedStudent as StudentWithFaceDescriptor}
+                    onSuccess={handleFaceRegistrySuccess}
                 />
             )}
         </div>

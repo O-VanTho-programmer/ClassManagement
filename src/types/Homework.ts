@@ -52,3 +52,8 @@ interface ClassHomeworkForAttendacneRecord {
     assigned_date: string,
     due_date: string,
 }
+
+interface ClassHomeworkWithSecuritySettings {
+    class_homework_id: string,
+    is_face_auth_enabled: boolean,
+}
