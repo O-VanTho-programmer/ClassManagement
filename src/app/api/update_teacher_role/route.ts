@@ -2,7 +2,7 @@ import pool from "@/lib/db";
 import { NextResponse } from "next/server";
 import { checkPermission, PERMISSIONS } from "@/lib/permissions";
 import { HubRole } from "@/types/Hub";
-import { updateUserPermissionInHubServer } from "@/lib/updateUserPermissionInHubServer";
+import { updateUserPermissionInHubServer } from "@/lib/permission/updateUserPermissionInHubServer";
 import type { PoolConnection } from "mysql2/promise";
 
 const ROLE_TEMPLATE = {

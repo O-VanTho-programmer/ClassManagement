@@ -4,20 +4,20 @@ import { NextResponse } from "next/server";
 export async function GET(req: Request) {
     try {
         const { searchParams } = new URL(req.url);
-        const assignmentId = searchParams.get("assignmentId");
+        const public_id = searchParams.get("public_id");
         
         const [assignment]: any[] = await pool.query(`
-            SELECT h.HubId 
+            SELECT h.HubId, ch.ClassHomeworkId
             FROM class_homework ch
             JOIN homework h ON ch.HomeworkId = h.HomeworkId
-            WHERE ch.ClassHomeworkId = ?
-        `, [assignmentId]);
+            WHERE ch.PublicIdForm = ?
+        `, [public_id]);
         
         if (assignment.length === 0) {
             return NextResponse.json({ message: "Assignment not found" }, { status: 404 });
         }
-        
-        const hubId = assignment[0].HubId;
+
+        const assignment_id = assignment[0].ClassHomeworkId;
         
         const queryGetStudentByAssignmentId = `
             SELECT  
@@ -37,7 +37,7 @@ export async function GET(req: Request) {
             WHERE sh.ClassHomeworkId = ?
         `;
 
-        const [row]: any[] = await pool.query(queryGetStudentByAssignmentId, [assignmentId]);
+        const [row]: any[] = await pool.query(queryGetStudentByAssignmentId, [assignment_id]);
         const studentList = row.map((item: any) => ({
             ...item,
             submission_urls: item.submission_urls ? JSON.parse(item.submission_urls) : []

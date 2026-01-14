@@ -11,6 +11,7 @@ import ErrorState from '@/components/QueryState/ErrorState';
 import LoadingState from '@/components/QueryState/LoadingState';
 import ToggleViewClassList from '@/components/ToggleViewClassList/ToggleViewClassList';
 import { useGetHomeworkById } from '@/hooks/useGetHomeworkById';
+import { useGetPublicIdForm } from '@/hooks/useGetPublicIdForm';
 import { useGetStudentHomeworkQuestionByClassHomeworkId } from '@/hooks/useGetStudentHomeworkQuestionByStudentHomeworkId';
 import { useGetStudentListByAssignmentId } from '@/hooks/useGetStudentListByAssignmentId';
 import { useHasPermission } from '@/hooks/useHasPermission';
@@ -34,6 +35,7 @@ function HomeworkSubmissionPage() {
   const { data: homeworkData, isLoading: isHomeworkLoading, isError: isHomeworkError, error: homeworkError } = useGetHomeworkById(homework_id as string);
   const { data: studentSubmissionsList = [] as StudentWithHomework[], isLoading: isStudentSubmissionsListLoading, isError: isStudentSubmissionsListError, error: studentSubmissionsListError } = useGetStudentListByAssignmentId(assignment_id as string);
   const { data: studentHomeworkQuestion, isLoading: isStudentHomeworkQuestionLoading, isError: isStudentHomeworkQuestionError, error: studentHomeworkQuestionError } = useGetStudentHomeworkQuestionByClassHomeworkId(assignment_id as string);
+  const {data: publicIdForm} = useGetPublicIdForm(assignment_id as string);
 
   const [isKeyModalOpen, setKeyModalOpen] = useState(false);
   const [isUploadModalOpen, setUploadModalOpen] = useState(false);
@@ -152,7 +154,7 @@ function HomeworkSubmissionPage() {
           <Key size={16} className="mr-2" />
           {answerKey ? "Edit Answer Key" : "Set Answer Key"}
         </button>
-        <Button color='blue' onClick={() => { router.push(`/public/form/${assignment_id}`) }} style='w-fit h-fit' icon={FileQuestionMarkIcon} title='Copy Form' />
+        <Button color='blue' onClick={() => { router.push(`/public/form/${publicIdForm}`) }} style='w-fit h-fit' icon={FileQuestionMarkIcon} title='Copy Form' />
       </div>
 
       {!answerKey ? (

@@ -4,23 +4,21 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET(req: NextRequest) {
     try {
         const { searchParams } = req.nextUrl;
-        const assignmentId = searchParams.get("assignmentId");
+        const public_id = searchParams.get("public_id");
 
-        // Get hubId from assignmentId (classHomeworkId)
+        // Get hubId from public_id 
         const [classHomework]: any[] = await pool.query(`
             SELECT h.HubId 
             FROM class_homework ch
             JOIN homework h ON ch.HomeworkId = h.HomeworkId
-            WHERE ch.ClassHomeworkId = ?
-        `, [assignmentId]);
+            WHERE ch.PublicIdForm = ?
+        `, [public_id]);
 
         if (classHomework.length === 0) {
             return NextResponse.json({ message: "Assignment not found" }, { status: 404 });
         }
 
-        const hubId = classHomework[0].HubId;
-
-        if (!assignmentId) {
+        if (!public_id) {
             return NextResponse.json({ message: "Assignment Id is required" }, { status: 400 });
         }
 
@@ -39,10 +37,10 @@ export async function GET(req: NextRequest) {
             JOIN homework h ON h.HomeworkId = ch.HomeworkId
             JOIN class c ON c.classId = ch.ClassId
             JOIN user u ON u.UserId = h.CreatedByUserId
-            WHERE ch.ClassHomeworkId = ?
+            WHERE ch.PublicIdForm = ?
         `;
 
-        const [row]: any[] = await pool.query(queryGetAssignmentById, [assignmentId]);
+        const [row]: any[] = await pool.query(queryGetAssignmentById, [public_id]);
 
         const class_homework = row[0];
 

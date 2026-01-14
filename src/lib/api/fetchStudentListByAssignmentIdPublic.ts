@@ -1,8 +1,8 @@
 import api from "../axios";
 
-export async function fetchStudentListByAssignmentIdPublic(assignmentId:string) {
+export async function fetchStudentListByAssignmentIdPublic(public_id:string) {
     try {
-        const res = await api.get(`/public/student_list/by_assignment_id?assignmentId=${assignmentId}`);
+        const res = await api.get(`/public/student_list/by_assignment_id?public_id=${public_id}`);
         console.log('Fetch student list by assignment id response:', res);
         return res.data.studentList as StudentWithHomeworkPublic[];
     } catch (error) {

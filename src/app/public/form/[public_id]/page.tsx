@@ -10,17 +10,19 @@ import { useGetStudentListByAssignmentIdPublic } from '@/hooks/useGetStudentList
 import { useUploadSubmissionMutation } from '@/hooks/useUploadSubmission';
 import { getUrlImageByUploadOnCloudiary } from '@/lib/api/getUrlImageByUploadOnCloudiary';
 import { saveStudentSubmission } from '@/lib/api/HomeworkSubmission/saveStudentSubmission';
+import { isFaceAuthEnablePublic } from '@/utils/face-recognition/isFaceAuthEnable';
 import {  Copy, FileText, Loader2, Send, Trash2, Upload, User } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation'
 import React, { useState, useMemo } from 'react'
 
 function AssignmentForm() {
-    const { assignment_id } = useParams();
+    const { public_id } = useParams();
     const router = useRouter();
 
-    const { data: assignment, isLoading: isAssignmentLoading, isError: isAssignmentError, error: assignmentError } = useGetClassHomeworkByIdPublic(assignment_id as string);
-    const { data: studentLists, isLoading: isStudentListsLoading, isError: isStudentListsError, error: studentListsError } = useGetStudentListByAssignmentIdPublic(assignment_id as string);
-
+    const { data: assignment, isLoading: isAssignmentLoading, isError: isAssignmentError, error: assignmentError } = useGetClassHomeworkByIdPublic(public_id as string);
+    const { data: studentLists, isLoading: isStudentListsLoading, isError: isStudentListsError, error: studentListsError } = useGetStudentListByAssignmentIdPublic(public_id as string);
+    const {data: isFaceAuthEnable} = isFaceAuthEnablePublic(public_id as string);
+    
     const { showAlert } = useAlert();
 
     const { files, previews, handleFileChange, handleRemoveFile } = useFileImg(showAlert);
@@ -30,7 +32,6 @@ function AssignmentForm() {
         return studentLists?.find(s => s.id.toString() === selectedStudentId);
     }, [studentLists, selectedStudentId]);
 
-    // Combine existing submission URLs with new file previews
     const allPreviews = useMemo(() => {
         const existingSubmissions = selectedStudent?.submission_urls?.map(sub => sub.url) || [];
         return [...existingSubmissions, ...previews];
@@ -50,6 +51,11 @@ function AssignmentForm() {
 
     //handler
     const handleSubmit = () => {
+
+        if(!isFaceAuthEnable){
+            showAlert("Permission denied", "error");
+            return;
+        }
         try {
             if (!files) {
                 showAlert("No files selected", "error");
@@ -58,11 +64,11 @@ function AssignmentForm() {
 
             uploadMutation.mutate({
                 files,
-                student_homework_id: assignment_id as string,
+                student_homework_id: public_id as string,
                 due_date: assignment!.due_date
             }, {
                 onSuccess: () => {
-                    router.push(`${assignment_id}/success/${selectedStudentId}`);
+                    router.push(`${public_id}/success/${selectedStudentId}`);
                 }
             })
 
@@ -72,7 +78,7 @@ function AssignmentForm() {
     }
 
     const handleCopyLinkForm = () => {
-        const link = `${window.location.origin}/public/form/${assignment_id}`;
+        const link = `${window.location.origin}/public/form/${public_id}`;
         navigator.clipboard.writeText(link);
         showAlert("Link form copied to clipboard", "success");
     }
@@ -84,7 +90,6 @@ function AssignmentForm() {
     return (
         <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-xl mx-auto">
-                {/* Header Card */}
                 <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6 border-t-8 border-blue-600">
                     <div className="p-6 sm:p-8">
                         <div className="flex justify-between items-start mb-4">
@@ -110,14 +115,12 @@ function AssignmentForm() {
                     </div>
                 </div>
 
-                {/* Submission Form */}
                 <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8">
                     <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center">
                         <Send size={20} className="mr-2 text-blue-600" />
                         Submit Your Work
                     </h3>
 
-                    {/* Student Identification */}
                     <div className="mb-8">
                         <label className="text-sm font-bold text-gray-700 mb-2 flex items-center">
                             <User size={18} className="mr-2 text-gray-400" />
@@ -143,7 +146,6 @@ function AssignmentForm() {
                         </p>
                     </div>
 
-                    {/* File Upload */}
                     <div className="mb-8">
                         <label className="text-sm font-bold text-gray-700 mb-2 flex items-center">
                             <Upload size={18} className="mr-2 text-gray-400" />
@@ -154,7 +156,6 @@ function AssignmentForm() {
                             {allPreviews.map((src, idx) => {
                                 const existingSubmissionCount = selectedStudent?.submission_urls?.length || 0;
                                 const isExistingSubmission = idx < existingSubmissionCount;
-                                // Check if URL is a PDF - check extension or common PDF indicators
                                 const urlLower = src.toLowerCase();
                                 const isPdf = urlLower.endsWith('.pdf') || 
                                              urlLower.includes('/pdf') || 
@@ -177,7 +178,6 @@ function AssignmentForm() {
                                         {!isExistingSubmission && (
                                             <button
                                                 onClick={() => {
-                                                    // Offset index to match newly selected files array
                                                     const existingSubmissionCount = selectedStudent?.submission_urls?.length || 0;
                                                     const newFileIndex = idx - existingSubmissionCount;
                                                     handleRemoveFile(newFileIndex);
@@ -204,7 +204,7 @@ function AssignmentForm() {
                         </div>
                     </div>
 
-                    {/* Submit Button */}
+                    {/* SubmitBTN */}
                     <button
                         onClick={handleSubmit}
                         disabled={!selectedStudentId || files?.length === 0 || uploadMutation.isPending}
@@ -220,10 +220,6 @@ function AssignmentForm() {
                         )}
                     </button>
                 </div>
-
-                <p className="text-center text-xs text-gray-400 mt-8">
-                    Powered by Class Hub
-                </p>
             </div>
         </div>
     );
