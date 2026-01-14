@@ -14,7 +14,7 @@ export default function SecuritySetting() {
   const { data: students = [], isLoading: isLoadingStudents } = useGetStudentsWithFaceDescriptorByClassHomeworkId(assignment_id as string);
   const { data: settings, isLoading: isLoadingSettings } = useGetAssignmentSecuritySettings(assignment_id as string);
 
-  const {hasPermission: canEditFaceAuthHomeWork} = useHasPermission(hub_id as string, 'EDIT_FACE_AUTH_HOMEWORK');
+  const { hasPermission: canEditFaceAuthHomeWork } = useHasPermission(hub_id as string, 'EDIT_FACE_AUTH_HOMEWORK');
 
   const mutationToggleFaceAuth = useMutationToggleFaceAuth(assignment_id as string);
 
@@ -41,7 +41,6 @@ export default function SecuritySetting() {
             </div>
           </div>
 
-          {/* 2. Toggle Control */}
           <div className="p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="flex items-start gap-4">
               <ScanFace size={24} className={isEnabled ? "text-green-600" : "text-gray-400"} />
@@ -62,7 +61,7 @@ export default function SecuritySetting() {
 
               <button
                 onClick={() => mutationToggleFaceAuth.mutate(!isEnabled)}
-                disabled={isLoadingSettings}
+                disabled={isLoadingSettings || !canEditFaceAuthHomeWork}
                 className={`
                                     relative inline-flex h-8 w-14 items-center rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2
                                     ${isEnabled ? 'bg-green-500' : 'bg-gray-300'}
@@ -71,25 +70,21 @@ export default function SecuritySetting() {
               >
                 <span className="sr-only">Enable Face Verification</span>
                 <span
-                  className={`
-                                        inline-block h-6 w-6 transform rounded-full bg-white shadow transition-transform duration-300
-                                        ${isEnabled ? 'translate-x-7' : 'translate-x-1'}
-                                    `}
+                  className={`inline-block h-6 w-6 transform rounded-full bg-white shadow transition-transform duration-300
+                            ${isEnabled ? 'translate-x-7' : 'translate-x-1'}`}
                 />
               </button>
             </div>
           </div>
 
-          {/* Status Banner */}
           {isEnabled && (
             <div className="bg-green-50 px-8 py-3 border-t border-green-100 flex items-center text-sm text-green-800 animate-in fade-in slide-in-from-top-1">
               <Info size={16} className="mr-2" />
               Security is active. Only registered students below can submit work.
             </div>
-          )}
+          ) || (null)}
         </div>
 
-        {/* 3. Student Registry Table */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="px-8 py-6 border-b border-gray-100 flex justify-between items-center bg-white">
             <h2 className="text-lg font-bold text-gray-900">Student Registry</h2>

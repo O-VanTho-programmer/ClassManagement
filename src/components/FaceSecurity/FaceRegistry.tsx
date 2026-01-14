@@ -2,6 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { loadModelFaceApi, tinyFaceDetectorOptions } from '@/utils/face-recognition/loadModelFaceApi';
 import * as faceapi from 'face-api.js';
 import api from '@/lib/axios';
+import { AlertTriangle, CheckCircle, Loader2, ScanFace, Upload, X } from 'lucide-react';
+import IconButton from '../IconButton/IconButton';
+import Button from '../Button/Button';
 
 type FaceRegistryProps = {
     student: StudentWithFaceDescriptor;
@@ -16,28 +19,48 @@ export default function FaceRegistry({
     onClose,
     onSuccess,
 }: FaceRegistryProps) {
+
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [descriptor, setDescriptor] = useState<Float32Array | null>(null);
-    const [loading, setLoading] = useState(false);
-    const [status, setStatus] = useState<string>('Loading AI libraries...');
+
     const [isModelLoaded, setIsModelLoaded] = useState(false);
+    const [isDetecting, setIsDetecting] = useState(false);
+    const [isRegistering, setIsRegistering] = useState(false);
+
+    const [statusMessage, setStatusMessage] = useState<string>('Initializing AI...');
+    const [statusType, setStatusType] = useState<'loading' | 'success' | 'error' | 'idle'>('loading');
+
     const imgRef = useRef<HTMLImageElement>(null);
 
     useEffect(() => {
         const init = async () => {
+            setStatusType('loading');
+            setStatusMessage('Loading Face Recognition Models...');
+
             const success = await loadModelFaceApi();
 
             if (success) {
-                setStatus('AI libraries loaded!');
-            }else{
-                setStatus('Error loading AI libraries.');
+                setIsModelLoaded(true);
+                setStatusType('idle');
+                setStatusMessage('Ready. Please upload a clear photo.');
+            } else {
+                setStatusType('error');
+                setStatusMessage('Failed to load AI models. Please refresh.');
             }
-
-            setIsModelLoaded(success);
         };
         init();
-    }, []);
+    }, [isOpen]);
+
+    useEffect(() => {
+        if (!isOpen) {
+            setPreviewUrl(null);
+            setSelectedFile(null);
+            setDescriptor(null);
+            setStatusType('idle');
+            setStatusMessage('');
+        }
+    }, [isOpen]);
 
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files[0]) {
@@ -46,8 +69,11 @@ export default function FaceRegistry({
 
             const objectUrl = URL.createObjectURL(file);
             setPreviewUrl(objectUrl);
+
+            setIsDetecting(true);
             setDescriptor(null);
-            setStatus('Detecting face...');
+            setStatusType('loading');
+            setStatusMessage('Detecting face...');
         }
     };
 
@@ -62,20 +88,25 @@ export default function FaceRegistry({
 
             if (detection) {
                 setDescriptor(detection.descriptor);
-                setStatus('Face detected! Ready to register.');
+                setStatusType('success');
+                setStatusMessage('Face detected successfully!');
             } else {
-                setStatus('No face detected. Please choose another photo.');
                 setDescriptor(null);
+                setStatusType('error');
+                setStatusMessage('No face found. Please use a clearer photo.');
             }
         } catch (error) {
             console.error(error);
-            setStatus('Error during detection.');
+            setStatusType('error');
+            setStatusMessage('Error during face detection.');
+        } finally {
+            setIsDetecting(false);
         }
     };
 
     const handleSubmit = async () => {
         if (!selectedFile || !descriptor) return;
-        setLoading(true);
+        setIsRegistering(true);
 
         try {
             const formData = new FormData();
@@ -83,60 +114,112 @@ export default function FaceRegistry({
             formData.append('descriptor', JSON.stringify(Array.from(descriptor)));
             formData.append('student_id', student.id);
 
-            const response = await api.post('/api/register-student', {
-                body: formData,
-            });
+            const response = await api.post('/api/register-student', { formData });
 
             if (response.status === 200) {
-                setStatus('Registration successful!');
+                onSuccess();
+                onClose();
             } else {
-                setStatus(`Error: ${response.data.error}`);
+                throw new Error('Upload failed.');
             }
         } catch (error) {
-            setStatus('Upload failed.');
+            console.error(error);
+            setStatusType('error');
+            setStatusMessage('Failed to save to server.');
         } finally {
-            setLoading(false);
+            setIsRegistering(false);
         }
     };
 
+
+    if (!isOpen) {
+        return;
+    }
+
     return (
-        <div className='fixed inset-0 z-50 flex items-center justify-center overlay transition-opacity duration-300'>
-            <div className="p-6 max-w-md mx-auto bg-white rounded-xl shadow-md space-y-4">
-                <h2 className="text-xl font-bold text-gray-800">Face Registration</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity p-4 animate-in fade-in duration-200">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
 
-                <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    disabled={!isModelLoaded}
-                    className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100 disabled:opacity-50"
-                />
-                {previewUrl && (
-                    <div className="relative">
-                        <img
-                            ref={imgRef}
-                            src={previewUrl}
-                            alt="Preview"
-                            onLoad={handleImageLoad}
-                            className="w-full h-64 object-cover rounded-lg"
-                        />
+                <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-white">
+                    <div>
+                        <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                            <ScanFace className="text-indigo-600" /> Face Registration
+                        </h2>
+                        <p className="text-sm text-gray-500 mt-1">Registering: <span className="font-semibold">{student.name}</span></p>
                     </div>
-                )}
 
-                <div className={`text-sm font-medium ${descriptor ? 'text-green-600' : 'text-blue-600'}`}>
-                    Status: {status}
+                    <IconButton icon={X} onClick={onClose} size={20} />
                 </div>
 
-                <button
-                    onClick={handleSubmit}
-                    disabled={!descriptor || loading}
-                    className={`w-full py-2 px-4 rounded-md text-white font-medium ${!descriptor || loading
-                        ? 'bg-gray-400 cursor-not-allowed'
-                        : 'bg-blue-600 hover:bg-blue-700'
-                        }`}
-                >
-                    {loading ? 'Processing...' : 'Register Student'}
-                </button>
+                <div className="p-6 space-y-6 overflow-y-auto">
+
+                    {/*Status */}
+                    <div className={`p-3 rounded-lg flex items-center gap-3 text-sm font-medium border ${statusType === 'loading' ? 'bg-blue-50 text-blue-700 border-blue-100' :
+                        statusType === 'success' ? 'bg-green-50 text-green-700 border-green-100' :
+                            statusType === 'error' ? 'bg-red-50 text-red-700 border-red-100' :
+                                'bg-gray-50 text-gray-700 border-gray-100'
+                        }`}>
+                        {statusType === 'loading' && <Loader2 size={18} className="animate-spin" />}
+                        {statusType === 'success' && <CheckCircle size={18} />}
+                        {statusType === 'error' && <AlertTriangle size={18} />}
+                        {statusMessage}
+                    </div>
+
+                    {/*Image reiew and Upload*/}
+                    <div className="aspect-[4/3] w-full bg-gray-50 rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center relative overflow-hidden group">
+
+                        {previewUrl ? (
+                            <>
+                                <img
+                                    ref={imgRef}
+                                    src={previewUrl}
+                                    alt="Preview"
+                                    onLoad={handleImageLoad}
+                                    className={`w-full h-full object-cover transition-opacity duration-300 ${isDetecting ? 'opacity-50 blur-sm' : 'opacity-100'}`}
+                                />
+                                {isDetecting && (
+                                    <div className="absolute inset-0 flex items-center justify-center">
+                                        <div className="bg-white/80 backdrop-blur px-4 py-2 rounded-full shadow-lg flex items-center gap-2 text-sm font-semibold text-indigo-600">
+                                            <Loader2 size={16} className="animate-spin" /> Scanning...
+                                        </div>
+                                    </div>
+                                )}
+                            </>
+                        ) : (
+                            <div className="text-center p-6">
+                                <div className="w-16 h-16 bg-indigo-50 text-indigo-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                                    <Upload size={32} />
+                                </div>
+                                <p className="text-gray-900 font-medium">Click to upload a photo</p>
+                                <p className="text-gray-500 text-xs mt-1">JPG or PNG. Ensure face is clearly visible.</p>
+                            </div>
+                        )}
+
+                        <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFileChange}
+                            disabled={!isModelLoaded || isDetecting}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                        />
+                    </div>
+                </div>
+
+                <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+                    <Button
+                        onClick={onClose}
+                        color='white'
+                        title='Cancel'
+                    />
+
+                    <Button
+                        title={isRegistering ? 'Registering...' : 'Confirm Registration'}
+                        disabled={!descriptor || isRegistering || isDetecting}
+                        onClick={handleSubmit}
+                        color='blue'
+                    />
+                </div>
+
             </div>
         </div>
     );

@@ -6,7 +6,7 @@ export async function PUT(req: NextRequest) {
     try {
         const body = await req.json();
 
-        const permissionCheck = await checkPermission(req, 'EDIT_FACE_AUTH_HOMEWORK');
+        const permissionCheck = await checkPermission(req, 'EDIT_FACE_AUTH_HOMEWORK', body.hub_id);
         if (permissionCheck instanceof NextResponse) {
             return permissionCheck;
         }
