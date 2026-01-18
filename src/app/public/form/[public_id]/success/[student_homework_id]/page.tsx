@@ -120,7 +120,7 @@ export default function FormSuccess() {
                 </div>
 
                 <p className="text-center text-sm text-gray-400 mt-8">
-                    Submission ID: #{studentHomework.student_homework_id} • Class Hub
+                    Submission ID: #{studentHomework.student_homework_id} • TutorDesk
                 </p>
             </div>
         </div>

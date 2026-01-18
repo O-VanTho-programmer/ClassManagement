@@ -22,3 +22,4 @@ export const tinyFaceDetectorOptions = () => new faceapi.TinyFaceDetectorOptions
     inputSize: 320, // larger = better accuracy, smaller = faster
     scoreThreshold: 0.5,
 });
+

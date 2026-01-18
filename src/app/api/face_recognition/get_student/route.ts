@@ -21,7 +21,22 @@ export async function GET(req:Request) {
 
         const [studentList]: any[] = await pool.query(queryGetStudentWithFaceDescriptor, [class_homework_id]);
 
-        return NextResponse.json({ message: "Success", studentList }, { status: 200 });
+        // Parse JSON face_descriptor if it exists (handle both string and already-parsed JSON)
+        const parsedStudentList = studentList.map((student: any) => {
+            if (student.face_descriptor) {
+                if (typeof student.face_descriptor === 'string') {
+                    try {
+                        student.face_descriptor = JSON.parse(student.face_descriptor);
+                    } catch (e) {
+                        console.error('Error parsing face_descriptor JSON:', e);
+                        student.face_descriptor = null;
+                    }
+                }
+            }
+            return student;
+        });
+
+        return NextResponse.json({ message: "Success", studentList: parsedStudentList }, { status: 200 });
 
     } catch (error) {
         console.error(error);

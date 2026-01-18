@@ -11,7 +11,6 @@ export async function POST(req: Request) {
         connection = await pool.getConnection();
         await connection.beginTransaction();
 
-        // Get hubId from studentHomeworkId
         const [studentHomework]: any[] = await connection.query(`
             SELECT h.HubId 
             FROM student_homework sh

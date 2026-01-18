@@ -1,6 +1,7 @@
 'use client';
 
 import { useAlert } from '@/components/AlertProvider/AlertContext';
+import FaceRecognitionAuth from '@/components/FaceSecurity/FaceRecognitionAuth';
 import IconButton from '@/components/IconButton/IconButton';
 import ErrorState from '@/components/QueryState/ErrorState';
 import LoadingState from '@/components/QueryState/LoadingState';
@@ -11,7 +12,7 @@ import { useUploadSubmissionMutation } from '@/hooks/useUploadSubmission';
 import { getUrlImageByUploadOnCloudiary } from '@/lib/api/getUrlImageByUploadOnCloudiary';
 import { saveStudentSubmission } from '@/lib/api/HomeworkSubmission/saveStudentSubmission';
 import { isFaceAuthEnablePublic } from '@/utils/face-recognition/isFaceAuthEnable';
-import {  Copy, FileText, Loader2, Send, Trash2, Upload, User } from 'lucide-react';
+import { Copy, FileText, Loader2, Send, Trash2, Upload, User } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation'
 import React, { useState, useMemo } from 'react'
 
@@ -21,12 +22,13 @@ function AssignmentForm() {
 
     const { data: assignment, isLoading: isAssignmentLoading, isError: isAssignmentError, error: assignmentError } = useGetClassHomeworkByIdPublic(public_id as string);
     const { data: studentLists, isLoading: isStudentListsLoading, isError: isStudentListsError, error: studentListsError } = useGetStudentListByAssignmentIdPublic(public_id as string);
-    const {data: isFaceAuthEnable} = isFaceAuthEnablePublic(public_id as string);
-    
+    const { data: isFaceAuthEnable } = isFaceAuthEnablePublic(public_id as string);
+
     const { showAlert } = useAlert();
 
     const { files, previews, handleFileChange, handleRemoveFile } = useFileImg(showAlert);
     const [selectedStudentId, setSelectedStudentId] = useState('');
+    const [isDetecting, setIsDetecting] = useState(false);
 
     const selectedStudent = useMemo(() => {
         return studentLists?.find(s => s.id.toString() === selectedStudentId);
@@ -51,11 +53,6 @@ function AssignmentForm() {
 
     //handler
     const handleSubmit = () => {
-
-        if(!isFaceAuthEnable){
-            showAlert("Permission denied", "error");
-            return;
-        }
         try {
             if (!files) {
                 showAlert("No files selected", "error");
@@ -84,7 +81,23 @@ function AssignmentForm() {
     }
 
     const handleSelectStudent = (studentId: string) => {
-        setSelectedStudentId(studentId);
+        if (studentId === selectedStudentId) {
+            setSelectedStudentId('');
+            return;
+        }
+
+        try {
+            if (isFaceAuthEnable) {
+                setIsDetecting(true);
+            }
+            setSelectedStudentId(studentId);
+        } catch (error) {
+
+        }
+    }
+
+    const handleSuccessFaceAuth = () => {
+
     }
 
     return (
@@ -157,10 +170,10 @@ function AssignmentForm() {
                                 const existingSubmissionCount = selectedStudent?.submission_urls?.length || 0;
                                 const isExistingSubmission = idx < existingSubmissionCount;
                                 const urlLower = src.toLowerCase();
-                                const isPdf = urlLower.endsWith('.pdf') || 
-                                             urlLower.includes('/pdf') || 
-                                             urlLower.includes('format=pdf');
-                                
+                                const isPdf = urlLower.endsWith('.pdf') ||
+                                    urlLower.includes('/pdf') ||
+                                    urlLower.includes('format=pdf');
+
                                 return (
                                     <div key={`${isExistingSubmission ? 'existing' : 'new'}-${idx}`} className="relative group rounded-lg overflow-hidden border border-gray-200 h-32 bg-gray-100">
                                         {isPdf ? (
@@ -169,9 +182,9 @@ function AssignmentForm() {
                                                 <span className="text-xs text-gray-600">PDF Document</span>
                                             </div>
                                         ) : (
-                                            <img 
-                                                src={src} 
-                                                alt="Preview" 
+                                            <img
+                                                src={src}
+                                                alt="Preview"
                                                 className="w-full h-full object-cover opacity-90"
                                             />
                                         )}
@@ -221,6 +234,17 @@ function AssignmentForm() {
                     </button>
                 </div>
             </div>
+
+            {isDetecting && (
+                <FaceRecognitionAuth
+                    studentDescriptor={selectedStudent?.face_descriptor ? (
+                        typeof selectedStudent.face_descriptor === 'string'
+                            ? selectedStudent.face_descriptor
+                            : JSON.stringify(selectedStudent.face_descriptor)
+                    ) : null}
+                    onAuthenticated={handleSuccessFaceAuth}
+                />
+            )}
         </div>
     );
 }

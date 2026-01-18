@@ -18,7 +18,6 @@ const gradingSchema: Schema = {
             description: "Overall constructive feedback summary.",
             nullable: false
         },
-
         questions: {
             type: SchemaType.ARRAY,
             description: "List of grades for each specific question found in the answer key",
@@ -31,7 +30,7 @@ const gradingSchema: Schema = {
                     },
                     grade: {
                         type: SchemaType.NUMBER,
-                        description: "Points earned for this specific question (e.g., 8.5)"
+                        description: "Points earned for this specific question (e.g., 85)"
                     },
                     max_grade: {
                         type: SchemaType.NUMBER,
@@ -51,7 +50,6 @@ const gradingSchema: Schema = {
 
 export async function POST(req: Request) {
     try {
-        // CHANGED: Expect 'images' as an array of strings
         const { answerKey, images, hubId } = await req.json();
         
         // Check permission - need GRADE_HOMEWORK to use AI grading

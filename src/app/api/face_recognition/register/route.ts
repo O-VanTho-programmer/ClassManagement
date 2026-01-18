@@ -18,7 +18,23 @@ export async function POST(req: Request) {
             return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
         }
 
-        const [studentRows]: any[] = await pool.query(
+        // Ensure descriptor is a JSON string
+        let descriptorJson: string;
+        if (typeof descriptor === 'string') {
+            // If it's already a JSON string, validate it
+            try {
+                JSON.parse(descriptor);
+                descriptorJson = descriptor;
+            } catch {
+                return NextResponse.json({ message: "Invalid descriptor format" }, { status: 400 });
+            }
+        } else if (Array.isArray(descriptor)) {
+            descriptorJson = JSON.stringify(descriptor);
+        } else {
+            return NextResponse.json({ message: "Invalid descriptor format" }, { status: 400 });
+        }
+
+        const [studentRows]: any[] = await pool.query(  
             `SELECT FaceImagePublicId FROM student WHERE StudentId = ?`,
             [student_id]
         );
@@ -50,7 +66,7 @@ export async function POST(req: Request) {
 
         await pool.query(
             `UPDATE student SET FaceDescriptor = ?, FaceImageUrl = ?, FaceImagePublicId = ? WHERE StudentId = ?`,
-            [descriptor, faceImageUrl, faceImagePublicId, student_id]
+            [descriptorJson, faceImageUrl, faceImagePublicId, student_id]
         );
 
         if (oldFaceImagePublicId) {

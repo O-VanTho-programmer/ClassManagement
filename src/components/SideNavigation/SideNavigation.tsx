@@ -30,7 +30,7 @@ export default function SideNavigation({isOpen, toggleNav, activePage, isShrunk,
             <div className="p-4 flex flex-col justify-between h-full">
                 <div className="text-center mb-6">
                     <h1 className={`font-bold text-blue-400 transition-opacity duration-300 ${isShrunk ? 'text-xl' : 'text-3xl'}`}>
-                        {isShrunk ? 'CH' : 'Class Hub'}
+                        {isShrunk ? 'TD' : 'TutorDesk'}
                     </h1>
                 </div>
                 <ul className="flex-grow">

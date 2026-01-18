@@ -24,11 +24,11 @@ export default function Home() {
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
               <img
                 src="/logo_only.jpg"
-                alt="Class Hub Logo"
+                alt="TutorDesk Logo"
                 className="h-8 w-8"
               />
             </div>
-            <span className="text-xl font-bold text-gray-800">Class Hub</span>
+            <span className="text-xl font-bold text-gray-800">TutorDesk</span>
           </div>
           {user ? (
             <HeaderAvatar name={user?.name}/>
@@ -84,7 +84,7 @@ export default function Home() {
           <div className="hidden lg:block">
             <img
               src="/banner.png"
-              alt="Class Hub application dashboard"
+              alt="TutorDesk application dashboard"
               className="rounded-2xl shadow-xl"
               width={500}
               height={500}

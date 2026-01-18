@@ -141,7 +141,7 @@ export default function CalendarSchedule({
             </div>
 
             {/* Calendar Table */}
-            <div className="overflow-x-auto relative">
+            <div className="overflow-x-auto overflow-y-scroll max-h-[500px] relative">
                 {isLoading && (
                     <div className="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center z-30">
                         <Loader2 size={32} className="animate-spin text-blue-600" />
@@ -173,7 +173,7 @@ export default function CalendarSchedule({
                     </thead>
 
                     {/* Table Body (Time Slots) */}
-                    <tbody>
+                    <tbody className="">
                         {timeSlots30Min.map(time => {
                             const isFullHour = time.endsWith(':00');
                             return (

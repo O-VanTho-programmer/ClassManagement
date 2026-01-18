@@ -5,6 +5,7 @@ import api from '@/lib/axios';
 import { AlertTriangle, CheckCircle, Loader2, ScanFace, Upload, X } from 'lucide-react';
 import IconButton from '../IconButton/IconButton';
 import Button from '../Button/Button';
+import { useAlert } from '../AlertProvider/AlertContext';
 
 type FaceRegistryProps = {
     student: StudentWithFaceDescriptor;
@@ -19,6 +20,8 @@ export default function FaceRegistry({
     onClose,
     onSuccess,
 }: FaceRegistryProps) {
+
+    const { showAlert } = useAlert();
 
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -70,15 +73,16 @@ export default function FaceRegistry({
             const objectUrl = URL.createObjectURL(file);
             setPreviewUrl(objectUrl);
 
-            setIsDetecting(true);
             setDescriptor(null);
-            setStatusType('loading');
-            setStatusMessage('Detecting face...');
         }
     };
 
     const handleImageLoad = async () => {
         if (!imgRef.current || !isModelLoaded) return;
+
+        setStatusType('loading');
+        setStatusMessage('Detecting face...');
+        setIsDetecting(true);
 
         try {
             const detection = await faceapi
@@ -109,17 +113,29 @@ export default function FaceRegistry({
         setIsRegistering(true);
 
         try {
-            const formData = new FormData();
-            formData.append('image', selectedFile);
-            formData.append('descriptor', JSON.stringify(Array.from(descriptor)));
-            formData.append('student_id', student.id);
+            // Convert File to base64 string
+            const base64Image = await new Promise<string>((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const result = reader.result as string;
+                    resolve(result);
+                };
+                reader.onerror = (error) => reject(error);
+                reader.readAsDataURL(selectedFile);
+            });
 
-            const response = await api.post('/api/register-student', { formData });
+            const response = await api.post('/face_recognition/register', {
+                image: base64Image,
+                descriptor: JSON.stringify(Array.from(descriptor)),
+                student_id: student.id
+            });
 
             if (response.status === 200) {
+                showAlert("Registration successful", "success");
                 onSuccess();
                 onClose();
             } else {
+                showAlert("Registration failed", "error");
                 throw new Error('Upload failed.');
             }
         } catch (error) {

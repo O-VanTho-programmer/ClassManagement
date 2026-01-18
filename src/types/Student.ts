@@ -65,6 +65,7 @@ type StudentWithHomeworkPublic = Student & {
     submission_urls: ResultUpload[];
     submitted_date: string;
     is_graded: boolean;
+    face_descriptor?: string,
 }
 
 type StudentHomeworkQuestion = StudentHomeworkQuestionsInputDTO & {
