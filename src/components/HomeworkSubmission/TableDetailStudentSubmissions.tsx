@@ -111,8 +111,6 @@ export default function TableDetailStudentSubmissions({
 
                         for (let submission of submissionsRes) {
                             const { grade, feedback, questions } = submission;
-                            await saveGrade(submission.student_homework_id, grade, feedback);
-                            await addStudentHomeworkQuestion(submission.student_homework_id, questions);
                             await saveGradeAndStudentHomeworkQuestion(submission.student_homework_id, grade, feedback, questions);
                         }
 

@@ -26,6 +26,7 @@ function AssignmentForm() {
 
     const { showAlert } = useAlert();
 
+    const [lockedSubmission, setLockedSubmission] = useState<boolean>(isFaceAuthEnable ? true : false);
     const { files, previews, handleFileChange, handleRemoveFile } = useFileImg(showAlert);
     const [selectedStudentId, setSelectedStudentId] = useState('');
     const [isDetecting, setIsDetecting] = useState(false);
@@ -86,18 +87,15 @@ function AssignmentForm() {
             return;
         }
 
-        try {
-            if (isFaceAuthEnable) {
-                setIsDetecting(true);
-            }
-            setSelectedStudentId(studentId);
-        } catch (error) {
-
+        if (isFaceAuthEnable) {
+            setIsDetecting(true);
         }
+
+        setSelectedStudentId(studentId);
     }
 
     const handleSuccessFaceAuth = () => {
-
+        setLockedSubmission(false);
     }
 
     return (
@@ -165,7 +163,7 @@ function AssignmentForm() {
                             Upload Files <span className="text-red-500 ml-1">*</span>
                         </label>
 
-                        <div className="grid grid-cols-2 gap-4 mb-4">
+                        <div className="grid grid-cols-2 gap-4 mb-4 relative">
                             {allPreviews.map((src, idx) => {
                                 const existingSubmissionCount = selectedStudent?.submission_urls?.length || 0;
                                 const isExistingSubmission = idx < existingSubmissionCount;
@@ -212,8 +210,14 @@ function AssignmentForm() {
                             <label className="border-2 border-dashed border-blue-300 rounded-lg h-32 flex flex-col items-center justify-center cursor-pointer hover:bg-blue-50 hover:border-blue-400 transition-colors">
                                 <Upload size={24} className="text-blue-400 mb-1" />
                                 <span className="text-xs font-semibold text-blue-600">Add Image/PDF</span>
-                                <input type="file" className="hidden" onChange={handleFileChange} accept="image/*,application/pdf" multiple />
+                                <input type="file" disabled={lockedSubmission} className="hidden" onChange={handleFileChange} accept="image/*,application/pdf" multiple />
                             </label>
+
+                            <div className={`absolute h-full w-full flex justify-center items-center ${lockedSubmission ? "overlay" : ""}`}>
+                                <p className=''>
+                                    Identify yourself first
+                                </p>
+                            </div>
                         </div>
                     </div>
 
@@ -235,8 +239,10 @@ function AssignmentForm() {
                 </div>
             </div>
 
-            {isDetecting && (
+            {isDetecting && isFaceAuthEnable && selectedStudent && (
                 <FaceRecognitionAuth
+                    isOpen={isDetecting}
+                    onClose={() => setIsDetecting(false)}
                     studentDescriptor={selectedStudent?.face_descriptor ? (
                         typeof selectedStudent.face_descriptor === 'string'
                             ? selectedStudent.face_descriptor

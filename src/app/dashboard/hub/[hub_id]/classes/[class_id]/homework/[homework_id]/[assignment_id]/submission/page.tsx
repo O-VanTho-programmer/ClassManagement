@@ -21,7 +21,7 @@ import { saveAnswerKey } from '@/lib/api/HomeworkSubmission/saveAnswerKey';
 import { saveGrade } from '@/lib/api/HomeworkSubmission/saveGrade';
 import { saveStudentSubmission } from '@/lib/api/HomeworkSubmission/saveStudentSubmission';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { AlertCircle, CheckCircle, FileQuestionMarkIcon, Key } from 'lucide-react';
+import { AlertCircle, CheckCircle, FileQuestionMarkIcon, Key, ShieldPlus } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
 
@@ -35,7 +35,7 @@ function HomeworkSubmissionPage() {
   const { data: homeworkData, isLoading: isHomeworkLoading, isError: isHomeworkError, error: homeworkError } = useGetHomeworkById(homework_id as string);
   const { data: studentSubmissionsList = [] as StudentWithHomework[], isLoading: isStudentSubmissionsListLoading, isError: isStudentSubmissionsListError, error: studentSubmissionsListError } = useGetStudentListByAssignmentId(assignment_id as string);
   const { data: studentHomeworkQuestion, isLoading: isStudentHomeworkQuestionLoading, isError: isStudentHomeworkQuestionError, error: studentHomeworkQuestionError } = useGetStudentHomeworkQuestionByClassHomeworkId(assignment_id as string);
-  const {data: publicIdForm} = useGetPublicIdForm(assignment_id as string);
+  const { data: publicIdForm } = useGetPublicIdForm(assignment_id as string);
 
   const [isKeyModalOpen, setKeyModalOpen] = useState(false);
   const [isUploadModalOpen, setUploadModalOpen] = useState(false);
@@ -90,7 +90,7 @@ function HomeworkSubmissionPage() {
   // --- Handlers ---
 
   const handleOpenFaceSecurity = () => {
-      router.push(`security_setting`);
+    router.push(`security_setting`);
   }
 
   const handleOpenUpload = (submission: StudentWithHomework) => {
@@ -139,7 +139,20 @@ function HomeworkSubmissionPage() {
     <div className="p-8 bg-gray-50 min-h-screen">
       <div className='flex items-center justify-between'>
         <h1 className="text-3xl font-bold text-gray-900">{homeworkData?.title}</h1>
-        <Button title='Face Security' color='blue' onClick={handleOpenFaceSecurity} />
+        <button
+          onClick={handleOpenFaceSecurity}
+          className="group cursor-pointer relative flex items-center gap-3 px-6 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl font-medium text-white shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-300 hover:scale-105 active:scale-95 overflow-hidden"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+          <span className="relative z-10 transition-transform duration-300 group-hover:rotate-12">
+            <ShieldPlus className="w-5 h-5" />
+          </span>
+          <span className="relative z-10 text-base">
+            Face Security
+          </span>
+          <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-400 to-indigo-400 opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-300" />
+        </button>
+
       </div>
       <p
         className="ml-4 mt-2 text-base text-gray-600 overflow-hidden max-h-[150px] relative"

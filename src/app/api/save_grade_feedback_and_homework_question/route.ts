@@ -45,8 +45,6 @@ export async function POST(req: Request) {
 
         await connection.query(querySaveGradeFeedbackSubmission, [grade, feedback, studentHomeworkId]);
 
-
-
         if (Array.isArray(questions) && questions.length > 0) {
             await connection.query(
                 `DELETE FROM student_homework_question WHERE StudentHomeworkId = ?`,
