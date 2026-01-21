@@ -35,7 +35,7 @@ export async function DELETE(req: Request) {
         const hubId = classHomework[0].HubId;
         
         // Check permission
-        const permissionCheck = await checkPermission(req, PERMISSIONS.ASSIGN_HOMEWORK, hubId);
+        const permissionCheck = await checkPermission(req, PERMISSIONS.DELETE_HOMEWORK, hubId);
         if (permissionCheck instanceof NextResponse) {
             await connection.rollback();
             return permissionCheck;

@@ -68,7 +68,7 @@ export default function QuickAssignHomeworkModal({
             }
 
             if (assignedDate >= dueDate) {
-                alert(`Error: Due date cannot be before assigned date for one of your selections.`);
+                showAlert(`Error: Due date cannot be before assigned date for one of your selections.`, 'error');
                 return;
             }
 

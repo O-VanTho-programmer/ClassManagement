@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/check_attendance",
+      "schedule": "0 23 * * *"
+    },
+    {
+      "path": "/api/cron/check_homework",
+      "schedule": "0 */6 * * *"
+    }
+  ]
+}

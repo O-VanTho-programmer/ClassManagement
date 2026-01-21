@@ -47,7 +47,7 @@ export default function EditAssignmentHomeworkModal({
 
     const handleSubmit = () => {
         if (new Date(dueDate) < new Date(assignedDate)) {
-            alert('Due date cannot be before the assigned date.');
+            showAlert('Due date cannot be before the assigned date.', 'error');
             return;
         }
         mutationUpdateHomeworkAssignmentDate.mutate();

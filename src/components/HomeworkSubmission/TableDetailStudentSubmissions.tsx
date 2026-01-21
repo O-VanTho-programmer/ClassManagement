@@ -1,15 +1,17 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Edit, Loader2, Sparkles } from 'lucide-react';
 import LoadingState from '../QueryState/LoadingState';
 import ErrorState from '../QueryState/ErrorState';
 import IconButton from '../IconButton/IconButton';
 import Button from '../Button/Button';
 import { addStudentHomeworkQuestion } from '@/lib/api/addStudentHomeworkQuestion';
-import { gradeStudentHomeworkUseAI } from '@/lib/api/gradeStudentHomeworkUseAI';
 import { saveGrade } from '@/lib/api/HomeworkSubmission/saveGrade';
 import { useQueryClient } from '@tanstack/react-query';
+import { gradeStudentHomeworkBatchUseAI } from '@/lib/api/gradeStudentHomeworkBatchUseAI';
+import { useAlert } from '../AlertProvider/AlertContext';
+import { saveGradeAndStudentHomeworkQuestion } from '@/lib/api/HomeworkSubmission/saveGradeAndStudentHomeworkQuestion';
 
 interface TableDetailStudentSubmissionsProps {
     studentSubmissionsList: StudentWithHomework[],
@@ -44,11 +46,26 @@ export default function TableDetailStudentSubmissions({
     }
 
     const queryClient = useQueryClient();
+    const { showAlert } = useAlert();
 
     const questionColumns = Array.from({ length: total_question }, (_, i) => i + 1);
 
+    const [isGrading, setIsGrading] = useState<boolean>(false);
+    const [gradingStudent, setGradingStudent] = useState<string[]>([]);
+
+    const mapStudentSubmissionList = useMemo(() => {
+        const mapStudentSubmissions = new Map<string, StudentWithHomework>();
+
+        studentSubmissionsList.forEach((s) => {
+            mapStudentSubmissions.set(s.id, s);
+            // s.id is student id
+        });
+
+        return mapStudentSubmissions;
+    }, [studentSubmissionsList]);
+
     const onOpenGrader = (studentId: string) => {
-        const selectedStudentSubmission = studentSubmissionsList.find(student => student.id == studentId);
+        const selectedStudentSubmission = mapStudentSubmissionList.get(studentId);
 
         if (selectedStudentSubmission === undefined) {
             return;
@@ -57,40 +74,55 @@ export default function TableDetailStudentSubmissions({
         handleOpenGrader(selectedStudentSubmission);
     }
 
-    const [isGrading, setIsGrading] = useState<boolean>(false);
-    const [gradingStudent, setGradingStudent] = useState<string>('');
-
-    const handleGradeAll = async () => {
+    const handleGradeAllBatch = async () => {
         if (!answerKey) {
-            alert("Please set an Answer Key first.");
+            showAlert("Please set an Answer Key first.", 'warning');
             return;
         }
 
         setIsGrading(true);
 
         try {
-            for (let studentView of students_homework_questions) {
+            for (let i = 0; i < students_homework_questions.length; i += 5) {
+                let submissionsBatch = [];
+                let batchStudentIds: string[] = [];
 
-                const submission = studentSubmissionsList.find(s => s.id === studentView.student_id);
+                for (let j = 0; j < 5 && i + j < students_homework_questions.length; j++) {
+                    const studentId = students_homework_questions[i + j].student_id;
+                    const submission = mapStudentSubmissionList.get(studentId);
 
-                if (!submission || !submission.submission_urls || submission.submission_urls.length === 0) {
-                    continue;
+                    if (!submission || !submission.submission_urls || submission.submission_urls.length === 0) {
+                        continue;
+                    }
+
+                    batchStudentIds.push(studentId);
+                    submissionsBatch.push(submission);
                 }
 
-                setGradingStudent(studentView.student_id);
+                if (batchStudentIds.length > 0) {
+                    setGradingStudent(batchStudentIds);
+                }
 
                 try {
-                    const aiRes = await gradeStudentHomeworkUseAI(answerKey, submission.submission_urls);
+                    const aiRes = await gradeStudentHomeworkBatchUseAI(answerKey, submissionsBatch);
 
                     if (aiRes?.status === 200 && aiRes.data) {
-                        const { grade, feedback, questions } = aiRes.data;
-                        await saveGrade(submission.student_homework_id, grade, feedback);
-                        await addStudentHomeworkQuestion(submission.student_homework_id, questions);
-                    
-                        queryClient.invalidateQueries({queryKey: ['student_homework_question_by_class_homework_id', class_homework_id]})
+                        const submissionsRes = aiRes.data;
+
+                        for (let submission of submissionsRes) {
+                            const { grade, feedback, questions } = submission;
+                            await saveGrade(submission.student_homework_id, grade, feedback);
+                            await addStudentHomeworkQuestion(submission.student_homework_id, questions);
+                            await saveGradeAndStudentHomeworkQuestion(submission.student_homework_id, grade, feedback, questions);
+                        }
+
+
+                        queryClient.invalidateQueries({ queryKey: ['student_homework_question_by_class_homework_id', class_homework_id] })
                     }
                 } catch (err) {
-                    console.error(`Failed to grade student ${studentView.student_name}`, err);
+                    console.error(`Failed to grade student`, err);
+                } finally {
+                    setGradingStudent([]);
                 }
             }
         } catch (error) {
@@ -98,7 +130,7 @@ export default function TableDetailStudentSubmissions({
             alert("An error occurred during batch grading.");
         } finally {
             setIsGrading(false);
-            setGradingStudent('');
+            setGradingStudent([]);
         }
     }
 
@@ -107,7 +139,7 @@ export default function TableDetailStudentSubmissions({
             <div className='flex justify-between items-center mb-4'>
                 <h1 className="text-2xl font-bold text-gray-900 mb-6">Homework Gradebook</h1>
                 <Button style='bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-indigo-700 transition-all shadow-md disabled:bg-gray-400 disabled:from-gray-400 disabled:cursor-not-allowed'
-                    color='blue' title='Grade All' onClick={handleGradeAll}
+                    color='blue' title='Grade All' onClick={handleGradeAllBatch}
                     disabled={isGrading}
                     isSaving={isGrading}
                     icon={isGrading ? Loader2 : Sparkles}
@@ -138,7 +170,7 @@ export default function TableDetailStudentSubmissions({
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
                             {students_homework_questions.map((student) => {
-                                const isGradingThisStudent = gradingStudent === student.student_id;
+                                const isGradingThisStudent = gradingStudent.includes(student.student_id);
 
                                 let statusColor = "bg-gray-100 text-gray-600";
                                 let statusText = student.homework_status;

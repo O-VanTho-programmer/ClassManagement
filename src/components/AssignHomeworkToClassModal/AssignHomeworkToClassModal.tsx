@@ -5,6 +5,7 @@ import { AlertTriangle, BookOpen, Calendar, CheckCircle2, Clock, Loader2, Users,
 import React, { useMemo, useState } from 'react'
 import SquareButton from '../SquareButton/SquareButton';
 import Button from '../Button/Button';
+import { useAlert } from '../AlertProvider/AlertContext';
 
 type AssignHomeworkToClassModalProps = {
     curHomework: Homework,
@@ -26,6 +27,7 @@ export default function AssignHomeworkToClassModal({
 }: AssignHomeworkToClassModalProps) {
 
     const queryClient = useQueryClient();
+    const { showAlert } = useAlert();
     const [selectedClassIds, setSelectedClassIds] = useState<Set<string>>(new Set());
 
     const { data: allClasses = [], isLoading: isLoadingClasses } = useGetClassesByHubIdQuery(hubId);
@@ -34,11 +36,12 @@ export default function AssignHomeworkToClassModal({
     const mutation = useMutation({
         mutationFn: (data: HomeworkAssignedClassesDTO) => assignHomework(data),
         onSuccess: () => {
-            alert('Homework assigned successfully!');
+            showAlert('Homework assigned successfully!', 'success');
+            queryClient.invalidateQueries({ queryKey: ['homeworkList', hubId] })
             handleClose();
         },
         onError: (error) => {
-            alert(`Error assigning homework: ${error.message}`);
+            showAlert(`Error assigning homework: ${error.message}`, 'error');
         }
     });
 
@@ -124,7 +127,7 @@ export default function AssignHomeworkToClassModal({
     const handleSubmit = async () => {
         if (!homework) return;
         if (selectedClassIds.size === 0) {
-            alert('Please select at least one class.');
+            showAlert('Please select at least one class.', 'error');
             return;
         }
 
@@ -147,17 +150,16 @@ export default function AssignHomeworkToClassModal({
         }
 
         if (assignHomework.length === 0) {
-            alert("No valid assignments to submit.");
+            showAlert("No valid assignments to submit.", "warning");
             return;
         }
 
         try {
             await Promise.all(assignmentsToSubmit.map(item => mutation.mutateAsync(item)));
-            alert("Homework assigned successfully!")
             handleClose();
 
         } catch (error) {
-            alert(`Error assigning homework: ${(error as Error).message}. Please try again.`);
+            showAlert(`Error assigning homework: ${(error as Error).message}. Please try again.`, 'error');
         }
     };
 
