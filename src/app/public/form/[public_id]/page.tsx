@@ -82,6 +82,8 @@ function AssignmentForm() {
     }
 
     const handleSelectStudent = (studentId: string) => {
+        setLockedSubmission(true);
+
         if (studentId === selectedStudentId) {
             setSelectedStudentId('');
             return;
@@ -213,7 +215,7 @@ function AssignmentForm() {
                                 <input type="file" disabled={lockedSubmission} className="hidden" onChange={handleFileChange} accept="image/*,application/pdf" multiple />
                             </label>
 
-                            <div className={`absolute h-full w-full flex justify-center items-center ${lockedSubmission ? "overlay" : ""}`}>
+                            <div className={`absolute hidden h-full w-full  justify-center items-center ${lockedSubmission ? "flex overlay" : ""}`}>
                                 <p className=''>
                                     Identify yourself first
                                 </p>

@@ -1,9 +1,11 @@
 'use client';
 
 import AddStudentIntoClassModal from "@/components/AddStudentIntoClassModal/AddStudentIntoClassModal";
+import { useAlert } from "@/components/AlertProvider/AlertContext";
 import CardDirection, { CardDirectionProps } from "@/components/CardDirection/CardDirection";
 import ClassHeader from "@/components/ClassHeader/ClassHeader";
 import NewStudentInHubModal from "@/components/NewStudentInHubModal/NewStudentInHubModal";
+import OverlapAlert from "@/components/OverlapAlert/OverlapAlert";
 import ErrorState from "@/components/QueryState/ErrorState";
 import LoadingState from "@/components/QueryState/LoadingState";
 import ViewStudentList from "@/components/ViewStudentList/ViewStudentList";
@@ -16,11 +18,12 @@ import { newStudentInHub } from "@/lib/api/newStudentInHub";
 import { useQueryClient } from "@tanstack/react-query";
 import { AlbumIcon, CalendarCheck, Pen } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function Class() {
 
     const { hub_id, class_id } = useParams();
+    const { showAlert } = useAlert();
     const router = useRouter();
 
     const { data: classList = [], isLoading: isLoadingClassList, isError: isErrorClassList, error: errorClassList } = useGetClassesByHubIdQuery(hub_id as string);
@@ -28,21 +31,37 @@ export default function Class() {
     const { data: studentDatas, isLoading: isLoadingStudent, isError: isErrorStudent, error: errorStudent } = useGetStudentListByClassId(class_id as string);
     const { data: allStudentList, isLoading: isLoadingAllStudentList, isError: isErrorAllStudentList, error: errorAllStudentList } = useGetAllStudentListByHubId(hub_id as string);
 
+    const [overlapClasses, setOverlapClasses] = useState<FormattedOverlap | null>(null);
+    const [openOverlapAlert, setOpenOverlapAlert] = useState<boolean>(false);
+
     const [openAddStudentIntoClassModal, setOpenAddStudentIntoClassModal] = useState(false);
     const [openNewStudentInHubModal, setOpenNewStudentInHubModal] = useState(false);
 
     const queryClient = useQueryClient();
 
+    useEffect(() => {
+        if (overlapClasses && Object.keys(overlapClasses).length > 0) {
+            setOpenOverlapAlert(true);
+        } else {
+            setOpenOverlapAlert(false);
+        }
+    }, [overlapClasses]);
+
     const addStudentIntoClass = async (selectedStudentIds: string[], classId: string, enrollDate: string) => {
         try {
-            for (const newStu of selectedStudentIds) {
-                await addStudentIntoClassAPI(newStu, classId, enrollDate);
-            }
+            const res = await addStudentIntoClassAPI(selectedStudentIds, classId, enrollDate);
 
             queryClient.invalidateQueries({ queryKey: ["get_student_list_by_class_id", class_id] });
             queryClient.invalidateQueries({ queryKey: ['all_student_list_by_hub_id', hub_id] });
-        } catch (error) {
-            console.error("Error adding student into class:", error);
+
+            showAlert("Student(s) added successfully", "success");
+            setOpenAddStudentIntoClassModal(false);
+        } catch (error: any) {
+            if (error.response?.status === 409) {
+                setOverlapClasses(error.response.data.overlap_classes);
+                return;
+            }
+
         }
     }
 
@@ -77,9 +96,9 @@ export default function Class() {
             title: "Homework",
             descr: "Create homework",
             bg_clr: 'blue',
-            onClick: () => { 
+            onClick: () => {
                 router.push(`${class_id}/homework`);
-             },
+            },
         },
         {
             icon: AlbumIcon,
@@ -138,6 +157,13 @@ export default function Class() {
                 onClose={() => setOpenNewStudentInHubModal(false)}
                 onSubmit={newStudent}
             />
+
+            {openOverlapAlert && (
+                <OverlapAlert
+                    overlapClasses={overlapClasses}
+                    setOpenOverlapAlert={setOpenOverlapAlert}
+                />
+            )}
         </>
     )
 }
