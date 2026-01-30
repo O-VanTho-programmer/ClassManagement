@@ -28,7 +28,7 @@ export async function POST(req: Request) {
             // Record Attendance
             present,
             score,
-            is_finished_homework,
+            // is_finished_homework,
             comment,
             date,
         } = newRecord;
@@ -48,31 +48,43 @@ export async function POST(req: Request) {
 
         const dateString = formatDateForCompare(date);
 
-        const attendanceRecordExistQuery = `
-            SELECT * FROM record_attendance WHERE StudentId = ? AND AttendanceDate = ?
-            LIMIT 1;
+        // const attendanceRecordExistQuery = `
+        //     SELECT * FROM record_attendance WHERE StudentId = ? AND AttendanceDate = ? AND ClassId = ?
+        //     LIMIT 1;
+        // `;
+
+        // const [attendanceRecordExits]: any[] = await connection.query(attendanceRecordExistQuery, [id, dateString, classId]);
+
+        // if (attendanceRecordExits.length > 0) { 
+        //     const attendanceRecordId = attendanceRecordExits[0].RecordAttendanceId;
+
+        //     const queryUpdateAttendanceRecord = `
+        //         UPDATE record_attendance
+        //         SET Present = ?, Score = ?, Comment = ?, UpdatedDate = NOW()
+        //         WHERE RecordAttendanceId = ?
+        //     `;
+            
+        //     await connection.query(queryUpdateAttendanceRecord, [present, score, comment, attendanceRecordId]);
+        // } else {
+        //     const queryNewAttendanceRecord = `
+        //         INSERT INTO record_attendance (Present, Score, Comment, AttendanceDate, StudentId, ClassId)
+        //         VALUES (?, ?, ?, ?, ?, ?)
+        //     `;
+
+        //     await connection.query(queryNewAttendanceRecord, [present, score, comment, dateString, id, classId]);
+        // }
+
+        const queryUpsertRecordAttendance = `
+            INSERT INTO record_attendance (Present, Score, Comment, AttendanceDate, StudentId, ClassId)
+            VALUES (?, ?, ?, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE 
+                Present = VALUES(Present),
+                Score = VALUES(Score),
+                Comment = VALUES(Comment),
+                UpdatedDate = NOW();
         `;
 
-        const [attendanceRecordExits]: any[] = await connection.query(attendanceRecordExistQuery, [id, dateString]);
-
-        if (attendanceRecordExits.length > 0) { 
-            const attendanceRecordId = attendanceRecordExits[0].RecordAttendanceId;
-
-            const queryUpdateAttendanceRecord = `
-                UPDATE record_attendance
-                SET Present = ?, Score = ?, Comment = ?, UpdatedDate = NOW()
-                WHERE RecordAttendanceId = ?
-            `;
-            
-            await connection.query(queryUpdateAttendanceRecord, [present, score, comment, attendanceRecordId]);
-        } else {
-            const queryNewAttendanceRecord = `
-                INSERT INTO record_attendance (Present, Score, Comment, AttendanceDate, StudentId, ClassId)
-                VALUES (?, ?, ?, ?, ?, ?)
-            `
-
-            await connection.query(queryNewAttendanceRecord, [present, score, comment, dateString, id, classId]);
-        }
+        await connection.query(queryUpsertRecordAttendance, [present, score, comment, dateString, id, classId]);
 
         await connection.commit();
 

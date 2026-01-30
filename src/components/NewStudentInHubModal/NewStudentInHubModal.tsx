@@ -52,7 +52,7 @@ export default function NewStudentInHubModal({
     const validateForm = () => {
         const newErrors: Record<string, string> = {};
         if (!formData.name.trim()) newErrors.name = "Student's name is required.";
-        if (!formData.birthday) newErrors.birthday = "Birthday is required.";
+        // if (!formData.birthday) newErrors.birthday = "Birthday is required.";
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };

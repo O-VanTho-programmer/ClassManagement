@@ -9,13 +9,13 @@ export async function GET(req: Request) {
     try {
         const { searchParams } = new URL(req.url);
         const classId = searchParams.get("classId");
-        
+
         // Get hubId from classId and check permission
         const hubId = await getHubIdFromClassId(classId || "");
         if (!hubId) {
             return NextResponse.json({ message: "Class not found" }, { status: 404 });
         }
-        
+
         const permissionCheck = await checkPermission(req, PERMISSIONS.VIEW_ATTENDANCE, hubId);
         if (permissionCheck instanceof NextResponse) {
             return permissionCheck;
@@ -42,7 +42,7 @@ export async function GET(req: Request) {
             DATE_FORMAT(rd.AttendanceDate, '%Y-%m-%d')as date
         FROM class_student cs
         JOIN student s ON s.StudentId = cs.StudentId 
-        LEFT JOIN record_attendance rd ON s.StudentId = rd.StudentId
+        LEFT JOIN record_attendance rd ON s.StudentId = rd.StudentId AND rd.ClassId = cs.ClassId
         WHERE cs.ClassId = ?
         ORDER BY rd.AttendanceDate DESC;
         `;
@@ -136,7 +136,7 @@ export async function GET(req: Request) {
                     const formattedDate = formatDateForCompare(date);
 
                     let record = records.find((r: any) => r.date === formattedDate);
-                    
+
                     if (!record) {
                         record = {
                             present: "Unchecked",

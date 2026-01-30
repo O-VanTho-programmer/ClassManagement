@@ -35,10 +35,10 @@ type StudentAttendance = AttendanceRecord & {
 
 interface AttendanceRecord {
     present: StudentAttendanceType,
-    score?: number,
-    assignments?: ClassHomeworkForAttendacneRecord[],
+    score?: number | null,
+    assignments?: ClassHomeworkForAttendacneRecord[] | [],
     is_homework?: boolean,
-    comment?: string,
+    comment?: string | null,
     date: string,
 }
 

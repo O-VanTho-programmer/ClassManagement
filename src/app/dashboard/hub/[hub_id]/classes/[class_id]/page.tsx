@@ -70,14 +70,17 @@ export default function Class() {
             const newStudentIdRes = await newStudentInHub(newStudentForm, hub_id as string);
 
             for (const enrollment of classEnrollments) {
-                await addStudentIntoClassAPI(newStudentIdRes, enrollment.classId, enrollment.enrollDate);
+                await addStudentIntoClassAPI([newStudentIdRes], enrollment.classId, enrollment.enrollDate);
             }
 
             queryClient.invalidateQueries({ queryKey: ['all_student_list_by_hub_id', hub_id] });
 
-            if (classEnrollments.some(e => e.classId === class_id)) {
-                queryClient.invalidateQueries({ queryKey: ["get_student_list_by_class_id", class_id] });
+            for (const enrollment of classEnrollments) {
+                queryClient.invalidateQueries({ queryKey: ['get_student_list_by_class_id', enrollment.classId] });
             }
+
+            showAlert("New student added successfully", "success");
+            setOpenNewStudentInHubModal(false);
         } catch (error) {
             console.error("Error adding new student:", error);
         }

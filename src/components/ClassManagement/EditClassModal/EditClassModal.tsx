@@ -6,6 +6,7 @@ import Selection, { Option } from "@/components/Selection/Selection";
 import SquareButton from "@/components/SquareButton/SquareButton";
 import Button from "@/components/Button/Button";
 import { useValidateClassInfoForm } from "@/hooks/useValidateClassInfoForm";
+import { useDeleteClassMutation } from "@/hooks/useDeleteClassMutation";
 
 interface EditClassModalProps {
     isOpen: boolean;
@@ -106,6 +107,11 @@ export default function EditClassModal({ isOpen, onClose, onSubmit, editingClass
             )
         }));
     };
+
+    // const onConfirmDeleteClass = () => {
+    //     const deleteClassMutation = useDeleteClassMutation();
+    //     deleteClassMutation.mutate
+    // }
 
     if (!isOpen) return null;
 
@@ -356,6 +362,11 @@ export default function EditClassModal({ isOpen, onClose, onSubmit, editingClass
 
                     {/* Actions */}
                     <div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
+                        <Button
+                            onClick={() => {}}
+                            title="Delete"
+                            color="red_off"
+                        />
                         <Button
                             onClick={onClose}
                             title="Cancel"

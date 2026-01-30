@@ -18,13 +18,13 @@ export async function POST(req: Request) {
             VALUES (?, ?, ?)
         `;
 
-        const [result] : any = await pool.query(queryNewStudent, [name, birthday, hubId]);
+        const [result] : any = await pool.query(queryNewStudent, [name, birthday ? birthday : null, hubId]);
         const newStudentId = result.insertId;
 
         return NextResponse.json({ message: "Success", newStudentId }, { status: 200 });
 
     } catch (error) {
-        console.log("Error ");
+        console.log("Error ", error);
         return NextResponse.json({ message: "Server error" }, { status: 500 });
     }
 }

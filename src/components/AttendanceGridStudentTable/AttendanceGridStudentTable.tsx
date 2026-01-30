@@ -3,10 +3,10 @@ import getDayNameFromDate from "@/utils/Format/getDateNameFromDate";
 import generateDateRange from "@/utils/generateDateRange";
 import HeaderAvatar from "../HeaderAvatar/HeaderAvatar";
 import AttendanceCell from "../AttendanceCell/AttendanceCell";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ModalEditAttendance } from "../ModalEditAttendance/ModalEditAttendance";
 import { useGetStudentAttendanceRecordsQuery } from "@/hooks/useGetStudentAttendanceRecordsQuery";
-import { newAttendanceRecordsApi } from "@/lib/api/newAttendanceRecord";
+// import { newAttendanceRecordsApi } from "@/lib/api/newAttendanceRecord";
 import { useAlert } from "../AlertProvider/AlertContext";
 import { Schedule } from "@/types/Schedule";
 import LoadingState from "../QueryState/LoadingState";
@@ -14,11 +14,13 @@ import ErrorState from "../QueryState/ErrorState";
 import { useQueryClient } from "@tanstack/react-query";
 import SearchBar from "../SearchBar/SearchBar";
 import { useGetDateHasHomeworkQuery } from "@/hooks/useGetDateHasHomework";
-import { BookPlus } from "lucide-react";
+import { BookPlus, ClipboardCheck } from "lucide-react";
+import QuickAttendanceModal from "../QuickAttendanceModal/QuickAttendanceModal";
 import QuickAssignHomeworkModal from "../QuickAssignHomeworkModal/QuickAssignHomeworkModal";
 import { useGetClassHomeworkByClassId } from "@/hooks/useGetClassHomeworkByClassId";
 import formatDateForCompare from "@/utils/Format/formatDateForCompare";
 import { useHasPermission } from "@/hooks/useHasPermission";
+import { newAttendanceRecordsList } from "@/lib/api/newAttendanceRecordsList";
 
 interface AttendanceGridStudentTableProps {
     class_id: string,
@@ -30,9 +32,9 @@ interface AttendanceGridStudentTableProps {
 
 export default function AttendanceGridStudentTable({ hub_id, class_id, schedule, startDate, endDate }: AttendanceGridStudentTableProps) {
 
-    const {hasPermission: canAssignHomework} = useHasPermission(hub_id, "ASSIGN_HOMEWORK");
-    const {hasPermission: canTakeAttendance} = useHasPermission(hub_id, "TAKE_ATTENDANCE");
-    const {hasPermission: canEditAttendance} = useHasPermission(hub_id, "EDIT_ATTENDANCE");
+    const { hasPermission: canAssignHomework } = useHasPermission(hub_id, "ASSIGN_HOMEWORK");
+    const { hasPermission: canTakeAttendance } = useHasPermission(hub_id, "TAKE_ATTENDANCE");
+    const { hasPermission: canEditAttendance } = useHasPermission(hub_id, "EDIT_ATTENDANCE");
 
     const { data: fetchedStudentAttendanceRecords, isLoading, isError, error } = useGetStudentAttendanceRecordsQuery(class_id, schedule);
     const { data: assignmentList, isLoading: isAssignmentListLoading, isError: isAssignmentListError, error: assignmentListError } = useGetClassHomeworkByClassId(class_id);
@@ -62,11 +64,11 @@ export default function AttendanceGridStudentTable({ hub_id, class_id, schedule,
                 recordsMap.set(record.date, record);
             }
 
-            return { ...student, recordsMap };
+            return { id: student.id, name: student.name, birthday: student.birthday, status: student.status, total_present: student.total_present, recordsMap };
         });
     }, [fetchedStudentAttendanceRecords, filter]);
 
-    console.log(processedStudentDatas);
+    // console.log(processedStudentDatas);
 
     const [isSaving, setIsSaving] = useState(false);
     const { showAlert } = useAlert();
@@ -75,7 +77,7 @@ export default function AttendanceGridStudentTable({ hub_id, class_id, schedule,
     const [editingRecord, setEditingRecord] = useState<StudentAttendance | null>(null);
 
     const handleEditClick = (record: AttendanceRecord, studentId: string, studentName: string) => {
-        if(!canTakeAttendance){
+        if (!canTakeAttendance) {
             showAlert("You don't have permission to take attendance", "error");
             return;
         }
@@ -96,21 +98,31 @@ export default function AttendanceGridStudentTable({ hub_id, class_id, schedule,
         setEditingRecord(null);
     };
 
-    const [openQuickAssignHomeworkModal, setOpenQuickAssignHomeworkModal] = useState<boolean>(false);
-    const [selectedDateForAssignHomework, setSelectedDateForAssignHomework] = useState<string | null>(null);
+    const [openQuickAction, setOpenQuickAction] = useState<boolean>(false);
+    const [selectedDate, setSelectDate] = useState<string | null>(null);
+    const [openAssignHomework, setOpenAssignHomework] = useState<boolean>(false);
+    const [openTakeAttendance, setOpenTakeAttendance] = useState<boolean>(false);
 
-    const handleQuickAssignHomework = (date: string) => {
-        if(!canAssignHomework){
+    const handleQuickAssignHomework = () => {
+        if (!canAssignHomework) {
             showAlert("You don't have permission to assign homework", "error");
             return;
         }
 
-        setSelectedDateForAssignHomework(date);
-        setOpenQuickAssignHomeworkModal(true);
+        setOpenAssignHomework(true);
+    }
+
+    const handleQuickTakeAttendance = () => {
+        if (!canTakeAttendance) {
+            showAlert("You don't have permission to assign homework", "error");
+            return;
+        }
+
+        setOpenTakeAttendance(true);
     }
 
     const handleSaveAttendance = async (updatedRecord: StudentAttendance) => {
-        if(!canTakeAttendance){
+        if (!canTakeAttendance) {
             showAlert("You don't have permission to take attendance", "error");
             return;
         }
@@ -120,30 +132,10 @@ export default function AttendanceGridStudentTable({ hub_id, class_id, schedule,
         setIsSaving(true);
 
         try {
-            const res = await newAttendanceRecordsApi(updatedRecord, class_id);
+            const res = await newAttendanceRecordsList([updatedRecord], class_id);
 
             if (res?.status === 200) {
-                queryClient.invalidateQueries({queryKey: ["studentAttendanceRecords", class_id]});
-                // queryClient.setQueryData<StudentWithAttendanceRecordList[]>(["studentAttendanceRecords", class_id], (prevStudents = []) =>
-                //     prevStudents.map(student => {
-                //         if (student.id !== targetStudentId) {
-                //             return student;
-                //         }
-
-                //         // Find if the record already exists to update it, otherwise add it.
-                //         const recordExists = student.records.some(r => r.date === updatedRecord.date);
-                //         const newRecords = recordExists
-                //             ? student.records.map(r => r.date === updatedRecord.date ? updatedRecord : r)
-                //             : [...student.records, updatedRecord];
-
-                //         // Total attended sessions
-                //         const newTotalPresentSessions = newRecords.filter(r =>
-                //             r.present === 'Present' || r.present === 'Late'
-                //         ).length;
-
-                //         return { ...student, total_present: newTotalPresentSessions, records: newRecords };
-                //     })
-                // );
+                queryClient.invalidateQueries({ queryKey: ["studentAttendanceRecords", class_id] });
                 showAlert("Attendance saved successfully!", "success");
                 console.log(`Record saved for ${editingRecord.name} on ${updatedRecord.date}:`, updatedRecord);
                 handleCloseModal();
@@ -157,6 +149,18 @@ export default function AttendanceGridStudentTable({ hub_id, class_id, schedule,
             setIsSaving(false);
         }
     };
+
+    const menuQuickActionRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (menuQuickActionRef.current && !menuQuickActionRef.current.contains(event.target as Node)) {
+                setOpenQuickAction(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
     if (isLoading) return <LoadingState fullScreen message="Loading your students attendance records..." />;
     if (isError) return (
@@ -210,16 +214,59 @@ export default function AttendanceGridStudentTable({ hub_id, class_id, schedule,
 
                             {/* Dynamic Date Columns */}
                             {dateRange.map(dateString => (
-                                <th key={dateString} className="py-3 px-2 text-center text-xs font-medium uppercase border-l border-indigo-600 min-w-[60px]">
+                                <th key={dateString} className="py-3 px-2 text-center text-xs font-medium uppercase border-l border-indigo-600 min-w-[60px] relative">
                                     {formatDisplayDate(dateString)}
                                     <p className="text-xs font-normal opacity-80 mt-0.5">{getDayNameFromDate(dateString)}</p>
                                     <button
-                                        onClick={() => handleQuickAssignHomework(dateString)}
+                                        onClick={() => { setOpenQuickAction(!openQuickAction); setSelectDate(dateString); }}
                                         className="mt-1 p-1.5 rounded-full text-indigo-200 hover:bg-indigo-500 hover:text-white transition-all duration-200 cursor-pointer"
-                                        title={`Assign homework due ${dateString}`}
+                                        title={`Open Quick Actions`}
                                     >
                                         <BookPlus size={16} />
                                     </button>
+
+                                    {openQuickAction && selectedDate === dateString && (
+                                        <div
+                                            ref={menuQuickActionRef}
+                                            className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+                                        >
+                                            {/* Header of Menu */}
+                                            <div className="px-3 py-2 bg-gray-50 border-b border-gray-100">
+                                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                                                    Actions
+                                                </p>
+                                            </div>
+
+                                            {/* Menu Items */}
+                                            <div className="p-1">
+                                                <button
+                                                    onClick={() => {
+                                                        handleQuickAssignHomework();
+                                                        setOpenQuickAction(false);
+                                                    }}
+                                                    className="cursor-pointer w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 transition-colors group/item"
+                                                >
+                                                    <div className="p-1.5 rounded bg-gray-100 text-gray-500 group-hover/item:bg-indigo-100 group-hover/item:text-indigo-600 transition-colors">
+                                                        <BookPlus size={14} />
+                                                    </div>
+                                                    Assign Homework
+                                                </button>
+
+                                                <button
+                                                    onClick={() => {
+                                                        handleQuickTakeAttendance();
+                                                        setOpenQuickAction(false);
+                                                    }}
+                                                    className="cursor-pointer w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-emerald-50 hover:text-emerald-600 transition-colors group/item mt-1"
+                                                >
+                                                    <div className="p-1.5 rounded bg-gray-100 text-gray-500 group-hover/item:bg-emerald-100 group-hover/item:text-emerald-600 transition-colors">
+                                                        <ClipboardCheck size={14} />
+                                                    </div>
+                                                    Quick Attendance
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
                                 </th>
                             ))}
                         </tr>
@@ -264,7 +311,7 @@ export default function AttendanceGridStudentTable({ hub_id, class_id, schedule,
                                         return (
                                             <AttendanceCell
                                                 key={dateString}
-                                                record={record as any} 
+                                                record={record as any}
                                                 onEdit={(rec) => handleEditClick(rec, student.id, student.name)}
                                             />
                                         );
@@ -289,13 +336,24 @@ export default function AttendanceGridStudentTable({ hub_id, class_id, schedule,
             )}
 
             {/* Quick Assign Homework */}
-            {openQuickAssignHomeworkModal && selectedDateForAssignHomework && (
+            {openAssignHomework && selectedDate && (
                 <QuickAssignHomeworkModal
-                    isOpen={openQuickAssignHomeworkModal}
-                    onClose={() => setOpenQuickAssignHomeworkModal(false)}
+                    isOpen={openAssignHomework}
+                    onClose={() => setOpenAssignHomework(false)}
                     hubId={hub_id}
                     classId={class_id}
-                    assignedDate={selectedDateForAssignHomework}
+                    assignedDate={selectedDate}
+                />
+            )}
+
+            {/* Quick Take Attendance */}
+            {openTakeAttendance && selectedDate && (
+                <QuickAttendanceModal
+                    classId={class_id}
+                    processedStudentDatas={processedStudentDatas}
+                    selectedDate={selectedDate}
+                    isOpen={openTakeAttendance}
+                    onClose={() => setOpenTakeAttendance(false)}
                 />
             )}
         </div>

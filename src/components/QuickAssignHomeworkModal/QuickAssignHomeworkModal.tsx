@@ -7,6 +7,7 @@ import { assignHomework } from '@/lib/api/assignHomework';
 import { useAlert } from '../AlertProvider/AlertContext';
 import { Book, Calendar, CheckCircle2, Clock, Loader2, X } from 'lucide-react';
 import SearchBar from '../SearchBar/SearchBar';
+import Button from '../Button/Button';
 
 type QuickAssignHomeworkModalProps = {
     isOpen: boolean;
@@ -48,7 +49,6 @@ export default function QuickAssignHomeworkModal({
             hw.title.toLowerCase().includes(searchTerm.toLowerCase())
         );
     }, [homeworkList, searchTerm]);
-
 
 
     const handleSubmit = async () => {
@@ -190,7 +190,7 @@ export default function QuickAssignHomeworkModal({
                                             {/* Expandable Date Selection Area */}
                                             {isSelected && curDueDate && (
                                                 <div className="px-4 pb-4 pt-2 bg-indigo-50/50 border-t border-indigo-100 grid grid-cols-2 gap-4 animate-in slide-in-from-top-2 duration-200">
-                                                    <label className="block text-xs font-medium text-gray-700 mb-1.5 flex items-center">
+                                                    <label className="text-xs font-medium text-gray-700 mb-1.5 flex items-center">
                                                         <Clock size={14} className="mr-1.5 text-red-500" />
                                                         Due Date
                                                     </label>
@@ -211,16 +211,16 @@ export default function QuickAssignHomeworkModal({
                 </div>
 
                 <div className="p-4 border-t bg-gray-50 rounded-b-xl flex justify-end gap-3">
-                    <button
+                    <Button
+                        title='Cancel'
+                        disabled={mutation.isPending}
                         onClick={onClose}
-                        className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors font-medium"
-                    >
-                        Cancel
-                    </button>
+                        color='white'
+                    />
                     <button
                         onClick={handleSubmit}
                         disabled={!selectedHomeworkId || mutation.isPending}
-                        className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium disabled:bg-indigo-300 disabled:cursor-not-allowed flex items-center"
+                        className="cursor-pointer px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium disabled:bg-indigo-300 disabled:cursor-not-allowed flex items-center"
                     >
                         {mutation.isPending && <Loader2 size={18} className="animate-spin mr-2" />}
                         Assign
