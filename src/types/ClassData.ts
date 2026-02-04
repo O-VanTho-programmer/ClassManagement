@@ -16,6 +16,12 @@ export interface ClassData {
     endDate: string;
 }
 
+export interface ClassDataSimple {
+    id: string;
+    name: string;
+    status: 'Active' | 'Finished';
+}
+
 export interface ClassDataWithTimeTableHour {
     class: ClassData,
     session: Schedule;

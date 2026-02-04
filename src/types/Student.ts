@@ -21,6 +21,14 @@ interface StudentInputDto {
     birthday: string,
 }
 
+interface StudentWithClasses extends Student{
+    classes: {
+        class_id: string,
+        class_name: string,
+        enroll_date: string,
+    }[],
+}
+
 interface ClassEnrollmentDto {
     classId: string,
     enrollDate: string,

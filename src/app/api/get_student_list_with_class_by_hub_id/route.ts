@@ -10,6 +10,7 @@ export async function GET(req: Request) {
         const limit = parseInt(searchParams.get("limit") || "1000");
         const search = searchParams.get("search");
         const status = searchParams.get("status");
+        const classId = searchParams.get("classId");
 
         if (!hubId) {
             return NextResponse.json({ message: "Hub id is required" }, { status: 400 });
@@ -26,9 +27,18 @@ export async function GET(req: Request) {
                 s.StudentId AS id,
                 s.Name AS name,
                 DATE_FORMAT(s.DateOfBirth, '%m/%d/%Y') as birthday,
-                s.Status as status
+                s.Status as status,
+                JSON_ARRAYAGG(
+                    JSON_OBJECT(
+                        'class_id', c.ClassId,
+                        'class_name', c.Name,
+                        'enroll_date', DATE_FORMAT(cs.EnrollDate, '%m/%d/%Y')
+                    )
+                ) AS classes
             FROM student s
-            WHERE s.HubId=?
+            LEFT JOIN class_student cs ON s.StudentId = cs.StudentId
+            LEFT JOIN class c ON cs.ClassId = c.ClassId
+            WHERE s.HubId = ?
             
         `;
 
@@ -50,7 +60,18 @@ export async function GET(req: Request) {
             queryParams.push(status);
         }
 
-        queryGetStudentListByHubId += `LIMIT ?, ?; `
+        if (classId !== "All" && classId) {
+            queryGetStudentListByHubId += `
+                AND cs.ClassId = ?
+            `;
+
+            queryParams.push(classId);
+        }
+
+        queryGetStudentListByHubId += `
+            GROUP BY s.StudentId
+            LIMIT ?, ?;
+        `
         queryParams.push(offset, limit);
 
         const [studentList] = await pool.query(queryGetStudentListByHubId, queryParams);

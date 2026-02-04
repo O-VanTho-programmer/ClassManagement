@@ -44,7 +44,7 @@ export default function CardDirection({ icon, title, descr, bg_clr, onClick }: C
             <button
             onClick={onClick}
             className={`mt-4 w-full text-gray-400 cursor-pointer font-semibold py-2 px-4 rounded-lg transition-transform transform-gpu hover:scale-105 shadow-lg flex items-center justify-center border border-white border-opacity-30 bg-white`}>
-                <span>Xem chi tiết</span>
+                <span>View Details</span>
                 <ArrowRightIcon className="w-4 h-4 ml-2" />
             </button>
         </div>

@@ -68,7 +68,7 @@ const NotificationList = ({ title = "Thông báo", notificationsData, isOpen, on
             )}
 
             <div className="p-4 border-t border-gray-200 text-center">
-                <Button onClick={ReadAll} color="blue" icon={ListChecks} title="Xem tất cả"/>
+                <Button onClick={ReadAll} color="blue" icon={ListChecks} title="View All"/>
             </div>
         </div>
     );
