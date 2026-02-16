@@ -60,7 +60,7 @@ export default function StudentsManagement() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 p-4 md:p-8 font-sans">
+        <div className="min-h-screen bg-slate-50 p-4 md:p-8">
             {/* ERP Header Section */}
             <div className="max-w-7xl mx-auto mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
