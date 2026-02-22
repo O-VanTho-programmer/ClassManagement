@@ -35,8 +35,10 @@ export default function AssignHomeworkToClassModal({
 
     const mutation = useMutation({
         mutationFn: (data: HomeworkAssignedClassesDTO) => assignHomework(data),
-        onSuccess: () => {
+        onSuccess: (_, { class_id}) => {
             showAlert('Homework assigned successfully!', 'success');
+
+            queryClient.invalidateQueries({ queryKey: ['homework_by_class_id', class_id] })
             queryClient.invalidateQueries({ queryKey: ['homeworkList', hubId] })
             handleClose();
         },

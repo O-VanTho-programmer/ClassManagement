@@ -30,7 +30,7 @@ export default function SearchBar({ search_width_style, onChange, onKeyDown, val
                     </svg>
                 </div>
 
-                <input value={value} onKeyDown={onKeyDown} onChange={onChange} id="default-search" className="block w-full min-w-[150px] p-2 ps-10 text-sm text-black! border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search" required />
+                <input value={value} onKeyDown={onKeyDown} onChange={onChange} id="default-search" className="block w-full min-w-[150px] p-2 ps-10 text-sm text-black! border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search" required />
             </div>
         </div>
     )
