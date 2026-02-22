@@ -19,6 +19,7 @@ import { useGetStudentGradeBookByClassId } from '@/hooks/useGetStudentGradeBookB
 import HeaderAvatar from '@/components/HeaderAvatar/HeaderAvatar';
 import SearchBar from '@/components/SearchBar/SearchBar';
 import Button from '@/components/Button/Button';
+import { exportToExcel } from '@/utils/exportToExcel';
 
 export default function GradeBookStudents() {
     const { hub_id } = useParams();
@@ -53,7 +54,6 @@ export default function GradeBookStudents() {
         };
     }, [studentsData]);
 
-    // Filter students based on search
     const filteredStudents = useMemo(() => {
         if (!searchTerm) return studentsData;
         return studentsData.filter(s =>
@@ -65,8 +65,37 @@ export default function GradeBookStudents() {
     const hasData = Object.keys(columnsType).length > 0;
 
     const handleExportExcel = () => {
+        if (!hasData || filteredStudents.length === 0) {
+            alert("No data available to export.");
+            return;
+        }
+        
+        const excelData = filteredStudents.map(student => {
+            const row: any = {
+                "Student ID": student.id,
+                "Full Name": student.name,
+            };
 
-    }
+            Object.entries(columnsType).forEach(([type, assignments]) => {
+                assignments.forEach((assignment: any) => {
+                    const gradeRecord = student.assignments[assignment.class_homework_id];
+                    row[`${type}: ${assignment.title}`] = gradeRecord?.grade ?? '-';
+                });
+
+                row[`${type} Average`] = student.averages[type] ?? '-';
+            });
+
+            row["Final Grade"] = student.final_grade ?? '-';
+
+            return row;
+        });
+
+        const className = currentClass?.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Class';
+        const dateStr = new Date().toISOString().split('T')[0];
+        const fileName = `Gradebook_${className}_${dateStr}`;
+
+        exportToExcel(excelData, fileName, 'Grades');
+    };
 
     return (
         <div className="flex flex-col h-full bg-slate-50/50 font-sans text-slate-900">
