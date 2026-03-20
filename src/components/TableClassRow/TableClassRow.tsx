@@ -81,13 +81,6 @@ function TableClassRowForClasses({ data, index }: TableClassRowProps) {
             <td className="py-4 px-2 whitespace-nowrap text-gray-800">
                 <Badge bg_clr="bg-green-500" title={data.status} />
             </td>
-            <td className="py-4 px-2 whitespace-nowrap text-gray-800">
-                <div className="flex justify-end">
-                    <button>
-                        <EllipsisVertical className="w-5 h-5 text-gray-500" />
-                    </button>
-                </div>
-            </td>
         </tr>
     )
 }
@@ -106,9 +99,9 @@ function TableClassRowForAttendance({ data, index }: TableClassRowProps) {
         router.push(`attendance/${data.id}/report`);
     }
 
-    const DirectToAttendanceList = () => {
-        router.push(`attendance/${data.id}/list`);
-    }
+    // const DirectToAttendanceList = () => {
+    //     router.push(`attendance/${data.id}/list`);
+    // }
 
     return (
         <tr className="border-b border-gray-200 text-sm">

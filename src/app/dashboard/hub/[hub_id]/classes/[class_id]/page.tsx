@@ -61,7 +61,6 @@ export default function Class() {
                 setOverlapClasses(error.response.data.overlap_classes);
                 return;
             }
-
         }
     }
 

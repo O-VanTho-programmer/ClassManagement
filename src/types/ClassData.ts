@@ -1,8 +1,6 @@
 import type { Schedule } from "./Schedule";
 
-export interface ClassData {
-    id: string;
-    name: string;
+export interface ClassData extends ClassDataSimple{
     schedule: Schedule[];
     studentCount: number;
     teacher: string;
@@ -11,7 +9,6 @@ export interface ClassData {
     tuition?: string;
     tuitionType: "Monthly" | "Quarter" | "Course" | "Flexible",
     base?: string;
-    status: 'Active' | 'Finished';
     startDate: string;
     endDate: string;
 }

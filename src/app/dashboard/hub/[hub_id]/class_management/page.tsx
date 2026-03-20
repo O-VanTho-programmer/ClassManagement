@@ -1,7 +1,7 @@
 'use client';
 
 import { useAlert } from "@/components/AlertProvider/AlertContext";
-import EditClassModal from "@/components/ClassManagement/EditClassModal/EditClassModal";
+import EditClassModal from "@/components/ClassManagement/EditClassModal";
 import IconButton from "@/components/IconButton/IconButton";
 import LoadingState from "@/components/QueryState/LoadingState";
 import SearchBar from "@/components/SearchBar/SearchBar";

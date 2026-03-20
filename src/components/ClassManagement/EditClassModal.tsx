@@ -7,6 +7,8 @@ import SquareButton from "@/components/SquareButton/SquareButton";
 import Button from "@/components/Button/Button";
 import { useValidateClassInfoForm } from "@/hooks/useValidateClassInfoForm";
 import { useDeleteClassMutation } from "@/hooks/useDeleteClassMutation";
+import { useParams } from "next/navigation";
+import ConfirmDeleteClassModal from "./ConfirmDeleteClassModal";
 
 interface EditClassModalProps {
     isOpen: boolean;
@@ -18,6 +20,9 @@ interface EditClassModalProps {
 }
 
 export default function EditClassModal({ isOpen, onClose, onSubmit, editingClass, teacherList, isSavingEdit }: EditClassModalProps) {
+
+    const { hub_id } = useParams();
+    const [isDeleteClassModalOpen, setIsDeleteClassModalOpen] = useState(false);
     const formatDateForInput = (dateString: string) => {
         if (!dateString) return '';
         const date = new Date(dateString);
@@ -107,11 +112,13 @@ export default function EditClassModal({ isOpen, onClose, onSubmit, editingClass
             )
         }));
     };
+    const deleteClassMutation = useDeleteClassMutation(hub_id as string);
 
-    // const onConfirmDeleteClass = () => {
-    //     const deleteClassMutation = useDeleteClassMutation();
-    //     deleteClassMutation.mutate
-    // }
+    const onConfirmDeleteClass = ({ class_id }: { class_id: string }) => {
+        if (!editingClass) return;
+        deleteClassMutation.mutate({ class_id: class_id, hub_id: hub_id as string });
+        onClose();
+    }
 
     if (!isOpen) return null;
 
@@ -363,7 +370,7 @@ export default function EditClassModal({ isOpen, onClose, onSubmit, editingClass
                     {/* Actions */}
                     <div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
                         <Button
-                            onClick={() => {}}
+                            onClick={() => setIsDeleteClassModalOpen(true)}
                             title="Delete"
                             color="red_off"
                         />
@@ -377,17 +384,23 @@ export default function EditClassModal({ isOpen, onClose, onSubmit, editingClass
                         <button
                             type="submit"
                             disabled={isSavingEdit}
-                            className={`px-6 py-2 bg-blue-600 text-white rounded-lg transition-colors font-medium shadow-sm hover:shadow-md ${
-                                isSavingEdit 
-                                    ? 'opacity-50 cursor-not-allowed' 
-                                    : 'cursor-pointer hover:bg-blue-700'
-                            }`}
+                            className={`px-6 py-2 bg-blue-600 text-white rounded-lg transition-colors font-medium shadow-sm hover:shadow-md ${isSavingEdit
+                                ? 'opacity-50 cursor-not-allowed'
+                                : 'cursor-pointer hover:bg-blue-700'
+                                }`}
                         >
                             {isSavingEdit ? 'Saving...' : 'Save Changes'}
                         </button>
                     </div>
                 </form>
             </div>
+            <ConfirmDeleteClassModal
+                isOpen={isDeleteClassModalOpen}
+                onClose={() => setIsDeleteClassModalOpen(false)}
+                onConfirm={onConfirmDeleteClass}
+                isDeleting={deleteClassMutation.isPending}
+                classData={editingClass}
+            />
         </div>
     );
 }

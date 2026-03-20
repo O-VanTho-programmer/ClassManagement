@@ -26,7 +26,6 @@ export default function TableClass({ datas }: TableClassProps) {
                         <th className="py-3 px-2 text-xs font-semibold text-gray-500 uppercase tracking-wider text-left w-[10%]">TUITION TYPE</th>
                         <th className="py-3 px-2 text-xs font-semibold text-gray-500 uppercase tracking-wider text-left w-[10%]">CƠ SỞ</th>
                         <th className="py-3 px-2 text-xs font-semibold text-gray-500 uppercase tracking-wider text-left w-[10%]">STATUS</th>
-                        <th className="py-3 px-2 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right w-[5%]">ACTION</th>
                     </tr>
                 </thead>
 

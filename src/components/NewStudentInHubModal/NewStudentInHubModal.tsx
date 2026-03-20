@@ -1,11 +1,11 @@
-import { ClassData } from "@/types/ClassData";
+import { ClassDataSimple } from "@/types/ClassData";
 import { UserPlus, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import SearchBar from "../SearchBar/SearchBar";
 import DatePicker from "../DatePicker/DatePicker";
 
 interface NewStudentInHubModalProps {
-    availableClassDatas: ClassData[] | undefined | null;
+    availableClassDatas: ClassDataSimple[] | undefined | null;
     isOpen: boolean;
     onClose: () => void;
     onSubmit: (formData: StudentInputDto, classEnrollments: ClassEnrollmentDto[]) => void;

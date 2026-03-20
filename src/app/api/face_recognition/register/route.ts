@@ -1,4 +1,4 @@
-import { deleteCloudImage } from "@/lib/cloudinary/deleteCloudImage";
+import { deleteCloudImage } from "@/lib/cloudinary/cloudinary";
 import cloudinary from "@/lib/cloudinary/cloudinary";
 import pool from "@/lib/db";
 import { NextResponse } from "next/server";

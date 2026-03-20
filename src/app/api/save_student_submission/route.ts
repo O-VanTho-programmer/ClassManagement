@@ -1,8 +1,8 @@
-import { deleteCloudImage } from "@/lib/cloudinary/deleteCloudImage";
 import pool from "@/lib/db";
 import { NextResponse } from "next/server";
 import { checkPermission, PERMISSIONS } from "@/lib/permissions";
 import type { PoolConnection } from "mysql2/promise";
+import { deleteCloudImage } from "@/lib/cloudinary/cloudinary";
 
 
 export async function POST(req: Request) {

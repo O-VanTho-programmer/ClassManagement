@@ -1,20 +1,26 @@
 'use client';
 
+import { useAlert } from '@/components/AlertProvider/AlertContext';
 import Badge from '@/components/Badge/Badge';
+import Button from '@/components/Button/Button';
 import HeaderAvatar from '@/components/HeaderAvatar/HeaderAvatar';
+import IconButton from '@/components/IconButton/IconButton';
 import SearchBar from '@/components/SearchBar/SearchBar';
 import Selection, { Option } from '@/components/Selection/Selection';
 import { useGetClassSimpleByHubId } from '@/hooks/useGetClassSimpleByHubId';
 import { useGetStudentsListWithClassByHubId } from '@/hooks/useGetStudentsListWithClassByHubId';
 import { usePagination } from '@/hooks/usePagination';
+import { newStudentInHub } from '@/lib/api/newStudentInHub';
 import { ClassDataSimple } from '@/types/ClassData';
 import { AlertCircle, CheckCircle2, Download, Filter, GraduationCap, Loader2, MoreVertical, Phone, UserPlus } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import React, { useMemo, useState } from 'react'
-
+import { useQueryClient } from '@tanstack/react-query';
+import NewStudentInHubModal from '@/components/NewStudentInHubModal/NewStudentInHubModal';
 export default function StudentsManagement() {
 
     const { hub_id } = useParams();
+    const { showAlert } = useAlert();
     const [filterClass, setFilterClass] = useState('All');
     const [filterStatus, setFilterStatus] = useState('All');
 
@@ -42,6 +48,23 @@ export default function StudentsManagement() {
         return options;
 
     }, [classes]);
+
+    const [openNewStudentInHubModal, setOpenNewStudentInHubModal] = useState(false);
+
+    const newStudent = async (newStudentForm: StudentInputDto) => {
+        const queryClient = useQueryClient();
+
+        try {
+            const newStudentIdRes = await newStudentInHub(newStudentForm, hub_id as string);
+            queryClient.invalidateQueries({ queryKey: ['all_student_list_by_hub_id', hub_id] });
+            showAlert("New student added successfully", "success");
+        } catch (error) {
+            console.error("Error adding new student:", error);
+            showAlert("Error adding new student", "error");
+        } finally {
+            setOpenNewStudentInHubModal(false);
+        }
+    }
 
     const getStatusStyle = (status: StudentStatus) => {
         switch (status) {
@@ -72,14 +95,19 @@ export default function StudentsManagement() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <button className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors shadow-sm">
-                        <Download className="w-4 h-4" />
-                        Export CSV
-                    </button>
-                    <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 rounded-lg text-sm font-medium text-white hover:bg-indigo-700 transition-colors shadow-sm shadow-indigo-200">
-                        <UserPlus className="w-4 h-4" />
-                        Add Student
-                    </button>
+                    <Button
+                        title='Export CSV'
+                        onClick={() => { }}
+                        color='white'
+                        icon={Download}
+                    />
+
+                    <Button
+                        title='Add Student'
+                        onClick={() => setOpenNewStudentInHubModal(true)}
+                        color='blue'
+                        icon={UserPlus}
+                    />
                 </div>
             </div>
 
@@ -173,13 +201,16 @@ export default function StudentsManagement() {
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-2">
                                             <Phone className="w-4 h-4 text-slate-400" />
-                                            <span className="text-sm text-slate-600">00000000</span>
+                                            <span className="text-sm text-slate-600">{student.phone_number || '---.---.---'}</span>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 text-right">
-                                        <button className="text-slate-400 hover:text-slate-600">
-                                            <MoreVertical className="w-5 h-5" />
-                                        </button>
+                                        <IconButton
+                                            icon={MoreVertical}
+                                            onClick={() => { }}
+                                            size={18}
+                                            className="text-slate-400 hover:text-slate-600"
+                                        />
                                     </td>
                                 </tr>
                             )) : !isLoading && (
@@ -214,6 +245,13 @@ export default function StudentsManagement() {
                     </div>
                 </div>
             </div>
+
+            <NewStudentInHubModal
+                availableClassDatas={classes}
+                isOpen={openNewStudentInHubModal}
+                onClose={() => setOpenNewStudentInHubModal(false)}
+                onSubmit={newStudent}
+            />
         </div>
     );
 }

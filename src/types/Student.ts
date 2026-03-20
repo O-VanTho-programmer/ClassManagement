@@ -5,6 +5,7 @@ interface Student {
     name: string,
     birthday: string | null,
     status: StudentStatus,
+    phone_number?: string,
 }
 
 interface StudentWithFaceDescriptor extends Student {
