@@ -112,7 +112,7 @@ export default function StudentsManagement() {
             </div>
 
             {/* Stats Overview Bar */}
-            <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            {/* <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                 <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
                     <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider">Total Students</p>
                     <p className="text-2xl font-bold text-slate-900">{students.length}</p>
@@ -125,7 +125,7 @@ export default function StudentsManagement() {
                     <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider">Avg. Attendance</p>
                     <p className="text-2xl font-bold text-indigo-600">92.4%</p>
                 </div>
-            </div>
+            </div> */}
 
             {/* Toolbar */}
             <div className="max-w-7xl mx-auto bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">

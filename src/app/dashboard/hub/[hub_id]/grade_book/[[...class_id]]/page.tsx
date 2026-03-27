@@ -22,8 +22,9 @@ import Button from '@/components/Button/Button';
 import { exportToExcel } from '@/utils/exportToExcel';
 
 export default function GradeBookStudents() {
-    const { hub_id } = useParams();
-    const [selectedClassId, setSelectedClassId] = useState("none");
+    const { hub_id, class_id } = useParams();
+    const parsedClassId = Array.isArray(class_id) ? class_id[0] : (class_id as string | undefined);
+    const [selectedClassId, setSelectedClassId] = useState(parsedClassId ?? "none");
     const [searchTerm, setSearchTerm] = useState("");
 
     const { data: classes = [] } = useGetClassSimpleByHubId(hub_id as string);
@@ -69,7 +70,7 @@ export default function GradeBookStudents() {
             alert("No data available to export.");
             return;
         }
-        
+
         const excelData = filteredStudents.map(student => {
             const row: any = {
                 "Student ID": student.id,
@@ -164,20 +165,13 @@ export default function GradeBookStudents() {
 
             {/* Main Content Area */}
             <div className="p-6 md:p-8 flex-1 overflow-hidden flex flex-col">
-                <div className="flex justify-between items-center mb-4 shrink-0">
+                <div className="mb-4 shrink-0">
                     <SearchBar
                         search_width_style='medium'
                         onChange={(e) => setSearchTerm(e.target.value)}
                         value={searchTerm}
                     />
 
-                    <div className="flex gap-2">
-                        <button className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer">
-                            <Filter className="w-4 h-4" />
-                            <span>Filter</span>
-                            <ChevronDown className="w-3 h-3 opacity-50" />
-                        </button>
-                    </div>
                 </div>
 
                 <div className="bg-white rounded-xl border border-slate-200 shadow-sm flex-1 flex flex-col overflow-hidden">

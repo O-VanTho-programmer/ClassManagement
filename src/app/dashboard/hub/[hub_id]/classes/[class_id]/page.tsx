@@ -104,10 +104,12 @@ export default function Class() {
         },
         {
             icon: AlbumIcon,
-            title: "Lesson Plan",
-            descr: "In Proccess",
+            title: "Gradebooks",
+            descr: "View students's gradebook",
             bg_clr: 'red',
-            onClick: () => { return null },
+            onClick: () => { 
+                router.push(`../grade_book/${class_id}`);
+             },
         },
     ];
 
