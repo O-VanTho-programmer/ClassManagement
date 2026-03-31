@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import SideNavigation from "../SideNavigation/SideNavigation"
-import { MenuIcon, BellElectricIcon, CalendarClock, CalendarDays, GraduationCapIcon, HomeIcon, StarIcon, BookPlusIcon, BookUp2, HatGlasses, BookCopy, UserLockIcon, LucideUsers } from "lucide-react";
+import { MenuIcon, BellElectricIcon, CalendarClock, CalendarDays, GraduationCapIcon, HomeIcon, StarIcon, BookPlusIcon, BookUp2, HatGlasses, BookCopy, UserLockIcon, LucideUsers, BookMarkedIcon } from "lucide-react";
 import HeaderDashboard from "../HeaderDashboard/HeaderDashboard";
 import { usePathname } from "next/navigation";
 
@@ -14,7 +14,7 @@ export default function LayoutDashboardHub({ children }: { children: React.React
             items: [
                 { name: 'Classes', icon: GraduationCapIcon, href: '/classes' },
                 { name: 'Attendance', icon: CalendarDays, href: '/attendance' },
-                { name: 'Grade Books', icon: CalendarDays, href: '/grade_book' },
+                { name: 'Grade Books', icon: BookMarkedIcon, href: '/grade_book' },
             ]
         },
         {

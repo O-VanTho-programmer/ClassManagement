@@ -58,7 +58,6 @@ export default function TableDetailStudentSubmissions({
 
         studentSubmissionsList.forEach((s) => {
             mapStudentSubmissions.set(s.id, s);
-            // s.id is student id
         });
 
         return mapStudentSubmissions;
@@ -83,25 +82,27 @@ export default function TableDetailStudentSubmissions({
         setIsGrading(true);
 
         try {
-            for (let i = 0; i < students_homework_questions.length; i += 5) {
-                let submissionsBatch = [];
-                let batchStudentIds: string[] = [];
-
-                for (let j = 0; j < 5 && i + j < students_homework_questions.length; j++) {
-                    const studentId = students_homework_questions[i + j].student_id;
-                    const submission = mapStudentSubmissionList.get(studentId);
-
-                    if (!submission || !submission.submission_urls || submission.submission_urls.length === 0) {
-                        continue;
-                    }
-
-                    batchStudentIds.push(studentId);
-                    submissionsBatch.push(submission);
+            const validSubmissions: {studentId: string, submission: StudentWithHomework}[] = [];
+            
+            for (const student of students_homework_questions) {
+                const submission = mapStudentSubmissionList.get(student.student_id);
+                if (submission && submission.submission_urls && submission.submission_urls.length > 0) {
+                    validSubmissions.push({ studentId: student.student_id, submission });
                 }
+            }
 
-                if (batchStudentIds.length > 0) {
-                    setGradingStudent(batchStudentIds);
-                }
+            if (validSubmissions.length === 0) {
+                showAlert("No submissions found to grade.", "info");
+                return;
+            }
+
+            const BATCH_SIZE = 5;
+            for (let i = 0; i < validSubmissions.length; i += BATCH_SIZE) {
+                const currentBatch = validSubmissions.slice(i, i + BATCH_SIZE);
+                const batchStudentIds = currentBatch.map(b => b.studentId);
+                const submissionsBatch = currentBatch.map(b => b.submission);
+
+                setGradingStudent(batchStudentIds);
 
                 try {
                     const aiRes = await gradeStudentHomeworkBatchUseAI(answerKey, submissionsBatch);
@@ -114,11 +115,10 @@ export default function TableDetailStudentSubmissions({
                             await saveGradeAndStudentHomeworkQuestion(submission.student_homework_id, grade, feedback, questions);
                         }
 
-
                         queryClient.invalidateQueries({ queryKey: ['student_homework_question_by_class_homework_id', class_homework_id] })
                     }
                 } catch (err) {
-                    console.error(`Failed to grade student`, err);
+                    console.error(`Failed to grade student batch`, err);
                 } finally {
                     setGradingStudent([]);
                 }
@@ -149,10 +149,10 @@ export default function TableDetailStudentSubmissions({
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-100">
                             <tr>
-                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider sticky left-0 bg-gray-100 z-10">
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider sticky left-0 bg-gray-100 z-20 w-64 min-w-[16rem] max-w-[16rem] border-r border-gray-200">
                                     Student Name
                                 </th>
-                                <th className="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                <th className="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider sticky left-64 bg-gray-100 z-20 w-24 min-w-[6rem] max-w-[6rem] border-r border-gray-200 shadow-[4px_0_10px_-4px_rgba(0,0,0,0.1)]">
                                     Total
                                 </th>
                                 {/* Dynamic Question Columns */}
@@ -195,15 +195,17 @@ export default function TableDetailStudentSubmissions({
                                     }
                                 }
 
+                                const rowBgColor = isGradingThisStudent ? 'bg-indigo-50' : 'bg-white hover:bg-gray-50';
+
                                 return (
                                     <tr
                                         key={student.student_id}
-                                        className={`transition-colors duration-200 ${isGradingThisStudent ? 'bg-indigo-50/20' : 'hover:bg-gray-50'}`}
+                                        className={`transition-colors duration-200 ${rowBgColor}`}
                                     >
                                         {/* --- Student Name & Status --- */}
-                                        <td className="px-6 py-4 whitespace-nowrap sticky left-0 bg-inherit z-10">
+                                        <td className="px-6 py-4 whitespace-nowrap sticky left-0 bg-inherit z-10 w-64 min-w-[16rem] max-w-[16rem] border-r border-gray-200">
                                             <div className="flex flex-col">
-                                                <span className="text-sm font-medium text-gray-900">{student.student_name}</span>
+                                                <span className="text-sm font-medium text-gray-900 overflow-hidden text-ellipsis">{student.student_name}</span>
                                                 <div className="mt-1">
                                                     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${statusColor}`}>
                                                         {statusText}
@@ -212,7 +214,7 @@ export default function TableDetailStudentSubmissions({
                                             </div>
                                         </td>
 
-                                        <td className="px-4 py-4 text-center">
+                                        <td className="px-4 py-4 text-center sticky left-64 bg-inherit z-10 w-24 min-w-[6rem] max-w-[6rem] border-r border-gray-200 shadow-[4px_0_10px_-4px_rgba(0,0,0,0.1)]">
                                             {isGradingThisStudent ? (
                                                 <div className="w-10 h-6 bg-gray-200 rounded animate-pulse mx-auto" />
                                             ) : (

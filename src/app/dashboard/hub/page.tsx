@@ -80,7 +80,6 @@ export default function HubPage() {
             <LayoutDashboard>
                 <div className="min-h-screen bg-gray-50 flex items-center justify-center p-8">
                     <EmptyStateHubs onCreate={handleOpenCreateModal} />
-                    {/* Create Hub Modal */}
                     <CreateHubModal
                         isOpen={isCreateModalOpen}
                         onClose={() => setIsCreateModalOpen(false)}

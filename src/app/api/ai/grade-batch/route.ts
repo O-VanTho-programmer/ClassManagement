@@ -6,17 +6,17 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 const studentResultSchema: Schema = {
     type: SchemaType.OBJECT,
     properties: {
-        student_homework_id: { 
-            type: SchemaType.STRING, 
-            description: "The unique ID of the student homework submission provided in the prompt header" 
+        student_homework_id: {
+            type: SchemaType.STRING,
+            description: "The unique ID of the student homework submission provided in the prompt header"
         },
-        grade: { 
-            type: SchemaType.NUMBER, 
-            description: "Total score (0-100)" 
+        grade: {
+            type: SchemaType.NUMBER,
+            description: "Total score (0-100)"
         },
-        feedback: { 
-            type: SchemaType.STRING, 
-            description: "Overall constructive feedback" 
+        feedback: {
+            type: SchemaType.STRING,
+            description: "Overall constructive feedback"
         },
         questions: {
             type: SchemaType.ARRAY,
@@ -50,7 +50,7 @@ export async function POST(req: Request) {
 
         // Use the preview model which supports JSON schema well
         const model = genAI.getGenerativeModel({
-            model: "gemini-2.5-flash-preview-09-2025",
+            model: "gemini-3.1-flash-lite-preview",
             generationConfig: {
                 responseMimeType: "application/json",
                 responseSchema: batchGradingSchema,
@@ -80,8 +80,8 @@ export async function POST(req: Request) {
         for (const sub of submissions) {
             if (!sub.submission_urls || sub.submission_urls.length === 0) continue;
 
-            parts.push({ 
-                text: `\n\n=== BEGIN SUBMISSION FOR STUDENT HOMEWORK ID: ${sub.student_homework_id} ===\nAnalyze the following images for this student:` 
+            parts.push({
+                text: `\n\n=== BEGIN SUBMISSION FOR STUDENT HOMEWORK ID: ${sub.student_homework_id} ===\nAnalyze the following images for this student:`
             });
 
             // Fetch and attach images for this student

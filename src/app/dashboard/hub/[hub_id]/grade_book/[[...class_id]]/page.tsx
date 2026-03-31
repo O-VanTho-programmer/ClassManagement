@@ -4,12 +4,8 @@ import React, { useMemo, useState } from 'react';
 import {
     BookOpen,
     ChevronDown,
-    Save,
-    Search,
-    MoreHorizontal,
     AlertTriangle,
     TrendingUp,
-    Filter,
     FileSpreadsheet,
     Inbox
 } from 'lucide-react';

@@ -21,7 +21,6 @@ export default function SideNavigation({isOpen, toggleNav, activePage, isShrunk,
         <nav
             className={`fixed inset-y-0 left-0 z-40 bg-slate-800 text-white shadow-lg transform transition-all duration-300 ${isShrunk ? 'w-20' : 'w-64'} md:relative ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}
         >
-            {/* Mobile close button and title */}
             <div className="flex items-center justify-end p-4 bg-slate-900 md:hidden">
                 <button onClick={toggleNav} className="text-white p-2 rounded-full hover:bg-slate-700">
                     <XIcon className="h-6 w-6" />
@@ -45,7 +44,7 @@ export default function SideNavigation({isOpen, toggleNav, activePage, isShrunk,
                         />
                     ))}
                 </ul>
-                {/* Toggle button for shrinking/expanding */}
+
                 <div className="absolute bottom-2.5 right-2.5 md:flex hidden">
                     <button onClick={toggleShrink} className="p-2 rounded-full text-slate-400 hover:bg-slate-700 hover:text-white transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-400">
                         {isShrunk ? <ChevronRightIcon className="h-6 w-6" /> : <ChevronLeftIcon className="h-6 w-6" />}
