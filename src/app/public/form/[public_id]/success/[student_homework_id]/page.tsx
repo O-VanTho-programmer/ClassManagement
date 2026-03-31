@@ -3,7 +3,7 @@
 import ErrorState from '@/components/QueryState/ErrorState';
 import LoadingState from '@/components/QueryState/LoadingState';
 import { useUser } from '@/context/UserContext';
-import { useGetStudentHomeworkByIdQuery } from '@/hooks/useGetStudentHomeworkById';
+import { useGetStudentHomeworkByIdPublicQuery } from '@/hooks/useGetStudentHomeworkByIdPublic';
 import formatDate from '@/utils/Format/formatDate';
 import { ArrowRight, Calendar, Check, Clock, Home } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
@@ -14,7 +14,7 @@ export default function FormSuccess() {
     const router = useRouter();
 
     const user = useUser();
-    const { data: studentHomework, isLoading, error } = useGetStudentHomeworkByIdQuery(student_homework_id as string);
+    const { data: studentHomework, isLoading, error } = useGetStudentHomeworkByIdPublicQuery(student_homework_id as string);
 
     if (isLoading) {
         return (

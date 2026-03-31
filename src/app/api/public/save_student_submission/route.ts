@@ -1,9 +1,7 @@
 import pool from "@/lib/db";
 import { NextResponse } from "next/server";
-import { checkPermission, PERMISSIONS } from "@/lib/permissions";
 import type { PoolConnection } from "mysql2/promise";
 import { deleteCloudImage } from "@/lib/cloudinary/cloudinary";
-
 
 export async function POST(req: Request) {
     let connection: PoolConnection | undefined;
@@ -13,12 +11,10 @@ export async function POST(req: Request) {
         connection = await pool.getConnection();
         await connection.beginTransaction();
 
-        // Get hubId from studentHomeworkId
+        // Get existing submission from studentHomeworkId
         const [studentHomework]: any[] = await connection.query(`
-            SELECT h.HubId, sh.UploadSubmission
+            SELECT sh.UploadSubmission
             FROM student_homework sh
-            JOIN class_homework ch ON sh.ClassHomeworkId = ch.ClassHomeworkId
-            JOIN homework h ON ch.HomeworkId = h.HomeworkId
             WHERE sh.StudentHomeworkId = ?
         `, [studentHomeworkId]);
 
@@ -27,16 +23,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ message: "Student homework not found" }, { status: 404 });
         }
 
-        const hubId = studentHomework[0].HubId;
         const existingSubmission = studentHomework[0].UploadSubmission;
-
-        // Check permission - students can submit their own homework, but we still check VIEW_HOMEWORK
-        // In a real system, you might want to check if the user is the student themselves
-        const permissionCheck = await checkPermission(req, PERMISSIONS.VIEW_HOMEWORK, hubId);
-        if (permissionCheck instanceof NextResponse) {
-            await connection.rollback();
-            return permissionCheck;
-        }
 
         const dueDateHomework = new Date(dueDate);
         const currentDate = new Date();
@@ -47,13 +34,11 @@ export async function POST(req: Request) {
             statusSubmission = 'Overdue';
         }
 
-        // Delete old images if they exist (before updating the database)
         if (existingSubmission) {
             try {
                 const oldImagesUrl = JSON.parse(existingSubmission);
 
                 if (Array.isArray(oldImagesUrl)) {
-                    // Delete old images from Cloudinary (non-transactional, but we handle errors)
                     await Promise.all(oldImagesUrl.map(async (item: any) => {
                         const publicId = item.public_id;
                         if (publicId) {
@@ -61,7 +46,6 @@ export async function POST(req: Request) {
                                 await deleteCloudImage(publicId);
                             } catch (deleteError) {
                                 console.error("Error deleting old image from Cloudinary:", deleteError);
-                                // Continue even if deletion fails
                             }
                         }
                     }));
@@ -89,7 +73,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ message: "Success" }, { status: 200 });
 
     } catch (error: any) {
-        console.error("Save Submission Error:", error);
+        console.error("Save Submission Public Error:", error);
         if (connection) await connection.rollback();
         return NextResponse.json({ message: "Error", error: error.message }, { status: 500 });
     } finally {

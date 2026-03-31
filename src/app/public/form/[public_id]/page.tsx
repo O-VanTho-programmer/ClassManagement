@@ -9,8 +9,8 @@ import { useFileImg } from '@/hooks/useFileImg';
 import { useGetClassHomeworkByIdPublic } from '@/hooks/useGetClassHomeworkByIdPublic';
 import { useGetStudentListByAssignmentIdPublic } from '@/hooks/useGetStudentListByAssignmentIdPublic';
 import { useUploadSubmissionMutation } from '@/hooks/useUploadSubmission';
-import { getUrlImageByUploadOnCloudiary } from '@/lib/api/getUrlImageByUploadOnCloudiary';
-import { saveStudentSubmission } from '@/lib/api/HomeworkSubmission/saveStudentSubmission';
+import { getUrlImageByUploadOnCloudiaryPublic } from '@/lib/api/getUrlImageByUploadOnCloudiaryPublic';
+import { saveStudentSubmissionPublic } from '@/lib/api/HomeworkSubmission/saveStudentSubmissionPublic';
 import { isFaceAuthEnablePublic } from '@/utils/face-recognition/isFaceAuthEnable';
 import { Copy, FileText, Loader2, Send, Trash2, Upload, User } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation'
@@ -41,8 +41,8 @@ function AssignmentForm() {
     }, [selectedStudent, previews]);
 
     const uploadMutation = useUploadSubmissionMutation(
-        getUrlImageByUploadOnCloudiary,
-        saveStudentSubmission,
+        getUrlImageByUploadOnCloudiaryPublic,
+        saveStudentSubmissionPublic,
     )
     if (isAssignmentLoading || isStudentListsLoading) {
         return <LoadingState fullScreen className='bg-white' />
@@ -62,11 +62,11 @@ function AssignmentForm() {
 
             uploadMutation.mutate({
                 files,
-                student_homework_id: public_id as string,
+                student_homework_id: selectedStudent!.student_homework_id,
                 due_date: assignment!.due_date
             }, {
                 onSuccess: () => {
-                    router.push(`${public_id}/success/${selectedStudentId}`);
+                    router.push(`/public/form/${public_id}/success/${selectedStudent!.student_homework_id}`);
                 }
             })
 
@@ -82,7 +82,6 @@ function AssignmentForm() {
     }
 
     const handleSelectStudent = (studentId: string) => {
-        setLockedSubmission(true);
 
         if (studentId === selectedStudentId) {
             setSelectedStudentId('');
@@ -90,6 +89,7 @@ function AssignmentForm() {
         }
 
         if (isFaceAuthEnable) {
+            setLockedSubmission(true);
             setIsDetecting(true);
         }
 
@@ -98,6 +98,7 @@ function AssignmentForm() {
 
     const handleSuccessFaceAuth = () => {
         setLockedSubmission(false);
+        setIsDetecting(false);
     }
 
     return (
