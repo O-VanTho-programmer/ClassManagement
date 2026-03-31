@@ -19,20 +19,26 @@ export default function SideNavigation({isOpen, toggleNav, activePage, isShrunk,
     const { hub_id } = useParams();
     return (
         <nav
-            className={`fixed inset-y-0 left-0 z-40 bg-slate-800 text-white shadow-lg transform transition-all duration-300 ${isShrunk ? 'w-20' : 'w-64'} md:relative ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}
+            className={`fixed inset-y-0 left-0 z-40 bg-slate-800 text-slate-300 shadow-xl transform transition-all duration-300 md:relative flex flex-col h-screen ${isShrunk ? 'w-20' : 'w-64'} ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}
         >
-            <div className="flex items-center justify-end p-4 bg-slate-900 md:hidden">
-                <button onClick={toggleNav} className="text-white p-2 rounded-full hover:bg-slate-700">
+            {/* Mobile Header */}
+            <div className="flex items-center justify-between p-4 bg-slate-900 md:hidden flex-shrink-0 shadow-sm z-10">
+                <h1 className="font-bold text-blue-400 text-xl">TutorDesk</h1>
+                <button onClick={toggleNav} className="text-white p-2 rounded-full hover:bg-slate-700 transition-colors">
                     <XIcon className="h-6 w-6" />
                 </button>
             </div>
-            <div className="p-4 flex flex-col justify-between h-full">
-                <div className="text-center mb-6">
-                    <h1 className={`font-bold text-blue-400 transition-opacity duration-300 ${isShrunk ? 'text-xl' : 'text-3xl'}`}>
-                        {isShrunk ? 'TD' : 'TutorDesk'}
-                    </h1>
-                </div>
-                <ul className="flex-grow">
+
+            {/* Desktop Header */}
+            <div className="p-6 text-center flex-shrink-0 hidden md:block border-b border-slate-700/50">
+                <h1 className={`font-bold text-blue-400 transition-all duration-300 ${isShrunk ? 'text-2xl' : 'text-3xl tracking-wide'}`}>
+                    {isShrunk ? 'TD' : 'TutorDesk'}
+                </h1>
+            </div>
+
+            {/* Scrollable Navigation List */}
+            <div className="flex-1 overflow-y-auto py-6 px-3 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+                <ul className="space-y-1">
                     {navigationSections.map((section, index) => (
                         <NavigationSection
                             key={index}
@@ -44,12 +50,17 @@ export default function SideNavigation({isOpen, toggleNav, activePage, isShrunk,
                         />
                     ))}
                 </ul>
+            </div>
 
-                <div className="absolute bottom-2.5 right-2.5 md:flex hidden">
-                    <button onClick={toggleShrink} className="p-2 rounded-full text-slate-400 hover:bg-slate-700 hover:text-white transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-400">
-                        {isShrunk ? <ChevronRightIcon className="h-6 w-6" /> : <ChevronLeftIcon className="h-6 w-6" />}
-                    </button>
-                </div>
+            {/* Footer / Shrink Toggle */}
+            <div className={`p-4 border-t border-slate-700/50 flex-shrink-0 hidden md:flex items-center transition-all duration-300 ${isShrunk ? 'justify-center' : 'justify-end'}`}>
+                <button 
+                    onClick={toggleShrink} 
+                    className="p-2 rounded-lg text-slate-400 hover:bg-slate-700 hover:text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-400 hover:scale-105 active:scale-95"
+                    aria-label={isShrunk ? "Expand sidebar" : "Collapse sidebar"}
+                >
+                    {isShrunk ? <ChevronRightIcon className="h-5 w-5" /> : <ChevronLeftIcon className="h-5 w-5" />}
+                </button>
             </div>
         </nav>
     );
