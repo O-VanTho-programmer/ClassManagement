@@ -2,7 +2,6 @@
 
 import { useAlert } from '@/components/AlertProvider/AlertContext';
 import FaceRecognitionAuth from '@/components/FaceSecurity/FaceRecognitionAuth';
-import IconButton from '@/components/IconButton/IconButton';
 import ErrorState from '@/components/QueryState/ErrorState';
 import LoadingState from '@/components/QueryState/LoadingState';
 import { useFileImg } from '@/hooks/useFileImg';

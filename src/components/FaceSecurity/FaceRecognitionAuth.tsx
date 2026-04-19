@@ -3,8 +3,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Loader2, Camera, CheckCircle, XCircle, X, AlertTriangle } from 'lucide-react';
 import { startVideo } from '@/utils/face-recognition/startVideoCamera';
-import { loadModelFaceApi, tinyFaceDetectorOptions } from '@/utils/face-recognition/loadModelFaceApi';
-import * as faceapi from 'face-api.js';
+import { useFaceWorker } from '@/hooks/useFaceWork';
 
 interface FaceRecognitionAuthProps {
   studentDescriptor: number[] | string | null;
@@ -23,26 +22,66 @@ export default function FaceRecognitionAuth({
   const modalRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const isMountedRef = useRef(true);
 
   const [isModelsLoaded, setIsModelsLoaded] = useState(false);
   const [isScanning, setIsScanning] = useState(true);
   const [authStatus, setAuthStatus] = useState<'scanning' | 'success' | 'failed'>('scanning');
   const [errorMsg, setErrorMsg] = useState('');
 
-  // Cleanup function to stop camera stream
+  // Parse descriptor once upfront
+  const parsedDescriptor = React.useMemo<number[] | null>(() => {
+    if (!studentDescriptor) return null;
+    try {
+      if (typeof studentDescriptor === 'string') return JSON.parse(studentDescriptor);
+      if (Array.isArray(studentDescriptor)) return studentDescriptor;
+      return null;
+    } catch {
+      return null;
+    }
+  }, [studentDescriptor]);
+
+  // ─── Web Worker ───────────────────────────────────────────────────────────
+  const { detectFace } = useFaceWorker({
+    onModelsLoaded: () => {
+      setIsModelsLoaded(true);
+    },
+    onDetectionResult: (matched, distance) => {
+      if (!isMountedRef.current || !isScanning) return;
+      if (matched) {
+        console.log(`✓ Face match! distance=${distance?.toFixed(3)}`);
+        setAuthStatus('success');
+        setIsScanning(false);
+        cleanupCamera();
+        setTimeout(() => {
+          if (isMountedRef.current) onAuthenticated();
+        }, 1500);
+      }
+    },
+    onError: (message) => {
+      if (!isMountedRef.current) return;
+      // Ignore transient "models not loaded yet" errors during startup
+      if (message === 'Models not loaded yet') return;
+      console.error('Worker error:', message);
+      setErrorMsg(message);
+      setAuthStatus('failed');
+      setIsScanning(false);
+    },
+  });
+  // ─────────────────────────────────────────────────────────────────────────
+
+  // Cleanup camera stream
   const cleanupCamera = useCallback(() => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
     }
     if (videoRef.current?.srcObject) {
-      const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
-      tracks.forEach(track => track.stop());
+      (videoRef.current.srcObject as MediaStream).getTracks().forEach(t => t.stop());
       videoRef.current.srcObject = null;
     }
   }, []);
 
-  // Close handler with camera cleanup
   const handleClose = useCallback(() => {
     cleanupCamera();
     onClose();
@@ -54,44 +93,38 @@ export default function FaceRecognitionAuth({
     }
   }, [handleClose]);
 
+  // Track mount state to avoid state updates after unmount
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => { isMountedRef.current = false; };
+  }, []);
+
+  // Keyboard close
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        handleClose();
-      }
+      if (e.key === 'Escape' && isOpen) handleClose();
     };
-
     if (isOpen) {
       document.addEventListener('keydown', handleEscape);
       document.body.style.overflow = 'hidden';
     }
-
     return () => {
       document.removeEventListener('keydown', handleEscape);
       document.body.style.overflow = 'unset';
     };
   }, [isOpen, handleClose]);
 
+  // Validate descriptor once models are loaded
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || !isModelsLoaded) return;
+    if (!parsedDescriptor) {
+      setErrorMsg('This student is not registered for face recognition.');
+      setAuthStatus('failed');
+      setIsScanning(false);
+    }
+  }, [isOpen, isModelsLoaded, parsedDescriptor]);
 
-    const init = async () => {
-      try {
-        const success = await loadModelFaceApi();
-        setIsModelsLoaded(success);
-        if (!success) {
-          setErrorMsg("Failed to load AI models. Please refresh and try again.");
-          setAuthStatus('failed');
-        }
-      } catch (error) {
-        console.error('Model loading error:', error);
-        setErrorMsg("Failed to load AI models. Please refresh and try again.");
-        setAuthStatus('failed');
-      }
-    };
-    init();
-  }, [isOpen]);
-
+  // Start camera when models are ready
   useEffect(() => {
     if (!isOpen || !isModelsLoaded || !isScanning) return;
 
@@ -101,111 +134,28 @@ export default function FaceRecognitionAuth({
         streamRef.current = stream;
       } catch (err) {
         console.error('Camera access error:', err);
-        setErrorMsg("Camera access denied or unavailable. Please allow camera access.");
+        setErrorMsg('Camera access denied or unavailable. Please allow camera access.');
         setIsScanning(false);
         setAuthStatus('failed');
       }
     };
 
     initCamera();
-
     return cleanupCamera;
   }, [isOpen, isModelsLoaded, isScanning, cleanupCamera]);
 
+  // Detection interval — send video frames to the worker
   useEffect(() => {
-    if (!isOpen || !isModelsLoaded || !isScanning) return;
+    if (!isOpen || !isModelsLoaded || !isScanning || !parsedDescriptor) return;
 
-    if (!studentDescriptor) {
-      setErrorMsg("This student is not registered for face recognition.");
-      setIsScanning(false);
-      setAuthStatus('failed');
-      return;
-    }
-
-    let isMounted = true;
-    let intervalId: NodeJS.Timeout | null = null;
-
-    // Parse descriptor
-    let descriptorArray: number[];
-    try {
-      if (typeof studentDescriptor === 'string') {
-        descriptorArray = JSON.parse(studentDescriptor);
-      } else if (Array.isArray(studentDescriptor)) {
-        descriptorArray = studentDescriptor;
-      } else {
-        throw new Error("Invalid descriptor type");
+    const intervalId = setInterval(() => {
+      if (videoRef.current) {
+        detectFace(videoRef.current, parsedDescriptor);
       }
-    } catch (e) {
-      console.error('Error parsing descriptor:', e);
-      setErrorMsg("Invalid face descriptor format.");
-      setIsScanning(false);
-      setAuthStatus('failed');
-      return;
-    }
+    }, 1000);
 
-    const storedDescriptor = new Float32Array(descriptorArray);
-    const THRESHOLD = 0.5;
-
-    const detectAndMatchFace = async () => {
-      if (!videoRef.current || videoRef.current.readyState !== videoRef.current.HAVE_ENOUGH_DATA) {
-        return;
-      }
-
-      try {
-        const detections = await faceapi
-          .detectAllFaces(videoRef.current, tinyFaceDetectorOptions())
-          .withFaceLandmarks()
-          .withFaceDescriptors();
-
-        if (!isMounted) return;
-
-        if (detections.length === 0) {
-          console.log("No face detected...");
-          return;
-        }
-
-        // Only process the first detected face
-        const detectedDescriptor = detections[0].descriptor;
-        const distance = faceapi.euclideanDistance(detectedDescriptor, storedDescriptor);
-
-        console.log(`Face distance: ${distance.toFixed(3)}`);
-
-        if (distance < THRESHOLD) {
-          console.log("✓ Face match found!");
-
-          if (intervalId) clearInterval(intervalId);
-
-          setAuthStatus('success');
-          setIsScanning(false);
-
-          // Clean up camera
-          cleanupCamera();
-
-          // Redirect after animation
-          setTimeout(() => {
-            if (isMounted) {
-              onAuthenticated();
-            }
-          }, 1500);
-        }
-      } catch (error) {
-        console.error("Face detection error:", error);
-        if (isMounted) {
-          setErrorMsg("Face detection failed. Please try again.");
-          setIsScanning(false);
-          setAuthStatus('failed');
-        }
-      }
-    };
-
-    // Start detection interval
-    intervalId = setInterval(detectAndMatchFace, 1000);
-
-    return () => {
-      isMounted = false;
-      if (intervalId) clearInterval(intervalId);
-    };
-  }, [isOpen, isModelsLoaded, isScanning, studentDescriptor, onAuthenticated, cleanupCamera]);
+    return () => clearInterval(intervalId);
+  }, [isOpen, isModelsLoaded, isScanning, parsedDescriptor, detectFace]);
 
   if (!isOpen) return null;
 
@@ -276,7 +226,7 @@ export default function FaceRecognitionAuth({
                     {/* Outer pulse ring */}
                     <div className="absolute inset-0 border-4 border-blue-400/20 rounded-full animate-ping"></div>
                     {/* Middle ring */}
-                    <div className="absolute inset-4 border-3 border-blue-500/40 rounded-full"></div>
+                    <div className="absolute inset-4 border-2 border-blue-500/40 rounded-full"></div>
                     {/* Inner ring */}
                     <div className="absolute inset-8 border-2 border-blue-400/60 rounded-full backdrop-blur-sm bg-blue-500/5"></div>
 
@@ -291,10 +241,10 @@ export default function FaceRecognitionAuth({
                     <div className="absolute w-full h-1 bg-gradient-to-r from-transparent via-blue-400 to-transparent top-0 animate-[scan_2s_ease-in-out_infinite] shadow-[0_0_20px_rgba(59,130,246,0.8)]"></div>
 
                     {/* Corner guides */}
-                    <div className="absolute top-0 left-0 w-8 h-8 border-l-3 border-t-3 border-blue-400 rounded-tl-lg"></div>
-                    <div className="absolute top-0 right-0 w-8 h-8 border-r-3 border-t-3 border-blue-400 rounded-tr-lg"></div>
-                    <div className="absolute bottom-0 left-0 w-8 h-8 border-l-3 border-b-3 border-blue-400 rounded-bl-lg"></div>
-                    <div className="absolute bottom-0 right-0 w-8 h-8 border-r-3 border-b-3 border-blue-400 rounded-br-lg"></div>
+                    <div className="absolute top-0 left-0 w-8 h-8 border-l-2 border-t-2 border-blue-400 rounded-tl-lg"></div>
+                    <div className="absolute top-0 right-0 w-8 h-8 border-r-2 border-t-2 border-blue-400 rounded-tr-lg"></div>
+                    <div className="absolute bottom-0 left-0 w-8 h-8 border-l-2 border-b-2 border-blue-400 rounded-bl-lg"></div>
+                    <div className="absolute bottom-0 right-0 w-8 h-8 border-r-2 border-b-2 border-blue-400 rounded-br-lg"></div>
                   </div>
                 </div>
               )}
@@ -342,7 +292,7 @@ export default function FaceRecognitionAuth({
               ) : authStatus === 'success' ? (
                 <div className="flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 rounded-lg">
                   <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                  <p className="text-green-700 font-semibold text-sm">Redirecting to dashboard...</p>
+                  <p className="text-green-700 font-semibold text-sm">Identity verified!</p>
                 </div>
               ) : (
                 <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg">
