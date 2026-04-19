@@ -6,7 +6,7 @@ import { deleteCloudImage } from "@/lib/cloudinary/cloudinary";
 export async function POST(req: Request) {
     let connection: PoolConnection | undefined;
     try {
-        const { studentHomeworkId, dueDate, submissionDataUrls } = await req.json();
+        const { studentHomeworkId, dueDate, submissionDataUrls, securityStatus } = await req.json();
 
         connection = await pool.getConnection();
         await connection.beginTransaction();
@@ -56,17 +56,20 @@ export async function POST(req: Request) {
         }
 
         const jsonUrlsList = JSON.stringify(submissionDataUrls);
+        // securityStatus can be: 'Verified' | 'Unverified' | 'None'
+        const resolvedSecurityStatus = securityStatus || 'None';
 
         const querySaveStudentSubmission = `
             UPDATE student_homework 
             SET 
                 UploadSubmission = ?,
                 Status = ?,
+                SecurityStatus = ?,
                 SubmittedDate = NOW()
             WHERE StudentHomeworkId = ?
         `;
 
-        await connection.query(querySaveStudentSubmission, [jsonUrlsList, statusSubmission, studentHomeworkId]);
+        await connection.query(querySaveStudentSubmission, [jsonUrlsList, statusSubmission, resolvedSecurityStatus, studentHomeworkId]);
 
         await connection.commit();
 

@@ -69,6 +69,7 @@ type StudentWithHomework = Student & {
     feedback?: string,
     confidence_score?: number,
     is_readable?: boolean,
+    security_status?: 'Verified' | 'Unverified' | 'None' | null,
 }
 
 type StudentWithHomeworkPublic = Student & {

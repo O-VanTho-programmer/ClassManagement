@@ -48,14 +48,12 @@ export default function FaceRecognitionAuth({
     onClose();
   }, [cleanupCamera, onClose]);
 
-  // Handle overlay click
   const handleOverlayClick = useCallback((e: React.MouseEvent) => {
     if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
       handleClose();
     }
   }, [handleClose]);
 
-  // Handle ESC key to close modal
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
@@ -65,7 +63,6 @@ export default function FaceRecognitionAuth({
 
     if (isOpen) {
       document.addEventListener('keydown', handleEscape);
-      // Prevent body scroll when modal is open
       document.body.style.overflow = 'hidden';
     }
 
@@ -75,7 +72,6 @@ export default function FaceRecognitionAuth({
     };
   }, [isOpen, handleClose]);
 
-  // Load face recognition models
   useEffect(() => {
     if (!isOpen) return;
 
@@ -96,7 +92,6 @@ export default function FaceRecognitionAuth({
     init();
   }, [isOpen]);
 
-  // Start video stream
   useEffect(() => {
     if (!isOpen || !isModelsLoaded || !isScanning) return;
 
@@ -114,11 +109,9 @@ export default function FaceRecognitionAuth({
 
     initCamera();
 
-    // Cleanup on unmount or when dependencies change
     return cleanupCamera;
   }, [isOpen, isModelsLoaded, isScanning, cleanupCamera]);
 
-  // Face detection and matching logic
   useEffect(() => {
     if (!isOpen || !isModelsLoaded || !isScanning) return;
 

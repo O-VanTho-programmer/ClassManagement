@@ -42,10 +42,10 @@ function HomeworkSubmissionPage() {
   const [isUploadModalOpen, setUploadModalOpen] = useState(false);
   const [isGradingModalOpen, setGradingModalOpen] = useState(false);
 
-  const [answerKey, setAnswerKey] = useState<string>(homeworkData?.answer_key || '');
+  const [answerKey, setAnswerKey] = useState<string>(homeworkData?.answer_key || "");
 
   useEffect(() => {
-    setAnswerKey(homeworkData?.answer_key || '');
+    setAnswerKey(homeworkData?.answer_key || "");
   }, [homeworkData])
 
   const [viewListSubmission, setViewListSubmission] = useState<boolean>(true);

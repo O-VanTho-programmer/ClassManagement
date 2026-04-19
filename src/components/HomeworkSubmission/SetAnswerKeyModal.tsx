@@ -18,10 +18,12 @@ export default function SetAnswerKeyModal({
     onSave,
     isSaving
 }: SetAnswerKeyModalProps) {
-    const [key, setKey] = useState(initialKey);
+    const sampleAnswerKey = `1) A, 2) B, 3) C, 4) D, 5) E,\n7) This is the correct answer,\n\nNote:\n- Multiple choice questions give 5 points each,\n- Essay questions give 10 points each.\n- Give half of maximun point if essay questions correct halfly.`
+
+    const [key, setKey] = useState(initialKey || sampleAnswerKey);
 
     useEffect(() => {
-        setKey(initialKey);
+        setKey(initialKey || sampleAnswerKey);
     }, [initialKey, isOpen]);
 
     const handleSave = () => {

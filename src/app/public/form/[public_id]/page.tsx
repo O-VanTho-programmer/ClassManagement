@@ -12,9 +12,11 @@ import { useUploadSubmissionMutation } from '@/hooks/useUploadSubmission';
 import { getUrlImageByUploadOnCloudiaryPublic } from '@/lib/api/getUrlImageByUploadOnCloudiaryPublic';
 import { saveStudentSubmissionPublic } from '@/lib/api/HomeworkSubmission/saveStudentSubmissionPublic';
 import { isFaceAuthEnablePublic } from '@/utils/face-recognition/isFaceAuthEnable';
-import { Copy, FileText, Loader2, Send, Trash2, Upload, User } from 'lucide-react';
+import { AlertTriangle, BookOpen, Calendar, CheckCircle2, Copy, FileText, Link2, Loader2, Send, ShieldAlert, ShieldCheck, ShieldOff, Trash2, Upload, User, Users } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation'
 import React, { useState, useMemo } from 'react'
+
+type SecurityStatus = 'Verified' | 'Unverified' | 'None';
 
 function AssignmentForm() {
     const { public_id } = useParams();
@@ -26,10 +28,10 @@ function AssignmentForm() {
 
     const { showAlert } = useAlert();
 
-    const [lockedSubmission, setLockedSubmission] = useState<boolean>(isFaceAuthEnable ? true : false);
+    const [faceVerified, setFaceVerified] = useState<boolean>(false);
+    const [isDetecting, setIsDetecting] = useState(false);
     const { files, previews, handleFileChange, handleRemoveFile } = useFileImg(showAlert);
     const [selectedStudentId, setSelectedStudentId] = useState('');
-    const [isDetecting, setIsDetecting] = useState(false);
 
     const selectedStudent = useMemo(() => {
         return studentLists?.find(s => s.id.toString() === selectedStudentId);
@@ -40,208 +42,318 @@ function AssignmentForm() {
         return [...existingSubmissions, ...previews];
     }, [selectedStudent, previews]);
 
+    // Compute security status label for submission
+    const securityStatus: SecurityStatus = useMemo(() => {
+        if (!isFaceAuthEnable) return 'None';
+        return faceVerified ? 'Verified' : 'Unverified';
+    }, [isFaceAuthEnable, faceVerified]);
+
     const uploadMutation = useUploadSubmissionMutation(
         getUrlImageByUploadOnCloudiaryPublic,
         saveStudentSubmissionPublic,
-    )
+    );
+
     if (isAssignmentLoading || isStudentListsLoading) {
-        return <LoadingState fullScreen className='bg-white' />
+        return <LoadingState fullScreen className='bg-gray-50' />;
     }
 
     if (isAssignmentError || isStudentListsError) {
-        return <ErrorState fullScreen className='bg-white' message={assignmentError?.message || studentListsError?.message || 'Something went wrong.'} />
+        return <ErrorState fullScreen className='bg-gray-50' message={assignmentError?.message || studentListsError?.message || 'Something went wrong.'} />;
     }
 
-    //handler
     const handleSubmit = () => {
         try {
-            if (!files) {
-                showAlert("No files selected", "error");
+            if (!files || files.length === 0) {
+                showAlert("Please upload at least one file.", "error");
+                return;
+            }
+            if (!selectedStudentId) {
+                showAlert("Please select your name first.", "error");
                 return;
             }
 
             uploadMutation.mutate({
                 files,
                 student_homework_id: selectedStudent!.student_homework_id,
-                due_date: assignment!.due_date
+                due_date: assignment!.due_date,
+                securityStatus,
             }, {
                 onSuccess: () => {
                     router.push(`/public/form/${public_id}/success/${selectedStudent!.student_homework_id}`);
                 }
-            })
-
+            });
         } catch (error) {
             showAlert("Internal server error", "error");
         }
-    }
+    };
 
     const handleCopyLinkForm = () => {
         const link = `${window.location.origin}/public/form/${public_id}`;
         navigator.clipboard.writeText(link);
-        showAlert("Link form copied to clipboard", "success");
-    }
+        showAlert("Link copied to clipboard!", "success");
+    };
 
     const handleSelectStudent = (studentId: string) => {
-
         if (studentId === selectedStudentId) {
             setSelectedStudentId('');
+            setFaceVerified(false);
             return;
         }
+        setFaceVerified(false);
+        setSelectedStudentId(studentId);
 
         if (isFaceAuthEnable) {
-            setLockedSubmission(true);
             setIsDetecting(true);
         }
-
-        setSelectedStudentId(studentId);
-    }
+    };
 
     const handleSuccessFaceAuth = () => {
-        setLockedSubmission(false);
+        setFaceVerified(true);
         setIsDetecting(false);
-    }
+    };
+
+    const canUploadFiles = !isFaceAuthEnable || faceVerified;
+
+    // Check if past due
+    const isPastDue = assignment?.due_date ? new Date(assignment.due_date) < new Date() : false;
 
     return (
-        <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-xl mx-auto">
-                <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6 border-t-8 border-blue-600">
-                    <div className="p-6 sm:p-8">
-                        <div className="flex justify-between items-start mb-4">
-                            <div>
-                                <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide">
-                                    Due: {assignment?.due_date || '--.--'}
-                                </span>
-                                <h1 className="text-2xl mt-2 font-bold text-gray-900">{assignment?.title}</h1>
-                                <p className="text-blue-600 font-medium mt-1">{assignment?.class_name}</p>
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+            {/* Top branded header */}
+            <header className="bg-white border-b border-gray-100 shadow-sm sticky top-0 z-30">
+                <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-blue-600 font-bold text-lg">
+                        <BookOpen size={22} />
+                        <span>TutorDesk</span>
+                    </div>
+                    <button
+                        onClick={handleCopyLinkForm}
+                        className="flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-blue-600 transition-colors px-3 py-1.5 rounded-lg hover:bg-blue-50 border border-transparent hover:border-blue-100"
+                    >
+                        <Link2 size={14} />
+                        Copy Link
+                    </button>
+                </div>
+            </header>
+
+            <main className="max-w-2xl mx-auto px-4 py-8 space-y-5">
+
+                {/* Assignment Card */}
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div className="h-1.5 bg-gradient-to-r from-blue-500 to-indigo-500" />
+                    <div className="p-6">
+                        <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                                <div className="flex flex-wrap items-center gap-2 mb-3">
+                                    <span className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold">
+                                        <Users size={12} />
+                                        {assignment?.class_name}
+                                    </span>
+                                    <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${isPastDue ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-700'}`}>
+                                        <Calendar size={12} />
+                                        Due: {assignment?.due_date || '--'}
+                                        {isPastDue && ' (Overdue)'}
+                                    </span>
+                                </div>
+                                <h1 className="text-2xl font-bold text-gray-900 leading-tight mb-2">{assignment?.title}</h1>
                             </div>
-                            <IconButton className="bg-blue-50 text-blue-700 p-3 rounded-full hover:bg-blue-100 transition-colors" icon={Copy} onClick={handleCopyLinkForm} size={26} />
                         </div>
 
-                        <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-gray-700 text-sm leading-relaxed">
-                            <p className="font-semibold text-gray-900 mb-1 flex items-center">
-                                <FileText size={16} className="mr-2" /> Content:
-                            </p>
-                            <p
-                                className="ml-4 mt-2 text-base text-gray-600 overflow-hidden max-h-[100px] relative"
-                                dangerouslySetInnerHTML={{ __html: assignment?.content || '' }}
-                            />
-                        </div>
+                        {assignment?.content && (
+                            <div className="mt-3 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+                                    <FileText size={12} /> Instructions
+                                </p>
+                                <div
+                                    className="text-sm text-gray-600 leading-relaxed overflow-hidden max-h-[120px]"
+                                    dangerouslySetInnerHTML={{ __html: assignment?.content || '' }}
+                                />
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8">
-                    <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center">
-                        <Send size={20} className="mr-2 text-blue-600" />
+                {/* Security status info banner */}
+                {isFaceAuthEnable && (
+                    <div className={`flex items-start gap-3 p-4 rounded-xl border text-sm font-medium transition-all ${
+                        faceVerified
+                            ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                            : 'bg-amber-50 border-amber-200 text-amber-800'
+                    }`}>
+                        {faceVerified
+                            ? <ShieldCheck size={18} className="mt-0.5 flex-shrink-0 text-emerald-600" />
+                            : <ShieldAlert size={18} className="mt-0.5 flex-shrink-0 text-amber-500" />
+                        }
+                        <div>
+                            {faceVerified ? (
+                                <>
+                                    <p className="font-semibold">Identity Verified ✓</p>
+                                    <p className="text-xs font-normal mt-0.5 text-emerald-700">Your face was successfully matched. Submission will be marked as <strong>Verified</strong>.</p>
+                                </>
+                            ) : (
+                                <>
+                                    <p className="font-semibold">Face Verification Required</p>
+                                    <p className="text-xs font-normal mt-0.5 text-amber-700">
+                                        This assignment requires face verification. You can still submit without verifying, but your submission will be marked as <strong>Unverified</strong> and flagged for teacher review.
+                                    </p>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Submission form card */}
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-6">
+                    <h2 className="text-base font-bold text-gray-800 flex items-center gap-2">
+                        <Send size={16} className="text-blue-600" />
                         Submit Your Work
-                    </h3>
+                    </h2>
 
-                    <div className="mb-8">
-                        <label className="text-sm font-bold text-gray-700 mb-2 flex items-center">
-                            <User size={18} className="mr-2 text-gray-400" />
-                            Who are you? <span className="text-red-500 ml-1">*</span>
+                    {/* Student selector */}
+                    <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1.5 flex items-center gap-1.5">
+                            <User size={14} className="text-gray-400" />
+                            Who are you? <span className="text-red-500">*</span>
                         </label>
-
-                        {isStudentListsLoading ? (
-                            <div className="h-10 w-full bg-gray-100 animate-pulse rounded-lg"></div>
-                        ) : (
-                            <select
-                                value={selectedStudentId}
-                                onChange={(e) => handleSelectStudent(e.target.value)}
-                                className="block w-full pl-3 pr-10 py-3 text-base text-gray-700 border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-lg border shadow-sm"
-                            >
-                                <option value="" disabled>Select your name...</option>
-                                {studentLists?.map(s => (
-                                    <option key={s.id} value={s.id}>{s.name}</option>
-                                ))}
-                            </select>
-                        )}
-                        <p className="mt-2 text-xs text-gray-500">
-                            Can't find your name? Contact your teacher.
-                        </p>
+                        <select
+                            value={selectedStudentId}
+                            onChange={(e) => handleSelectStudent(e.target.value)}
+                            className="block w-full px-3 py-2.5 text-sm text-gray-700 bg-white border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                        >
+                            <option value="" disabled>Select your name...</option>
+                            {studentLists?.map(s => (
+                                <option key={s.id} value={s.id}>{s.name}</option>
+                            ))}
+                        </select>
+                        <p className="mt-1.5 text-xs text-gray-400">Can't find your name? Contact your teacher.</p>
                     </div>
 
-                    <div className="mb-8">
-                        <label className="text-sm font-bold text-gray-700 mb-2 flex items-center">
-                            <Upload size={18} className="mr-2 text-gray-400" />
-                            Upload Files <span className="text-red-500 ml-1">*</span>
+                    {/* Face verify action — show after picking student when not yet verified */}
+                    {selectedStudentId && isFaceAuthEnable && !faceVerified && (
+                        <div className="flex items-center gap-3 p-3 bg-amber-50 border border-amber-200 rounded-xl">
+                            <ShieldAlert size={18} className="text-amber-500 flex-shrink-0" />
+                            <div className="flex-1 min-w-0">
+                                <p className="text-xs font-semibold text-amber-800">Not verified yet</p>
+                                <p className="text-xs text-amber-700">Verify now for a Verified submission, or skip to submit as Unverified.</p>
+                            </div>
+                            <button
+                                onClick={() => setIsDetecting(true)}
+                                className="flex-shrink-0 text-xs font-semibold text-white bg-amber-500 hover:bg-amber-600 px-3 py-1.5 rounded-lg transition cursor-pointer"
+                            >
+                                Verify Face
+                            </button>
+                        </div>
+                    )}
+
+                    {/* File upload */}
+                    <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1.5 flex items-center gap-1.5">
+                            <Upload size={14} className="text-gray-400" />
+                            Upload Files <span className="text-red-500">*</span>
                         </label>
 
-                        <div className="grid grid-cols-2 gap-4 mb-4 relative">
+                        <div className="grid grid-cols-3 gap-3 mb-3">
                             {allPreviews.map((src, idx) => {
-                                const existingSubmissionCount = selectedStudent?.submission_urls?.length || 0;
-                                const isExistingSubmission = idx < existingSubmissionCount;
-                                const urlLower = src.toLowerCase();
-                                const isPdf = urlLower.endsWith('.pdf') ||
-                                    urlLower.includes('/pdf') ||
-                                    urlLower.includes('format=pdf');
+                                const existingCount = selectedStudent?.submission_urls?.length || 0;
+                                const isExisting = idx < existingCount;
+                                const isPdf = src.toLowerCase().includes('.pdf') || src.toLowerCase().includes('/pdf');
 
                                 return (
-                                    <div key={`${isExistingSubmission ? 'existing' : 'new'}-${idx}`} className="relative group rounded-lg overflow-hidden border border-gray-200 h-32 bg-gray-100">
+                                    <div key={`${isExisting ? 'ex' : 'new'}-${idx}`} className="relative group rounded-xl overflow-hidden border border-gray-200 h-28 bg-gray-50 shadow-sm">
                                         {isPdf ? (
-                                            <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50">
-                                                <FileText size={32} className="text-gray-400 mb-2" />
-                                                <span className="text-xs text-gray-600">PDF Document</span>
+                                            <div className="w-full h-full flex flex-col items-center justify-center">
+                                                <FileText size={28} className="text-gray-400 mb-1" />
+                                                <span className="text-xs text-gray-500 font-medium">PDF</span>
                                             </div>
                                         ) : (
-                                            <img
-                                                src={src}
-                                                alt="Preview"
-                                                className="w-full h-full object-cover opacity-90"
-                                            />
+                                            <img src={src} alt="Preview" className="w-full h-full object-cover" />
                                         )}
-                                        {!isExistingSubmission && (
+                                        {isExisting ? (
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-end p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <span className="text-white text-[10px] font-bold px-1.5 py-0.5 bg-blue-500 rounded">Existing</span>
+                                            </div>
+                                        ) : (
                                             <button
                                                 onClick={() => {
-                                                    const existingSubmissionCount = selectedStudent?.submission_urls?.length || 0;
-                                                    const newFileIndex = idx - existingSubmissionCount;
-                                                    handleRemoveFile(newFileIndex);
+                                                    const existingCount = selectedStudent?.submission_urls?.length || 0;
+                                                    handleRemoveFile(idx - existingCount);
                                                 }}
-                                                className="absolute top-1 right-1 bg-red-500 cursor-pointer text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                                                className="absolute top-1.5 right-1.5 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow cursor-pointer"
                                             >
-                                                <Trash2 size={14} />
+                                                <Trash2 size={12} />
                                             </button>
-                                        )}
-                                        {isExistingSubmission && (
-                                            <div className="absolute top-1 left-1 bg-blue-500 text-white px-2 py-1 rounded text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
-                                                Existing
-                                            </div>
                                         )}
                                     </div>
                                 );
                             })}
 
-                            <label className="border-2 border-dashed border-blue-300 rounded-lg h-32 flex flex-col items-center justify-center cursor-pointer hover:bg-blue-50 hover:border-blue-400 transition-colors">
-                                <Upload size={24} className="text-blue-400 mb-1" />
-                                <span className="text-xs font-semibold text-blue-600">Add Image/PDF</span>
-                                <input type="file" disabled={lockedSubmission} className="hidden" onChange={handleFileChange} accept="image/*,application/pdf" multiple />
+                            <label className="border-2 border-dashed border-blue-200 rounded-xl h-28 flex flex-col items-center justify-center cursor-pointer hover:bg-blue-50 hover:border-blue-400 transition-all group">
+                                <Upload size={20} className="text-blue-400 group-hover:text-blue-600 mb-1 transition-colors" />
+                                <span className="text-xs font-semibold text-blue-500 group-hover:text-blue-700">Add File</span>
+                                <span className="text-[10px] text-gray-400 mt-0.5">IMG or PDF</span>
+                                <input
+                                    type="file"
+                                    className="hidden"
+                                    onChange={handleFileChange}
+                                    accept="image/*,application/pdf"
+                                    multiple
+                                />
                             </label>
-
-                            <div className={`absolute hidden h-full w-full  justify-center items-center ${lockedSubmission ? "flex overlay" : ""}`}>
-                                <p className=''>
-                                    Identify yourself first
-                                </p>
-                            </div>
                         </div>
+
+                        {files && files.length > 0 && (
+                            <p className="text-xs text-gray-500">{files.length} new file{files.length > 1 ? 's' : ''} selected</p>
+                        )}
                     </div>
 
-                    {/* SubmitBTN */}
+                    {/* Security status preview */}
+                    {selectedStudentId && (
+                        <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold border ${
+                            securityStatus === 'Verified'   ? 'bg-emerald-50 border-emerald-200 text-emerald-700' :
+                            securityStatus === 'Unverified' ? 'bg-amber-50 border-amber-200 text-amber-700' :
+                                                              'bg-gray-50 border-gray-200 text-gray-500'
+                        }`}>
+                            {securityStatus === 'Verified'   && <ShieldCheck size={14} />}
+                            {securityStatus === 'Unverified' && <ShieldAlert size={14} />}
+                            {securityStatus === 'None'       && <ShieldOff size={14} />}
+                            This submission will be labelled: <span className="font-bold ml-0.5">{securityStatus}</span>
+                        </div>
+                    )}
+
+                    {/* Submit button */}
                     <button
                         onClick={handleSubmit}
-                        disabled={!selectedStudentId || files?.length === 0 || uploadMutation.isPending}
-                        className="w-full flex cursor-pointer justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all transform active:scale-[0.98]"
+                        disabled={!selectedStudentId || !files || files.length === 0 || uploadMutation.isPending}
+                        className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-md hover:shadow-lg transition-all active:scale-[0.98] disabled:from-gray-300 disabled:to-gray-300 disabled:cursor-not-allowed disabled:shadow-none cursor-pointer"
                     >
                         {uploadMutation.isPending ? (
-                            <div className="flex items-center">
-                                <Loader2 size={18} className="animate-spin mr-2" />
+                            <>
+                                <Loader2 size={16} className="animate-spin" />
                                 Uploading...
-                            </div>
+                            </>
                         ) : (
-                            "Submit Homework"
+                            <>
+                                <Send size={16} />
+                                Submit Homework
+                            </>
                         )}
                     </button>
-                </div>
-            </div>
 
+                    {/* Unverified notice below button */}
+                    {isFaceAuthEnable && !faceVerified && selectedStudentId && (
+                        <p className="text-center text-xs text-amber-600 flex items-center justify-center gap-1">
+                            <AlertTriangle size={12} />
+                            Submitting without face verification will flag this as <strong className="mx-0.5">Unverified</strong>.
+                        </p>
+                    )}
+                </div>
+
+                <p className="text-center text-xs text-gray-400 pb-4">
+                    Powered by TutorDesk • Secure homework submission
+                </p>
+            </main>
+
+            {/* Face Auth Modal */}
             {isDetecting && isFaceAuthEnable && selectedStudent && (
                 <FaceRecognitionAuth
                     isOpen={isDetecting}
@@ -258,4 +370,4 @@ function AssignmentForm() {
     );
 }
 
-export default AssignmentForm
+export default AssignmentForm;
