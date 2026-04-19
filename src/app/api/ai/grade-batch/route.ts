@@ -10,16 +10,27 @@ const studentResultSchema: Schema = {
             type: SchemaType.STRING,
             description: "The unique ID of the student homework submission provided in the prompt header"
         },
+        is_readable: {
+            type: SchemaType.BOOLEAN,
+            description: "Whether the submission image(s) are clear enough to grade accurately. Set to false if the image is blurry, too dark, illegible, or handwriting is impossible to read.",
+            nullable: false
+        },
+        confidence_score: {
+            type: SchemaType.NUMBER,
+            description: "Your confidence level (0-100) in the grading result. 0 means completely unreadable, 100 means perfectly clear. If is_readable is false, this should be below 40.",
+            nullable: false
+        },
         grade: {
             type: SchemaType.NUMBER,
-            description: "Total score (0-100)"
+            description: "Total score (0-100). Set to 0 if is_readable is false."
         },
         feedback: {
             type: SchemaType.STRING,
-            description: "Overall constructive feedback"
+            description: "Overall constructive feedback. If is_readable is false, explain why the image cannot be graded."
         },
         questions: {
             type: SchemaType.ARRAY,
+            description: "Return empty array if is_readable is false.",
             items: {
                 type: SchemaType.OBJECT,
                 properties: {
@@ -32,7 +43,7 @@ const studentResultSchema: Schema = {
             }
         }
     },
-    required: ["student_homework_id", "grade", "feedback", "questions"]
+    required: ["student_homework_id", "is_readable", "confidence_score", "grade", "feedback", "questions"]
 };
 
 const batchGradingSchema: Schema = {
@@ -60,14 +71,19 @@ export async function POST(req: Request) {
 
         const systemInstructions = `
             You are a strict but fair teaching assistant grading multiple student submissions.
+
+            CRITICAL RULE — IMAGE READABILITY:
+            For EACH student submission, FIRST assess whether the image(s) are readable:
+            - If the image is blurry, too dark, overexposed, or the handwriting is impossible to read → set is_readable: false, confidence_score below 40, grade: 0, questions: [], and explain in feedback.
+            - NEVER fabricate or guess answers when you cannot clearly read the student's work. Flag it for manual review instead.
+            - Only grade (is_readable: true) when you can clearly read the submission.
             
             TASK:
             1. I will provide an Answer Key.
             2. I will provide submissions for multiple students. Each submission is marked with a "Student Homework ID".
             3. For EACH student:
-               - Analyze their images against the Answer Key.
-               - Calculate the total grade (0-100).
-               - Provide a breakdown for each question.
+               - Assess image readability first (see CRITICAL RULE above).
+               - If readable: analyze their images against the Answer Key, calculate the total grade (0-100), provide a breakdown for each question.
                - IMPORTANT: Return the "student_homework_id" exactly as it appears in the prompt so I can match the grade to the correct student.
             
             --- ANSWER KEY START ---

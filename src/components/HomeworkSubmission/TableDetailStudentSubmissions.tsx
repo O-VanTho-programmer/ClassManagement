@@ -110,9 +110,29 @@ export default function TableDetailStudentSubmissions({
                     if (aiRes?.status === 200 && aiRes.data) {
                         const submissionsRes = aiRes.data;
 
-                        for (let submission of submissionsRes) {
-                            const { grade, feedback, questions } = submission;
-                            await saveGradeAndStudentHomeworkQuestion(submission.student_homework_id, grade, feedback, questions, true);
+                        for (const submission of submissionsRes) {
+                            const { grade, feedback, questions, is_readable } = submission;
+
+                            if (is_readable === false) {
+                                // Flag as NeedsReview — do NOT save a fabricated grade
+                                await saveGradeAndStudentHomeworkQuestion(
+                                    submission.student_homework_id,
+                                    0,
+                                    feedback || "Image unreadable",
+                                    [],
+                                    true,
+                                    false // isReadable
+                                );
+                            } else {
+                                await saveGradeAndStudentHomeworkQuestion(
+                                    submission.student_homework_id,
+                                    grade,
+                                    feedback,
+                                    questions,
+                                    true,
+                                    true
+                                );
+                            }
                         }
 
                         queryClient.invalidateQueries({ queryKey: ['student_homework_question_by_class_homework_id', class_homework_id] })
@@ -185,6 +205,10 @@ export default function TableDetailStudentSubmissions({
                                         case 'GradeAI':
                                             statusColor = 'bg-purple-100 text-purple-700';
                                             statusText = 'AI Grade';
+                                            break;
+                                        case 'NeedsReview':
+                                            statusColor = 'bg-amber-100 text-amber-700 border border-amber-200';
+                                            statusText = 'Need Review!';
                                             break;
                                         case 'Late':
                                             statusColor = 'bg-orange-100 text-orange-700';

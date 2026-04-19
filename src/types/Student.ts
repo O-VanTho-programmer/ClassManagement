@@ -67,6 +67,8 @@ type StudentWithHomework = Student & {
     is_graded_by_ai: boolean,
     grade: number | 0,
     feedback?: string,
+    confidence_score?: number,
+    is_readable?: boolean,
 }
 
 type StudentWithHomeworkPublic = Student & {

@@ -5,22 +5,32 @@ import { checkPermission, PERMISSIONS } from "@/lib/permissions";
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 const gradingSchema: Schema = {
-    description: "Grading result with detailed breakdown per question",
+    description: "Grading result with detailed breakdown per question, including image readability assessment",
     type: SchemaType.OBJECT,
     properties: {
+        is_readable: {
+            type: SchemaType.BOOLEAN,
+            description: "Whether the submission image(s) are clear enough to grade accurately. Set to false if the image is blurry, too dark, illegible, or handwriting is impossible to read.",
+            nullable: false
+        },
+        confidence_score: {
+            type: SchemaType.NUMBER,
+            description: "Your confidence level (0-100) in the grading result. 0 means completely unreadable, 100 means perfectly clear. If is_readable is false, this should be below 40.",
+            nullable: false
+        },
         grade: {
             type: SchemaType.NUMBER,
-            description: "Overall calculated score (0-100)",
+            description: "Overall calculated score (0-100). Set to 0 if is_readable is false.",
             nullable: false
         },
         feedback: {
             type: SchemaType.STRING,
-            description: "Overall constructive feedback summary.",
+            description: "Overall constructive feedback summary. If is_readable is false, explain why the image cannot be graded.",
             nullable: false
         },
         questions: {
             type: SchemaType.ARRAY,
-            description: "List of grades for each specific question found in the answer key",
+            description: "List of grades for each specific question found in the answer key. Return empty array if is_readable is false.",
             items: {
                 type: SchemaType.OBJECT,
                 properties: {
@@ -45,7 +55,7 @@ const gradingSchema: Schema = {
             },
         },
     },
-    required: ["grade", "feedback", "questions"],
+    required: ["is_readable", "confidence_score", "grade", "feedback", "questions"],
 };
 
 export async function POST(req: Request) {
@@ -73,9 +83,15 @@ export async function POST(req: Request) {
         });
 
         const promptText = `
-            You are a strict but fair teaching assistant.
-      
-            TASK:
+            You are a strict but fair teaching assistant grading student homework.
+
+            CRITICAL FIRST STEP — IMAGE READABILITY CHECK:
+            Before grading, assess the quality of the submitted image(s):
+            - If the image is blurry, too dark, overexposed, or the handwriting is impossible to read → set is_readable: false, confidence_score below 40, grade: 0, questions: [], and explain in feedback why it cannot be graded.
+            - NEVER fabricate or guess answers when you cannot clearly read the student's work. It is better to flag the submission for manual review than to invent a grade.
+            - If the image is legible, proceed with grading normally and set is_readable: true.
+
+            GRADING TASK (only if is_readable is true):
             1. Analyze the attached student homework images.
             2. Compare them against the Answer Key below.
             3. For EACH question defined in the answer key:

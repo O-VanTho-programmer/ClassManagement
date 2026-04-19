@@ -1,4 +1,4 @@
-import { CheckCircle, FileImage, Loader2, X } from "lucide-react";
+import { AlertTriangle, CheckCircle, FileImage, Loader2, X } from "lucide-react";
 import { useState } from "react";
 import IconButton from "../IconButton/IconButton";
 import { addStudentHomeworkQuestion } from "@/lib/api/addStudentHomeworkQuestion";
@@ -38,7 +38,9 @@ export default function SubmissionDetailsModal({
         setFeedback,
         gradeBooks,
         handleAutoGrade,
-        handleUpdateGradeBooks
+        handleUpdateGradeBooks,
+        isUnreadable,
+        confidenceScore,
     } = useAutoGradeWithAI(submission, studentQuestionBreakdown);
 
     const [showKey, setShowKey] = useState(false);
@@ -66,19 +68,32 @@ export default function SubmissionDetailsModal({
     };
 
     const isAIGraded = submission.homework_status === 'GradeAI';
+    const isNeedsReview = submission.homework_status === 'NeedsReview';
 
     if (!isOpen) return null;
+
+    // Determine confidence badge color
+    const getConfidenceBadge = (score: number) => {
+        if (score >= 80) return { color: 'bg-green-100 text-green-700 border-green-200', label: 'High' };
+        if (score >= 50) return { color: 'bg-yellow-100 text-yellow-700 border-yellow-200', label: 'Medium' };
+        return { color: 'bg-red-100 text-red-700 border-red-200', label: 'Low' };
+    };
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center overlay transition-opacity duration-300">
             <div className="bg-white rounded-xl shadow-2xl w-full max-w-6xl m-4 transform transition-all duration-300 flex flex-col max-h-[95vh]">
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 flex-wrap">
                         <h2 className="text-xl font-bold text-gray-800">Grade Submission: {submission.name}</h2>
                         {isAIGraded && (
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-700">
                                 ✨ AI Graded – Pending Approval
+                            </span>
+                        )}
+                        {isNeedsReview && (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">
+                                Need Review!
                             </span>
                         )}
                     </div>
@@ -124,6 +139,28 @@ export default function SubmissionDetailsModal({
 
                     <div className="overflow-y-auto p-6 flex flex-col space-y-4">
 
+                        {/* Unreadable Image Warning Banner */}
+                        {isUnreadable && (
+                            <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-300 rounded-lg text-amber-800 animate-pulse-once">
+                                <AlertTriangle size={20} className="mt-0.5 flex-shrink-0 text-amber-500" />
+                                <div>
+                                    <p className="font-semibold text-sm">Ảnh mờ – Yêu cầu giáo viên chấm tay</p>
+                                    <p className="text-xs mt-0.5 text-amber-700">AI không thể đọc rõ bài làm. Hệ thống đã gắn cờ bài này. Vui lòng chấm thủ công hoặc yêu cầu học sinh nộp lại ảnh rõ hơn.</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* NeedsReview status banner (from DB) */}
+                        {isNeedsReview && !isUnreadable && (
+                            <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-300 rounded-lg text-amber-800">
+                                <AlertTriangle size={20} className="mt-0.5 flex-shrink-0 text-amber-500" />
+                                <div>
+                                    <p className="font-semibold text-sm">Ảnh mờ – Yêu cầu giáo viên chấm tay</p>
+                                    <p className="text-xs mt-0.5 text-amber-700">AI đã phát hiện ảnh không đọc được khi chấm hàng loạt. Vui lòng chấm thủ công.</p>
+                                </div>
+                            </div>
+                        )}
+
                         <button
                             onClick={() => handleAutoGrade(submission.submission_urls, answerKey)}
                             disabled={isGrading || !answerKey || !submission.submission_urls}
@@ -140,6 +177,22 @@ export default function SubmissionDetailsModal({
                         </button>
 
                         {!answerKey && <p className="text-xs text-red-500">⚠️ Please set an Answer Key first.</p>}
+
+                        {/* Confidence Score Badge */}
+                        {confidenceScore !== null && (
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs text-gray-500 font-medium">AI Confidence:</span>
+                                <div className="flex-1 bg-gray-200 rounded-full h-2 overflow-hidden">
+                                    <div
+                                        className={`h-2 rounded-full transition-all duration-500 ${confidenceScore >= 80 ? 'bg-green-500' : confidenceScore >= 50 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                                        style={{ width: `${confidenceScore}%` }}
+                                    />
+                                </div>
+                                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${getConfidenceBadge(confidenceScore).color}`}>
+                                    {confidenceScore}% – {getConfidenceBadge(confidenceScore).label}
+                                </span>
+                            </div>
+                        )}
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700">Total Grade</label>
@@ -212,4 +265,3 @@ export default function SubmissionDetailsModal({
         </div>
     );
 }
-

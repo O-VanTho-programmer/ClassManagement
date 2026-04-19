@@ -6,9 +6,12 @@ import type { PoolConnection } from "mysql2/promise";
 export async function POST(req: Request) {
     let connection: PoolConnection | undefined;
     try {
-        const { studentHomeworkId, grade, feedback, questions, isGradedByAI } = await req.json();
+        const { studentHomeworkId, grade, feedback, questions, isGradedByAI, isReadable } = await req.json();
 
-        if (!studentHomeworkId || !grade || !feedback || !questions) {
+        // isReadable === false means the AI flagged this as blurry/unreadable
+        const isUnreadable = isReadable === false;
+
+        if (!studentHomeworkId || (!isUnreadable && (grade === undefined || grade === null || !feedback || !questions))) {
             return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
         }
 
@@ -37,6 +40,19 @@ export async function POST(req: Request) {
             return permissionCheck;
         }
 
+        if (isUnreadable) {
+            // Image is unreadable: flag the submission for manual review, do NOT save grade
+            await connection.query(`
+                UPDATE student_homework 
+                SET Status = 'NeedsReview', IsGradedByAI = 1, IsGraded = 0
+                WHERE StudentHomeworkId = ?
+            `, [studentHomeworkId]);
+
+            await connection.commit();
+            return NextResponse.json({ message: "Submission flagged for manual review due to unreadable image" }, { status: 200 });
+        }
+
+        // Image is readable: save grade normally
         // If graded by AI, set Status = 'GradeAI'; otherwise set Status = 'Graded'
         const newStatus = isGradedByAI ? 'GradeAI' : 'Graded';
         const gradedByAIValue = isGradedByAI ? 1 : 0;
@@ -81,4 +97,4 @@ export async function POST(req: Request) {
     } finally {
         if (connection) connection.release();
     }
-}
+}

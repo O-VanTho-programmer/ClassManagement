@@ -5,7 +5,8 @@ export async function saveGradeAndStudentHomeworkQuestion(
     grade: number,
     feedback: string,
     questions: StudentHomeworkQuestionsInputDTO[],
-    isGradedByAI: boolean = false
+    isGradedByAI: boolean = false,
+    isReadable: boolean = true
 ) {
     try {
         const res = await api.post('save_grade_feedback_and_homework_question', {
@@ -13,7 +14,8 @@ export async function saveGradeAndStudentHomeworkQuestion(
             grade,
             feedback,
             questions,
-            isGradedByAI
+            isGradedByAI,
+            isReadable
         });
 
         console.log("Grade and feedback and homework questions saved", res.data);

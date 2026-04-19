@@ -34,6 +34,9 @@ export default function TableStudentSubmissions({
                     if (submission.homework_status === 'GradeAI') {
                         badgeColor = 'bg-purple-100 text-purple-800';
                         badgeText = 'AI Grade';
+                    } else if (submission.homework_status === 'NeedsReview') {
+                        badgeColor = 'bg-amber-100 text-amber-800 border border-amber-200';
+                        badgeText = 'Need Review!';
                     } else if (isGraded) {
                         if (isLate) {
                             badgeColor = 'bg-orange-100 text-orange-800';
