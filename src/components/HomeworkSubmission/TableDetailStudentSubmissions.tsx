@@ -82,8 +82,8 @@ export default function TableDetailStudentSubmissions({
         setIsGrading(true);
 
         try {
-            const validSubmissions: {studentId: string, submission: StudentWithHomework}[] = [];
-            
+            const validSubmissions: { studentId: string, submission: StudentWithHomework }[] = [];
+
             for (const student of students_homework_questions) {
                 const submission = mapStudentSubmissionList.get(student.student_id);
                 if (submission && submission.submission_urls && submission.submission_urls.length > 0) {
@@ -112,7 +112,7 @@ export default function TableDetailStudentSubmissions({
 
                         for (let submission of submissionsRes) {
                             const { grade, feedback, questions } = submission;
-                            await saveGradeAndStudentHomeworkQuestion(submission.student_homework_id, grade, feedback, questions);
+                            await saveGradeAndStudentHomeworkQuestion(submission.student_homework_id, grade, feedback, questions, true);
                         }
 
                         queryClient.invalidateQueries({ queryKey: ['student_homework_question_by_class_homework_id', class_homework_id] })
@@ -181,6 +181,10 @@ export default function TableDetailStudentSubmissions({
                                         case 'Finished':
                                         case 'Graded':
                                             statusColor = 'bg-green-100 text-green-700';
+                                            break;
+                                        case 'GradeAI':
+                                            statusColor = 'bg-purple-100 text-purple-700';
+                                            statusText = 'AI Grade';
                                             break;
                                         case 'Late':
                                             statusColor = 'bg-orange-100 text-orange-700';

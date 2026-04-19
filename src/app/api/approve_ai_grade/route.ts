@@ -6,17 +6,17 @@ import type { PoolConnection } from "mysql2/promise";
 export async function POST(req: Request) {
     let connection: PoolConnection | undefined;
     try {
-        const { studentHomeworkId, grade, feedback, questions, isGradedByAI } = await req.json();
+        const { studentHomeworkId } = await req.json();
 
-        if (!studentHomeworkId || !grade || !feedback || !questions) {
-            return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
+        if (!studentHomeworkId) {
+            return NextResponse.json({ message: "Missing studentHomeworkId" }, { status: 400 });
         }
 
         connection = await pool.getConnection();
         await connection.beginTransaction();
 
         const [studentHomework]: any[] = await connection.query(`
-            SELECT h.HubId 
+            SELECT h.HubId, sh.Status
             FROM student_homework sh
             JOIN class_homework ch ON sh.ClassHomeworkId = ch.ClassHomeworkId
             JOIN homework h ON ch.HomeworkId = h.HomeworkId
@@ -37,46 +37,25 @@ export async function POST(req: Request) {
             return permissionCheck;
         }
 
-        // If graded by AI, set Status = 'GradeAI'; otherwise set Status = 'Graded'
-        const newStatus = isGradedByAI ? 'GradeAI' : 'Graded';
-        const gradedByAIValue = isGradedByAI ? 1 : 0;
+        // Only allow approval if currently GradeAI
+        if (studentHomework[0].Status !== 'GradeAI') {
+            await connection.rollback();
+            return NextResponse.json({ message: "Submission is not pending AI grade approval" }, { status: 400 });
+        }
 
         await connection.query(`
             UPDATE student_homework 
-            SET Grade = ?, Feedback = ?, IsGraded = 1, Status = ?, IsGradedByAI = ?
+            SET Status = 'Graded', IsGradedByAI = 0, IsGraded = 1
             WHERE StudentHomeworkId = ?
-        `, [grade, feedback, newStatus, gradedByAIValue, studentHomeworkId]);
-
-        if (Array.isArray(questions) && questions.length > 0) {
-            await connection.query(
-                `DELETE FROM student_homework_question WHERE StudentHomeworkId = ?`,
-                [studentHomeworkId]
-            );
-
-            const values = questions.map((q: StudentHomeworkQuestionsInputDTO) => [
-                studentHomeworkId,
-                q.question_number,
-                q.grade,
-                q.max_grade,
-                q.feed_back
-            ]);
-
-            await connection.query(
-                `INSERT INTO student_homework_question 
-                (StudentHomeworkId, QuestionNumber, Grade, MaxGrade, FeedBack) 
-                VALUES ?`,
-                [values]
-            );
-        }
+        `, [studentHomeworkId]);
 
         await connection.commit();
 
-        return NextResponse.json({ message: "Success" }, { status: 200 });
+        return NextResponse.json({ message: "AI grade approved successfully" }, { status: 200 });
 
     } catch (error: any) {
         if (connection) await connection.rollback();
-
-        console.error("Save Questions Error:", error);
+        console.error("Approve AI Grade Error:", error);
         return NextResponse.json({ message: "Internal Server Error", error: error.message }, { status: 500 });
     } finally {
         if (connection) connection.release();

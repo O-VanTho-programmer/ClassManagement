@@ -17,6 +17,7 @@ import { useGetStudentListByAssignmentId } from '@/hooks/useGetStudentListByAssi
 import { useHasPermission } from '@/hooks/useHasPermission';
 import { useUploadSubmissionMutation } from '@/hooks/useUploadSubmission';
 import { getUrlImageByUploadOnCloudiary } from '@/lib/api/getUrlImageByUploadOnCloudiary';
+import { approveAIGrade } from '@/lib/api/HomeworkSubmission/approveAIGrade';
 import { saveAnswerKey } from '@/lib/api/HomeworkSubmission/saveAnswerKey';
 import { saveGrade } from '@/lib/api/HomeworkSubmission/saveGrade';
 import { saveStudentSubmission } from '@/lib/api/HomeworkSubmission/saveStudentSubmission';
@@ -58,7 +59,7 @@ function HomeworkSubmissionPage() {
       queryClient.invalidateQueries({ queryKey: ['homework', homework_id] });
       setKeyModalOpen(false);
     },
-    onError: (error: Error) => alert(`Error saving key: ${error.message}`)
+    onError: (error: Error) => showAlert(`Error saving key: ${error.message}`, 'error')
   });
 
   const uploadMutation = useUploadSubmissionMutation(
@@ -75,8 +76,21 @@ function HomeworkSubmissionPage() {
         showAlert("Grade saved successfully", 'success');
         setGradingModalOpen(false);
       } else {
-        alert('Error saving grade');
+        showAlert('Notthing changed', 'warning');
       }
+    }
+  });
+
+  const approveAIGradeMutation = useMutation({
+    mutationFn: () => approveAIGrade(selectedSubmission!.student_homework_id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['get_student_list_by_assignment_id', assignment_id] });
+      queryClient.invalidateQueries({ queryKey: ['student_homework_question_by_class_homework_id', assignment_id] });
+      showAlert("AI grade approved successfully", 'success');
+      setGradingModalOpen(false);
+    },
+    onError: () => {
+      showAlert("Failed to approve AI grade", 'error');
     }
   });
 
@@ -249,7 +263,9 @@ function HomeworkSubmissionPage() {
           studentQuestionBreakdown={selectedStudentHomeworkQuestion?.questions || []}
           answerKey={answerKey}
           onSaveGrade={(grade, feedback) => saveGradeMutation.mutate({ grade, feedback })}
+          onApproveAIGrade={() => approveAIGradeMutation.mutate()}
           isSaving={saveGradeMutation.isPending}
+          isApprovingAI={approveAIGradeMutation.isPending}
         />
       )}
     </div>

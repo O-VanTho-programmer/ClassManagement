@@ -39,6 +39,7 @@ export async function GET(req: Request) {
 				sh.UploadSubmission AS submission_urls,
                 sh.SubmittedDate AS submitted_date,
                 sh.IsGraded AS is_graded,
+                COALESCE(sh.IsGradedByAI, 0) AS is_graded_by_ai,
                 sh.Grade AS grade,
                 sh.Feedback AS feedback
             FROM student_homework sh

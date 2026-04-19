@@ -22,7 +22,7 @@ interface StudentInputDto {
     birthday: string,
 }
 
-interface StudentWithClasses extends Student{
+interface StudentWithClasses extends Student {
     classes: {
         class_id: string,
         class_name: string,
@@ -64,6 +64,7 @@ type StudentWithHomework = Student & {
     assigned_date: string,
     due_date: string,
     is_graded: boolean,
+    is_graded_by_ai: boolean,
     grade: number | 0,
     feedback?: string,
 }
@@ -87,6 +88,7 @@ type StudentHomeworkQuestions = {
     student_homework_id: string,
     total_score: number | null,
     homework_status: string,
+    is_graded_by_ai: boolean,
     feedback: string | null,
     questions: StudentHomeworkQuestion[]; //ith question, grade of ith question
 }

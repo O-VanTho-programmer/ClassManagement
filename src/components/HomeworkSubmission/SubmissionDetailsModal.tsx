@@ -1,4 +1,4 @@
-import { FileImage, Loader2, X } from "lucide-react";
+import { CheckCircle, FileImage, Loader2, X } from "lucide-react";
 import { useState } from "react";
 import IconButton from "../IconButton/IconButton";
 import { addStudentHomeworkQuestion } from "@/lib/api/addStudentHomeworkQuestion";
@@ -13,7 +13,9 @@ interface SubmissionDetailsModalProps {
     studentQuestionBreakdown: StudentHomeworkQuestionsInputDTO[] | null;
     answerKey: string;
     onSaveGrade: (grade: number, feedback: string) => void;
+    onApproveAIGrade?: () => void;
     isSaving: boolean;
+    isApprovingAI?: boolean;
 }
 
 export default function SubmissionDetailsModal({
@@ -22,7 +24,9 @@ export default function SubmissionDetailsModal({
     submission,
     answerKey,
     onSaveGrade,
+    onApproveAIGrade,
     isSaving,
+    isApprovingAI,
     studentQuestionBreakdown
 }: SubmissionDetailsModalProps) {
 
@@ -61,6 +65,8 @@ export default function SubmissionDetailsModal({
         }
     };
 
+    const isAIGraded = submission.homework_status === 'GradeAI';
+
     if (!isOpen) return null;
 
     return (
@@ -68,7 +74,14 @@ export default function SubmissionDetailsModal({
             <div className="bg-white rounded-xl shadow-2xl w-full max-w-6xl m-4 transform transition-all duration-300 flex flex-col max-h-[95vh]">
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b">
-                    <h2 className="text-xl font-bold text-gray-800">Grade Submission: {submission.name}</h2>
+                    <div className="flex items-center gap-3">
+                        <h2 className="text-xl font-bold text-gray-800">Grade Submission: {submission.name}</h2>
+                        {isAIGraded && (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-700">
+                                ✨ AI Graded – Pending Approval
+                            </span>
+                        )}
+                    </div>
                     <IconButton icon={X} onClick={onClose} size={20} className='p-2 rounded-full text-gray-400 hover:bg-gray-100' />
                 </div>
 
@@ -176,6 +189,16 @@ export default function SubmissionDetailsModal({
                         onClick={onClose}
                         color="white"
                     />
+                    {isAIGraded && onApproveAIGrade && (
+                        <button
+                            onClick={onApproveAIGrade}
+                            disabled={isApprovingAI || isSaving || isSavingQuestions}
+                            className="px-6 py-2 cursor-pointer bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-md hover:from-purple-600 hover:to-indigo-700 disabled:bg-gray-400 disabled:from-gray-400 flex items-center gap-2 font-medium shadow-md"
+                        >
+                            {isApprovingAI ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />}
+                            Approve AI Grade
+                        </button>
+                    )}
                     <button
                         onClick={handleSave}
                         disabled={isGrading || isSaving || isSavingQuestions}
@@ -189,3 +212,4 @@ export default function SubmissionDetailsModal({
         </div>
     );
 }
+

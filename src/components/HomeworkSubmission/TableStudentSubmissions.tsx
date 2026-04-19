@@ -8,7 +8,7 @@ type TableStudentSubmissionsProps = {
 
 }
 
-export default function TableStudentSubmissions({ 
+export default function TableStudentSubmissions({
     studentSubmissionsList,
     handleOpenGrader,
     handleOpenUpload
@@ -31,7 +31,10 @@ export default function TableStudentSubmissions({
                     let badgeColor = 'bg-gray-100 text-gray-800';
                     let badgeText = submission.homework_status;
 
-                    if (isGraded) {
+                    if (submission.homework_status === 'GradeAI') {
+                        badgeColor = 'bg-purple-100 text-purple-800';
+                        badgeText = 'AI Grade';
+                    } else if (isGraded) {
                         if (isLate) {
                             badgeColor = 'bg-orange-100 text-orange-800';
                             badgeText = 'Graded (Late)';
