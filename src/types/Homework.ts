@@ -2,6 +2,7 @@ interface HomeworkInputDto {
     hub_id: string,
     title: string,
     content: string,
+    answer_key: string,
     created_by_user_id: string
 }
 

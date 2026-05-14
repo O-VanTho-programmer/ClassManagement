@@ -8,6 +8,7 @@ export async function POST(req: Request) {
             hub_id,
             title,
             content,
+            answer_key,
             created_by_user_id
         } = await req.json();
         
@@ -18,11 +19,11 @@ export async function POST(req: Request) {
         }
 
         const query = `
-        INSERT INTO homework (HubId, Title, Content, CreatedByUserId)
-        VALUES (? , ?, ?, ?);
+        INSERT INTO homework (HubId, Title, Content, AnswerKey, CreatedByUserId)
+        VALUES (?, ?, ?, ?, ?);
         `;
 
-        await pool.query(query, [hub_id, title, content, created_by_user_id]);
+        await pool.query(query, [hub_id, title, content, answer_key, created_by_user_id]);
 
         return NextResponse.json({message: "Success"}, {status: 200});
     } catch (error) {

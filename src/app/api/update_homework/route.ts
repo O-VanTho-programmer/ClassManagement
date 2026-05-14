@@ -4,7 +4,7 @@ import { checkPermission, PERMISSIONS, getHubIdFromHomeworkId } from "@/lib/perm
 
 export async function PUT(req:Request) {
     try {
-        const {title, content, homeworkId} = await req.json();
+        const {title, content, answerKey, homeworkId} = await req.json();
         
         // Get hubId from homeworkId and check permission
         const hubId = await getHubIdFromHomeworkId(homeworkId);
@@ -19,11 +19,11 @@ export async function PUT(req:Request) {
 
         const queryUpdateHomework = `
             UPDATE homework
-            SET Title = ?, Content = ?, UpdatedDate = NOW()
+            SET Title = ?, Content = ?, AnswerKey = ?, UpdatedDate = NOW()
             WHERE HomeworkId = ?
         `;
 
-        const [result] = await pool.query(queryUpdateHomework, [title, content, homeworkId]);
+        const [result] = await pool.query(queryUpdateHomework, [title, content, answerKey, homeworkId]);
         
         return NextResponse.json({ message: "Homework data updated successfully", result }, { status: 200 });
     } catch (error) {

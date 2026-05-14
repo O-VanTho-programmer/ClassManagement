@@ -1,8 +1,8 @@
 import api from "../axios";
 
-export async function updateHomework(title: string, content: string, homeworkId: string) {
+export async function updateHomework(title: string, content: string, answerKey: string, homeworkId: string) {
     try {
-        const res = await api.put('/update_homework', { title, content, homeworkId });
+        const res = await api.put('/update_homework', { title, content, answerKey, homeworkId });
         console.log('Update homework response:', res);
         return res;
     } catch (error) {
