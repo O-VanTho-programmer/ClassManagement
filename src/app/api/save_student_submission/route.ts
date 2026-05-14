@@ -41,10 +41,10 @@ export async function POST(req: Request) {
         const dueDateHomework = new Date(dueDate);
         const currentDate = new Date();
 
-        let statusSubmission = 'Submitted';
+        let timingStatus = 'InTime';
 
         if (dueDateHomework < currentDate) {
-            statusSubmission = 'Overdue';
+            timingStatus = 'Overdue';
         }
 
         // Delete old images if they exist (before updating the database)
@@ -77,12 +77,13 @@ export async function POST(req: Request) {
             UPDATE student_homework 
             SET 
                 UploadSubmission = ?,
-                Status = ?,
+                Status = 'Submitted',
+                TimingStatus = ?,
                 SubmittedDate = NOW()
             WHERE StudentHomeworkId = ?
         `;
 
-        await connection.query(querySaveStudentSubmission, [jsonUrlsList, statusSubmission, studentHomeworkId]);
+        await connection.query(querySaveStudentSubmission, [jsonUrlsList, timingStatus, studentHomeworkId]);
 
         await connection.commit();
 

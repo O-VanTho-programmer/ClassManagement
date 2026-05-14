@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { Loader2, Camera, CheckCircle, XCircle, X, AlertTriangle } from 'lucide-react';
+import { Loader2, ScanFace, CheckCircle, XCircle, X, AlertTriangle } from 'lucide-react';
 import { startVideo } from '@/utils/face-recognition/startVideoCamera';
 import { useFaceWorker } from '@/hooks/useFaceWork';
 
 interface FaceRecognitionAuthProps {
+  studentName?: string;
   studentDescriptor: number[] | string | null;
   onAuthenticated: () => void;
   isOpen: boolean;
@@ -13,6 +14,7 @@ interface FaceRecognitionAuthProps {
 }
 
 export default function FaceRecognitionAuth({
+  studentName,
   studentDescriptor,
   isOpen,
   onAuthenticated,
@@ -41,7 +43,6 @@ export default function FaceRecognitionAuth({
     }
   }, [studentDescriptor]);
 
-  // ─── Web Worker ───────────────────────────────────────────────────────────
   const { detectFace } = useFaceWorker({
     onModelsLoaded: () => {
       setIsModelsLoaded(true);
@@ -68,7 +69,6 @@ export default function FaceRecognitionAuth({
       setIsScanning(false);
     },
   });
-  // ─────────────────────────────────────────────────────────────────────────
 
   // Cleanup camera stream
   const cleanupCamera = useCallback(() => {
@@ -180,10 +180,10 @@ export default function FaceRecognitionAuth({
         {/* Header */}
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg shadow-blue-500/30 mb-3">
-            <Camera className="text-white" size={24} />
+            <ScanFace className="text-white" size={24} />
           </div>
           <h3 className="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
-            Face Recognition
+            {studentName ? `Verifying ${studentName}` : 'Face Recognition'}
           </h3>
           <p className="text-sm text-gray-500 mt-1">Position your face in the frame</p>
         </div>
@@ -233,7 +233,7 @@ export default function FaceRecognitionAuth({
                     {/* Center icon */}
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="bg-blue-500/20 backdrop-blur-md p-4 rounded-full border border-blue-400/30">
-                        <Camera className="text-blue-300" size={32} />
+                        <ScanFace className="text-blue-300" size={32} />
                       </div>
                     </div>
 

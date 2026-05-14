@@ -61,6 +61,8 @@ type StudentWithHomework = Student & {
     homework_status: string,
     submission_urls?: ResultUpload[],
     submitted_date: string,
+    needs_review: boolean,
+    timing_status: 'InTime' | 'Overdue' | null,
     assigned_date: string,
     due_date: string,
     is_graded: boolean,
@@ -77,6 +79,8 @@ type StudentWithHomeworkPublic = Student & {
     homework_status: string;
     submission_urls: ResultUpload[];
     submitted_date: string;
+    needs_review: boolean;
+    timing_status: 'InTime' | 'Overdue' | null;
     is_graded: boolean;
     face_descriptor?: string,
 }
@@ -91,6 +95,8 @@ type StudentHomeworkQuestions = {
     student_homework_id: string,
     total_score: number | null,
     homework_status: string,
+    needs_review: boolean,
+    timing_status: 'InTime' | 'Overdue' | null,
     is_graded_by_ai: boolean,
     feedback: string | null,
     questions: StudentHomeworkQuestion[]; //ith question, grade of ith question

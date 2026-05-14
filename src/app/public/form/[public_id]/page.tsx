@@ -101,7 +101,8 @@ function AssignmentForm() {
         setFaceVerified(false);
         setSelectedStudentId(studentId);
 
-        if (isFaceAuthEnable) {
+        const student = studentLists?.find(s => s.id.toString() === studentId);
+        if (isFaceAuthEnable && student?.face_descriptor) {
             setIsDetecting(true);
         }
     };
@@ -229,18 +230,33 @@ function AssignmentForm() {
 
                     {/* Face verify action — show after picking student when not yet verified */}
                     {selectedStudentId && isFaceAuthEnable && !faceVerified && (
-                        <div className="flex items-center gap-3 p-3 bg-amber-50 border border-amber-200 rounded-xl">
-                            <ShieldAlert size={18} className="text-amber-500 flex-shrink-0" />
-                            <div className="flex-1 min-w-0">
-                                <p className="text-xs font-semibold text-amber-800">Not verified yet</p>
-                                <p className="text-xs text-amber-700">Verify now for a Verified submission, or skip to submit as Unverified.</p>
-                            </div>
-                            <button
-                                onClick={() => setIsDetecting(true)}
-                                className="flex-shrink-0 text-xs font-semibold text-white bg-amber-500 hover:bg-amber-600 px-3 py-1.5 rounded-lg transition cursor-pointer"
-                            >
-                                Verify Face
-                            </button>
+                        <div className={`flex items-center gap-3 p-3 rounded-xl border ${selectedStudent?.face_descriptor ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200'}`}>
+                            {selectedStudent?.face_descriptor ? (
+                                <>
+                                    <ShieldAlert size={18} className="text-amber-500 flex-shrink-0" />
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-xs font-semibold text-amber-800">Identity verification recommended</p>
+                                        <p className="text-xs text-amber-700">Verify now for a Verified submission, or skip to submit as Unverified.</p>
+                                    </div>
+                                    <button
+                                        onClick={() => setIsDetecting(true)}
+                                        className="flex-shrink-0 text-xs font-semibold text-white bg-amber-500 hover:bg-amber-600 px-3 py-1.5 rounded-lg transition cursor-pointer"
+                                    >
+                                        Verify Now
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    <ShieldOff size={18} className="text-red-500 flex-shrink-0" />
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-xs font-semibold text-red-800">Face not registered</p>
+                                        <p className="text-xs text-red-700">You haven't registered your face yet. Your submission will be marked as <strong>Unverified</strong>.</p>
+                                    </div>
+                                    <div className="flex-shrink-0 px-3 py-1.5 bg-red-100 text-red-700 text-[10px] font-bold rounded-lg uppercase">
+                                        Skipped
+                                    </div>
+                                </>
+                            )}
                         </div>
                     )}
 
@@ -357,6 +373,7 @@ function AssignmentForm() {
                 <FaceRecognitionAuth
                     isOpen={isDetecting}
                     onClose={() => setIsDetecting(false)}
+                    studentName={selectedStudent.name}
                     studentDescriptor={selectedStudent?.face_descriptor ? (
                         typeof selectedStudent.face_descriptor === 'string'
                             ? selectedStudent.face_descriptor

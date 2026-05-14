@@ -28,7 +28,7 @@ export default function FormSuccess() {
         );
     }
 
-    const isLate = studentHomework.homework_status === 'Late' || studentHomework.homework_status === 'Overdue';
+    const isLate = studentHomework.timing_status === 'Overdue';
     const timingColor = isLate ? 'bg-orange-100 text-orange-700 border-orange-200' : 'bg-emerald-100 text-emerald-700 border-emerald-200';
     const timingLabel = isLate ? 'Late Submission' : 'On Time';
 

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { Edit, Loader2, Sparkles } from 'lucide-react';
+import { Edit, Loader2, ShieldAlert, ShieldCheck, ShieldOff, Sparkles } from 'lucide-react';
 import LoadingState from '../QueryState/LoadingState';
 import ErrorState from '../QueryState/ErrorState';
 import IconButton from '../IconButton/IconButton';
@@ -196,29 +196,27 @@ export default function TableDetailStudentSubmissions({
                                 if (isGradingThisStudent) {
                                     statusColor = "bg-indigo-50 text-indigo-600 border border-indigo-100 animate-pulse";
                                     statusText = "AI Grading...";
+                                } else if (student.is_graded_by_ai) {
+                                    statusColor = 'bg-purple-100 text-purple-700';
+                                    statusText = 'AI Grade';
+                                } else if (student.needs_review) {
+                                    statusColor = 'bg-amber-100 text-amber-700 border border-amber-200';
+                                    statusText = 'Need Review!';
+                                } else if (student.total_score !== null) {
+                                    statusColor = 'bg-green-100 text-green-700';
+                                    statusText = student.timing_status === 'Overdue' ? 'Graded (Late)' : 'Graded';
                                 } else {
                                     switch (student.homework_status) {
-                                        case 'Finished':
-                                        case 'Graded':
-                                            statusColor = 'bg-green-100 text-green-700';
-                                            break;
-                                        case 'GradeAI':
-                                            statusColor = 'bg-purple-100 text-purple-700';
-                                            statusText = 'AI Grade';
-                                            break;
-                                        case 'NeedsReview':
-                                            statusColor = 'bg-amber-100 text-amber-700 border border-amber-200';
-                                            statusText = 'Need Review!';
-                                            break;
-                                        case 'Late':
-                                            statusColor = 'bg-orange-100 text-orange-700';
-                                            break;
                                         case 'Missed':
                                             statusColor = 'bg-red-100 text-red-700';
                                             break;
                                         case 'Submitted':
-                                        case 'Uploaded':
-                                            statusColor = 'bg-blue-100 text-blue-700';
+                                            statusColor = student.timing_status === 'Overdue' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700';
+                                            statusText = student.timing_status === 'Overdue' ? 'Overdue' : 'Submitted';
+                                            break;
+                                        case 'Pending':
+                                        default:
+                                            statusColor = 'bg-yellow-100 text-yellow-700';
                                             break;
                                     }
                                 }
@@ -234,10 +232,22 @@ export default function TableDetailStudentSubmissions({
                                         <td className="px-6 py-4 whitespace-nowrap sticky left-0 bg-inherit z-10 w-64 min-w-[16rem] max-w-[16rem] border-r border-gray-200">
                                             <div className="flex flex-col">
                                                 <span className="text-sm font-medium text-gray-900 overflow-hidden text-ellipsis">{student.student_name}</span>
-                                                <div className="mt-1">
+                                                <div className="mt-1 flex items-center gap-2">
                                                     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${statusColor}`}>
                                                         {statusText}
                                                     </span>
+                                                    {(student.homework_status === 'Submitted' || student.total_score !== null) && student.security_status && (
+                                                        <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                                                            student.security_status === 'Verified'   ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                                                            student.security_status === 'Unverified' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                                                                                                      'bg-gray-50 text-gray-400 border-gray-100'
+                                                        }`}>
+                                                            {student.security_status === 'Verified'   && <ShieldCheck size={10} />}
+                                                            {student.security_status === 'Unverified' && <ShieldAlert size={10} />}
+                                                            {student.security_status === 'None'       && <ShieldOff size={10} />}
+                                                            {student.security_status}
+                                                        </span>
+                                                    )}
                                                 </div>
                                             </div>
                                         </td>

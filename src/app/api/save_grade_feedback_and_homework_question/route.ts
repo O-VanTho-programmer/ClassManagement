@@ -44,7 +44,7 @@ export async function POST(req: Request) {
             // Image is unreadable: flag the submission for manual review, do NOT save grade
             await connection.query(`
                 UPDATE student_homework 
-                SET Status = 'NeedsReview', IsGradedByAI = 1, IsGraded = 0
+                SET NeedsReview = 1, IsGradedByAI = 1, IsGraded = 0
                 WHERE StudentHomeworkId = ?
             `, [studentHomeworkId]);
 
@@ -53,15 +53,14 @@ export async function POST(req: Request) {
         }
 
         // Image is readable: save grade normally
-        // If graded by AI, set Status = 'GradeAI'; otherwise set Status = 'Graded'
-        const newStatus = isGradedByAI ? 'GradeAI' : 'Graded';
+        // Image is readable: save grade normally
         const gradedByAIValue = isGradedByAI ? 1 : 0;
 
         await connection.query(`
             UPDATE student_homework 
-            SET Grade = ?, Feedback = ?, IsGraded = 1, Status = ?, IsGradedByAI = ?
+            SET Grade = ?, Feedback = ?, IsGraded = 1, IsGradedByAI = ?, NeedsReview = 0
             WHERE StudentHomeworkId = ?
-        `, [grade, feedback, newStatus, gradedByAIValue, studentHomeworkId]);
+        `, [grade, feedback, gradedByAIValue, studentHomeworkId]);
 
         if (Array.isArray(questions) && questions.length > 0) {
             await connection.query(

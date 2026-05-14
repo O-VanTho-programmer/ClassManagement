@@ -35,6 +35,8 @@ export async function GET(req:Request) {
                 ch.DueDate as due_date,
                 sh.StudentHomeworkId as student_homework_id,
                 sh.Status as homework_status,
+                sh.NeedsReview as needs_review,
+                sh.TimingStatus as timing_status,
                 sh.SubmittedDate as submitted_date
             FROM student_homework sh
             JOIN student s ON s.StudentId = sh.StudentId

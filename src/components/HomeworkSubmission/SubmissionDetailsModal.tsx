@@ -67,8 +67,8 @@ export default function SubmissionDetailsModal({
         }
     };
 
-    const isAIGraded = submission.homework_status === 'GradeAI';
-    const isNeedsReview = submission.homework_status === 'NeedsReview';
+    const isAIGraded = submission.is_graded_by_ai;
+    const isNeedsReview = submission.needs_review;
 
     if (!isOpen) return null;
 

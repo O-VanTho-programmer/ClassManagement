@@ -35,6 +35,8 @@ export async function GET(req: Request) {
                 sh.Grade as total_score,
                 COALESCE(sh.Status, 'Pending') as status,
                 sh.Feedback as feedback,
+                COALESCE(sh.NeedsReview, 0) as needs_review,
+                sh.TimingStatus as timing_status,
                 COALESCE(sh.IsGradedByAI, 0) as is_graded_by_ai,
                 -- Aggregate questions into a JSON array
                 JSON_ARRAYAGG(
@@ -51,7 +53,7 @@ export async function GET(req: Request) {
             LEFT JOIN student_homework sh ON sh.ClassHomeworkId = ch.ClassHomeworkId AND sh.StudentId = s.StudentId
             LEFT JOIN student_homework_question shq ON shq.StudentHomeworkId = sh.StudentHomeworkId
             WHERE ch.ClassHomeworkId = ?
-            GROUP BY s.StudentId, s.Name, sh.Grade, sh.Status, sh.Feedback, sh.IsGradedByAI
+            GROUP BY s.StudentId, s.Name, sh.Grade, sh.Status, sh.Feedback, sh.IsGradedByAI, sh.NeedsReview, sh.TimingStatus
             ORDER BY s.Name ASC;
         `;
 
@@ -74,6 +76,8 @@ export async function GET(req: Request) {
                 total_score: row.total_score,
                 homework_status: row.status,
                 is_graded_by_ai: !!row.is_graded_by_ai,
+                needs_review: !!row.needs_review,
+                timing_status: row.timing_status,
                 feedback: row.feedback,
                 questions: validQuestion
             }

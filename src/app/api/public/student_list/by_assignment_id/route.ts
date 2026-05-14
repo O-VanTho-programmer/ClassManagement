@@ -32,6 +32,8 @@ export async function GET(req: Request) {
                 sh.IsGraded AS is_graded,
                 sh.Grade AS grade,
                 sh.Feedback AS feedback,
+                sh.NeedsReview AS needs_review,
+                sh.TimingStatus AS timing_status,
                 s.FaceDescriptor AS face_descriptor
             FROM student_homework sh
             JOIN student s ON sh.StudentId = s.StudentId

@@ -37,6 +37,8 @@ export async function GET(req: Request) {
                 sh.Feedback as feedback,
                 sh.UploadSubmission as submission_urls,
                 sh.Status as homework_status,
+                sh.NeedsReview as needs_review,
+                sh.TimingStatus as timing_status,
                 ch.Type as homework_type
             FROM class_student cs
             JOIN student s ON s.StudentId = cs.StudentId
@@ -79,6 +81,8 @@ export async function GET(req: Request) {
                     feedback: student.feedback,
                     submission_urls: student.submission_urls,
                     homework_status: student.homework_status,
+                    needs_review: !!student.needs_review,
+                    timing_status: student.timing_status,
                     homework_type: student.homework_type
                 };
             }

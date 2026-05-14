@@ -36,6 +36,8 @@ export async function GET(req: Request) {
                 s.Status AS status,
                 sh.StudentHomeworkId AS student_homework_id,
                 sh.Status AS homework_status,
+                sh.NeedsReview AS needs_review,
+                sh.TimingStatus AS timing_status,
 				sh.UploadSubmission AS submission_urls,
                 sh.SubmittedDate AS submitted_date,
                 sh.IsGraded AS is_graded,

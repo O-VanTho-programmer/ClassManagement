@@ -88,6 +88,8 @@ export async function GET(req: Request) {
             DATE_FORMAT(ch.AssignedDate, '%Y-%m-%d') as assigned_date,
             ch.ClassHomeworkId as id,
             COALESCE(sh.Status, 'Pending') as status,
+            sh.NeedsReview as needs_review,
+            sh.TimingStatus as timing_status,
             DATE_FORMAT(sh.SubmittedDate, '%Y-%m-%d') as submitted_date
         FROM class_student cs
         JOIN student s ON cs.StudentId = s.StudentId
@@ -111,6 +113,8 @@ export async function GET(req: Request) {
                 title: row.title,
                 submitted_date: row.submitted_date,
                 status: row.status,
+                needs_review: !!row.needs_review,
+                timing_status: row.timing_status,
                 assigned_date: row.assigned_date,
                 due_date: row.due_date,
             };

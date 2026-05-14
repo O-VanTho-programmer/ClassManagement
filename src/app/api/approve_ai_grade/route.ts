@@ -16,7 +16,7 @@ export async function POST(req: Request) {
         await connection.beginTransaction();
 
         const [studentHomework]: any[] = await connection.query(`
-            SELECT h.HubId, sh.Status
+            SELECT h.HubId, sh.IsGradedByAI
             FROM student_homework sh
             JOIN class_homework ch ON sh.ClassHomeworkId = ch.ClassHomeworkId
             JOIN homework h ON ch.HomeworkId = h.HomeworkId
@@ -37,15 +37,15 @@ export async function POST(req: Request) {
             return permissionCheck;
         }
 
-        // Only allow approval if currently GradeAI
-        if (studentHomework[0].Status !== 'GradeAI') {
+        // Only allow approval if currently graded by AI
+        if (!studentHomework[0].IsGradedByAI) {
             await connection.rollback();
             return NextResponse.json({ message: "Submission is not pending AI grade approval" }, { status: 400 });
         }
 
         await connection.query(`
             UPDATE student_homework 
-            SET Status = 'Graded', IsGradedByAI = 0, IsGraded = 1
+            SET IsGradedByAI = 0, IsGraded = 1
             WHERE StudentHomeworkId = ?
         `, [studentHomeworkId]);
 

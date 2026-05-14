@@ -28,10 +28,10 @@ export async function POST(req: Request) {
         const dueDateHomework = new Date(dueDate);
         const currentDate = new Date();
 
-        let statusSubmission = 'Submitted';
+        let timingStatus = 'InTime';
 
         if (dueDateHomework < currentDate) {
-            statusSubmission = 'Overdue';
+            timingStatus = 'Overdue';
         }
 
         if (existingSubmission) {
@@ -63,13 +63,14 @@ export async function POST(req: Request) {
             UPDATE student_homework 
             SET 
                 UploadSubmission = ?,
-                Status = ?,
+                Status = 'Submitted',
+                TimingStatus = ?,
                 SecurityStatus = ?,
                 SubmittedDate = NOW()
             WHERE StudentHomeworkId = ?
         `;
 
-        await connection.query(querySaveStudentSubmission, [jsonUrlsList, statusSubmission, resolvedSecurityStatus, studentHomeworkId]);
+        await connection.query(querySaveStudentSubmission, [jsonUrlsList, timingStatus, resolvedSecurityStatus, studentHomeworkId]);
 
         await connection.commit();
 
