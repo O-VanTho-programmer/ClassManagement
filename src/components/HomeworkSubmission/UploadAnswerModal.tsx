@@ -1,4 +1,4 @@
-import { FileImage, Loader2, X } from 'lucide-react'
+import { FileImage, Loader2, X, FileText } from 'lucide-react'
 import React, { useState } from 'react'
 import SquareButton from '../SquareButton/SquareButton'
 import IconButton from '../IconButton/IconButton'
@@ -46,19 +46,28 @@ export default function UploadAnswerModal({
                 <div className="mt-6">
                     <label htmlFor="file-upload" className="w-full h-48 flex flex-col items-center justify-center border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
                         {previews.length > 0 ? (
-                            <div className='flex'>
-                                {previews.map((preview, index) => (
-                                    <img key={index} src={preview} alt="Submission preview" className="max-h-44 object-contain rounded-md" />
-                                ))}
+                            <div className='flex gap-2 flex-wrap justify-center p-2'>
+                                {previews.map((preview, index) => {
+                                    const file = files?.[index];
+                                    const isDoc = file && (file.type.includes('pdf') || file.type.includes('document') || file.type.includes('msword') || file.name.endsWith('.docx') || file.name.endsWith('.pdf'));
+                                    return isDoc ? (
+                                        <div key={index} className="flex flex-col items-center justify-center w-32 h-32 bg-white rounded-md border shadow-sm">
+                                            <FileText size={40} className="text-gray-400 mb-2" />
+                                            <span className="text-xs text-gray-500 font-medium truncate w-full px-2 text-center">{file?.name}</span>
+                                        </div>
+                                    ) : (
+                                        <img key={index} src={preview} alt="Submission preview" className="max-h-44 object-contain rounded-md shadow-sm" />
+                                    );
+                                })}
                             </div>
                         ) : (
                             <div className="text-center text-gray-500">
                                 <FileImage size={40} className="mx-auto" />
-                                <span className="mt-2 block font-medium">Click to upload images</span>
-                                <span className="mt-1 block text-xs">PNG, JPG (multiple allowed)</span>
+                                <span className="mt-2 block font-medium">Click to upload files</span>
+                                <span className="mt-1 block text-xs">IMG, PDF, DOCX (multiple allowed)</span>
                             </div>
                         )}
-                        <input id="file-upload" name="file-upload" accept="image/*" type="file" multiple className="sr-only" onChange={handleFileChange} />
+                        <input id="file-upload" name="file-upload" accept="image/*,application/pdf,.docx,.doc" type="file" multiple className="sr-only" onChange={handleFileChange} />
                     </label>
                 </div>
 

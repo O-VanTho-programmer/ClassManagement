@@ -5,46 +5,66 @@ import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import { useAlert } from '../AlertProvider/AlertContext';
 import { useQueryClient } from '@tanstack/react-query';
-import { Sparkles, Upload, X, FileText } from 'lucide-react';
+import { Sparkles, Upload } from 'lucide-react';
 import axios from 'axios';
 
 export default function CreateHomework({ hubId, currentUserId }: { hubId: string, currentUserId: string }) {
     const { showAlert } = useAlert();
     const queryClient = useQueryClient();
-    
+
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [answerKey, setAnswerKey] = useState('');
     const [loading, setLoading] = useState(false);
     const [generatingAI, setGeneratingAI] = useState(false);
-    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [parsingDoc, setParsingDoc] = useState(false);
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files) {
-            const files = Array.from(e.target.files);
-            setSelectedFiles(prev => [...prev, ...files]);
+    const docInputRef = useRef<HTMLInputElement>(null);
+
+    const handleDocImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            const file = e.target.files[0];
+            setParsingDoc(true);
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('hubId', hubId);
+
+            try {
+                const res = await axios.post('/api/homework/parse-doc', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+
+                if (res.status === 200 && res.data.html) {
+                    setContent(res.data.html);
+                    showAlert('Document imported successfully!', 'success');
+                } else {
+                    showAlert('Failed to import document.', 'error');
+                }
+            } catch (err: any) {
+                console.error(err);
+                const message = err.response?.data?.message || 'Error parsing document.';
+                showAlert(message, 'error');
+            } finally {
+                setParsingDoc(false);
+                if (docInputRef.current) {
+                    docInputRef.current.value = ''; // Reset file input
+                }
+            }
         }
     };
 
-    const removeFile = (index: number) => {
-        setSelectedFiles(prev => prev.filter((_, i) => i !== index));
-    };
-
     const generateAIAnswerKey = async () => {
-        if (selectedFiles.length === 0) {
-            showAlert('Please upload at least one homework file (PDF/Word/Image) to generate a key.', 'error');
+        if (!content.trim() || content === '<p><br></p>') {
+            showAlert('Please write or import some homework content first before generating an answer key.', 'error');
             return;
         }
 
         setGeneratingAI(true);
-        const formData = new FormData();
-        selectedFiles.forEach(file => formData.append('files', file));
-        formData.append('hubId', hubId);
 
         try {
-            const res = await axios.post('/api/ai/generate-answer-key', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
+            const res = await axios.post('/api/ai/generate-answer-key-from-content', {
+                content,
+                hubId
             });
 
             if (res.status === 200) {
@@ -69,9 +89,9 @@ export default function CreateHomework({ hubId, currentUserId }: { hubId: string
 
         try {
             const res = await newHomework({
-                hub_id: hubId, 
-                title, 
-                content, 
+                hub_id: hubId,
+                title,
+                content,
                 answer_key: answerKey,
                 created_by_user_id: currentUserId
             });
@@ -81,7 +101,6 @@ export default function CreateHomework({ hubId, currentUserId }: { hubId: string
                 setTitle('');
                 setContent('');
                 setAnswerKey('');
-                setSelectedFiles([]);
                 setLoading(false);
                 queryClient.invalidateQueries({ queryKey: ['homeworkList', hubId] });
             } else {
@@ -114,8 +133,37 @@ export default function CreateHomework({ hubId, currentUserId }: { hubId: string
                     />
                 </div>
 
-                <div className="space-y-1">
-                    <label className="text-sm font-semibold text-gray-700">Homework Description / Instructions</label>
+                <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                        <label className="text-sm font-semibold text-gray-700">Homework Description / Instructions</label>
+                        <div className="flex items-center gap-2">
+                            <button
+                                type="button"
+                                onClick={() => docInputRef.current?.click()}
+                                disabled={parsingDoc}
+                                className="flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-lg font-medium transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {parsingDoc ? (
+                                    <>
+                                        <div className="animate-spin rounded-full h-3 w-3 border-2 border-blue-600 border-t-transparent"></div>
+                                        Importing...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Upload className="w-3.5 h-3.5" />
+                                        Import from Word (.docx)
+                                    </>
+                                )}
+                            </button>
+                            <input
+                                type="file"
+                                ref={docInputRef}
+                                onChange={handleDocImport}
+                                accept=".docx"
+                                className="hidden"
+                            />
+                        </div>
+                    </div>
                     <ReactQuill
                         theme="snow"
                         value={content}
@@ -134,9 +182,10 @@ export default function CreateHomework({ hubId, currentUserId }: { hubId: string
                         <h3 className="text-lg font-bold text-blue-900">Answer Key (Optional)</h3>
                     </div>
                     <button
+                        type="button"
                         onClick={generateAIAnswerKey}
-                        disabled={generatingAI || selectedFiles.length === 0}
-                        className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium text-sm shadow-sm"
+                        disabled={generatingAI || !content.trim() || content === '<p><br></p>'}
+                        className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium text-sm shadow-sm cursor-pointer"
                     >
                         {generatingAI ? (
                             <>
@@ -153,55 +202,11 @@ export default function CreateHomework({ hubId, currentUserId }: { hubId: string
                 </div>
 
                 <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <p className="text-xs font-medium text-blue-800 uppercase tracking-wider">Step 1: Upload homework file</p>
-                            <div 
-                                onClick={() => fileInputRef.current?.click()}
-                                className="border-2 border-dashed border-blue-200 rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer hover:bg-blue-100/50 transition-colors bg-white"
-                            >
-                                <Upload className="text-blue-400 w-8 h-8 mb-2" />
-                                <span className="text-sm text-blue-600 font-medium">Click to upload</span>
-                                <span className="text-xs text-gray-400 mt-1">PDF, DOCX, or Images</span>
-                                <input 
-                                    type="file" 
-                                    className="hidden" 
-                                    multiple 
-                                    ref={fileInputRef}
-                                    onChange={handleFileChange}
-                                    accept=".pdf,.doc,.docx,image/*"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="space-y-2">
-                            <p className="text-xs font-medium text-blue-800 uppercase tracking-wider">Selected Files ({selectedFiles.length})</p>
-                            <div className="bg-white rounded-xl border border-blue-100 p-2 min-h-[100px] max-h-[100px] overflow-y-auto">
-                                {selectedFiles.length === 0 ? (
-                                    <div className="h-full flex items-center justify-center text-gray-400 text-xs italic">
-                                        No files selected
-                                    </div>
-                                ) : (
-                                    <div className="space-y-1">
-                                        {selectedFiles.map((file, index) => (
-                                            <div key={index} className="flex items-center justify-between bg-blue-50 px-2 py-1.5 rounded-lg border border-blue-100">
-                                                <div className="flex items-center gap-2 truncate">
-                                                    <FileText className="w-4 h-4 text-blue-500 shrink-0" />
-                                                    <span className="text-xs text-blue-900 truncate">{file.name}</span>
-                                                </div>
-                                                <button onClick={() => removeFile(index)} className="text-blue-400 hover:text-red-500">
-                                                    <X className="w-3.5 h-3.5" />
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
+                    <p className="text-xs text-blue-800">
+                        Generate an initial draft answer key based on the homework content provided above. You can customize the AI-generated key directly in the editor below.
+                    </p>
 
                     <div className="space-y-1">
-                        <p className="text-xs font-medium text-blue-800 uppercase tracking-wider">Step 2: Review/Edit Draft Answer Key</p>
                         <ReactQuill
                             theme="snow"
                             value={answerKey}

@@ -32,8 +32,6 @@ export default function TimeTableCard({
     const timeList = times[timeSchedule].timeList;
     const selectedIcon = Icons[timeSchedule];
 
-    console.log(classes)
-
     return (
         <div className="p-4 bg-white rounded-lg shadow-xl border border-gray-200">
             <div className='flex items-center text-lg font-bold text-gray-700 mb-4 p-2'>

@@ -15,10 +15,7 @@ interface ModalEditAttendanceProps {
 export function ModalEditAttendance({ studentAttendance, isOpen, onClose, onSave, isSaving, classHomeworkList }: ModalEditAttendanceProps) {
     const [editData, setEditData] = useState<StudentAttendance>(studentAttendance);
 
-    console.log(studentAttendance)
-
     const assignedHomework = studentAttendance.assignments;
-
 
     useEffect(() => {
         setEditData(studentAttendance);

@@ -100,7 +100,13 @@ export default function TableDetailStudentSubmissions({
             for (let i = 0; i < validSubmissions.length; i += BATCH_SIZE) {
                 const currentBatch = validSubmissions.slice(i, i + BATCH_SIZE);
                 const batchStudentIds = currentBatch.map(b => b.studentId);
-                const submissionsBatch = currentBatch.map(b => b.submission);
+                const submissionsBatch = currentBatch.map(b => ({
+                    ...b.submission,
+                    submission_urls: b.submission.submission_urls?.map(item => ({
+                        ...item,
+                        url: item.url.toLowerCase().includes('.pdf') ? item.url.replace(/\.pdf$/i, '.jpg') : item.url
+                    }))
+                }));
 
                 setGradingStudent(batchStudentIds);
 
@@ -189,6 +195,7 @@ export default function TableDetailStudentSubmissions({
                         <tbody className="bg-white divide-y divide-gray-200">
                             {students_homework_questions.map((student) => {
                                 const isGradingThisStudent = gradingStudent.includes(student.student_id);
+                                const submission = mapStudentSubmissionList.get(student.student_id);
 
                                 let statusColor = "bg-gray-100 text-gray-600";
                                 let statusText = student.homework_status;
@@ -236,16 +243,16 @@ export default function TableDetailStudentSubmissions({
                                                     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${statusColor}`}>
                                                         {statusText}
                                                     </span>
-                                                    {(student.homework_status === 'Submitted' || student.total_score !== null) && student.security_status && (
+                                                    {(student.homework_status === 'Submitted' || student.total_score !== null) && submission?.security_status && (
                                                         <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold border ${
-                                                            student.security_status === 'Verified'   ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                                                            student.security_status === 'Unverified' ? 'bg-amber-50 text-amber-600 border-amber-100' :
-                                                                                                      'bg-gray-50 text-gray-400 border-gray-100'
+                                                            submission.security_status === 'Verified'   ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                                                            submission.security_status === 'Unverified' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                                                                                                          'bg-gray-50 text-gray-400 border-gray-100'
                                                         }`}>
-                                                            {student.security_status === 'Verified'   && <ShieldCheck size={10} />}
-                                                            {student.security_status === 'Unverified' && <ShieldAlert size={10} />}
-                                                            {student.security_status === 'None'       && <ShieldOff size={10} />}
-                                                            {student.security_status}
+                                                            {submission.security_status === 'Verified'   && <ShieldCheck size={10} />}
+                                                            {submission.security_status === 'Unverified' && <ShieldAlert size={10} />}
+                                                            {submission.security_status === 'None'       && <ShieldOff size={10} />}
+                                                            {submission.security_status}
                                                         </span>
                                                     )}
                                                 </div>

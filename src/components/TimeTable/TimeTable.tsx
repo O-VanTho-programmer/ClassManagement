@@ -48,8 +48,6 @@ export default function TimeTable({ classDatas = [] }: TimeTableProps) {
 
     }, [selectedDate, classDatas])
 
-    console.log(filterClasses);
-
     const filterClassDataMorning = useMemo((): ClassDataWithTimeTableHour[] => {
         let res: ClassDataWithTimeTableHour[] = [];
 
@@ -83,7 +81,6 @@ export default function TimeTable({ classDatas = [] }: TimeTableProps) {
             cls.schedule.forEach(session => {
                 let timeStart = parseInt(session.startTime.split(':')[0]);
                 let timeEnd = parseInt(session.endTime.split(':')[0]);
-                console.log(timeStart, timeEnd)
                 if (12 <= timeStart && timeStart <= 21) {
                     let studyTime = timeEnd - timeStart;
                     let startHour = timeStart;

@@ -2,6 +2,8 @@ import { Loader2, X } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import IconButton from '../IconButton/IconButton'
 import Button from '../Button/Button'
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
 
 type SetAnswerKeyModalProps = {
     isOpen: boolean
@@ -18,7 +20,7 @@ export default function SetAnswerKeyModal({
     onSave,
     isSaving
 }: SetAnswerKeyModalProps) {
-    const sampleAnswerKey = `1) A, 2) B, 3) C, 4) D, 5) E,\n7) This is the correct answer,\n\nNote:\n- Multiple choice questions give 5 points each,\n- Essay questions give 10 points each.\n- Give half of maximun point if essay questions correct halfly.`
+    const sampleAnswerKey = `<p>1) A, 2) B, 3) C, 4) D, 5) E,</p><p>7) This is the correct answer,</p><p><br></p><p>Note:</p><ul><li>Multiple choice questions give 5 points each,</li><li>Essay questions give 10 points each.</li><li>Give half of maximun point if essay questions correct halfly.</li></ul>`
 
     const [key, setKey] = useState(initialKey || sampleAnswerKey);
 
@@ -39,16 +41,19 @@ export default function SetAnswerKeyModal({
                     <h2 className="text-2xl font-bold text-gray-800">Set Answer Key</h2>
                     <IconButton icon={X} onClick={onClose} size={20} className='p-2 rounded-full text-gray-400 hover:bg-gray-100' />
                 </div>
-                <div className="flex-grow overflow-y-auto mt-6">
+                <div className="flex-grow overflow-y-auto mt-6 pb-12">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                         Provide the correct answers and grading criteria for the AI.
                     </label>
-                    <textarea
-                        value={key}
-                        onChange={(e) => setKey(e.target.value)}
-                        placeholder="e.g.,&#10;1. x = 5 (10 points)&#10;2. y = 10 (10 points)&#10;..."
-                        className="w-full h-80 p-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 resize-none font-mono text-sm"
-                    />
+                    <div className="space-y-1">
+                        <ReactQuill
+                            theme="snow"
+                            value={key}
+                            onChange={setKey}
+                            className="bg-white rounded-xl overflow-hidden border border-gray-200"
+                            placeholder="The draft answer key will appear here..."
+                        />
+                    </div>
                 </div>
                 <div className="pt-6 flex justify-end gap-3 border-t">
                     {/* --- FIX: Corrected "type.button" to "type='button'" --- */}

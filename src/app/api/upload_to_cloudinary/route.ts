@@ -19,16 +19,13 @@ export async function POST(req: Request) {
             return NextResponse.json({ message: "No files uploaded" }, { status: 400 });
         }
         
-        const uploadedUrls: ResultUpload[] = [];
-
-        for (const file of files) {
+        const uploadPromises = files.map(async (file) => {
             const buffer = Buffer.from(await file.arrayBuffer());
-
             const uploadResult: UploadApiResponse = await new Promise((resolve, reject) => {
                 cloudinary.uploader.upload_stream(
                     {
                         folder: "homework_submissions",
-                        resource_type: "image"
+                        resource_type: "auto"
                     },
                     (error, result) => {
                         if (error) reject(error);
@@ -37,11 +34,13 @@ export async function POST(req: Request) {
                 ).end(buffer);
             });
 
-            uploadedUrls.push({
+            return {
                 url: uploadResult.secure_url,
                 public_id: uploadResult.public_id
-            });
-        }
+            };
+        });
+
+        const uploadedUrls: ResultUpload[] = await Promise.all(uploadPromises);
 
         return NextResponse.json({ urls: uploadedUrls }, { status: 200 });
 

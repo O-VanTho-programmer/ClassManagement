@@ -19,7 +19,8 @@ const mock = () => {
     self.HTMLImageElement = class HTMLImageElement {};
     self.HTMLCanvasElement = class HTMLCanvasElement {};
     self.HTMLVideoElement = class HTMLVideoElement {};
-    // ImageData is usually already in the worker global scope
+    self.CanvasRenderingContext2D = class CanvasRenderingContext2D {};
+    self.ImageData = self.ImageData || class ImageData {};
 };
 
 mock();

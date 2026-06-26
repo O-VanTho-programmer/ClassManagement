@@ -32,7 +32,6 @@ export default function AddTeacherToHubModal({
         }
 
         for (const teacherId of selectedTeacherIds) {
-            console.log(teacherId);
             const res = await addTeacherToHub(teacherId, hubId);
 
             if (res.status === 200) {

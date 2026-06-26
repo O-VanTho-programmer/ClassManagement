@@ -17,7 +17,6 @@ export const useUploadSubmissionMutation = (
     const uploadMutation = useMutation({
         mutationFn: async ({ files, student_homework_id, due_date, securityStatus }: ParamsUploadSubmission) => {
             const resDataUrls: ResultUpload[] = await getUrlImageByUploadOnCloudiary(files);
-            console.log(resDataUrls);
             return saveStudentSubmission(student_homework_id, due_date, resDataUrls, securityStatus);
         },
         onSuccess: () => {

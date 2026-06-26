@@ -68,8 +68,6 @@ export default function AttendanceGridStudentTable({ hub_id, class_id, schedule,
         });
     }, [fetchedStudentAttendanceRecords, filter]);
 
-    // console.log(processedStudentDatas);
-
     const [isSaving, setIsSaving] = useState(false);
     const { showAlert } = useAlert();
     const dateRange = useMemo(() => generateDateRange(startDate, endDate, schedule), [startDate, endDate]);

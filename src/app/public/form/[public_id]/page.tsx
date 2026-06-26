@@ -271,14 +271,26 @@ function AssignmentForm() {
                             {allPreviews.map((src, idx) => {
                                 const existingCount = selectedStudent?.submission_urls?.length || 0;
                                 const isExisting = idx < existingCount;
-                                const isPdf = src.toLowerCase().includes('.pdf') || src.toLowerCase().includes('/pdf');
+                                let isDoc = false;
+                                let fileName = 'Document';
+
+                                if (isExisting) {
+                                    isDoc = src.toLowerCase().includes('.pdf') || src.toLowerCase().includes('.docx') || src.toLowerCase().includes('/raw');
+                                    fileName = src.toLowerCase().includes('.pdf') ? 'PDF' : 'DOCX';
+                                } else {
+                                    const localFile = files?.[idx - existingCount];
+                                    if (localFile) {
+                                        isDoc = localFile.type.includes('pdf') || localFile.type.includes('document') || localFile.type.includes('msword') || localFile.name.toLowerCase().endsWith('.docx') || localFile.name.toLowerCase().endsWith('.pdf');
+                                        fileName = localFile.name;
+                                    }
+                                }
 
                                 return (
                                     <div key={`${isExisting ? 'ex' : 'new'}-${idx}`} className="relative group rounded-xl overflow-hidden border border-gray-200 h-28 bg-gray-50 shadow-sm">
-                                        {isPdf ? (
-                                            <div className="w-full h-full flex flex-col items-center justify-center">
+                                        {isDoc ? (
+                                            <div className="w-full h-full flex flex-col items-center justify-center p-2 text-center">
                                                 <FileText size={28} className="text-gray-400 mb-1" />
-                                                <span className="text-xs text-gray-500 font-medium">PDF</span>
+                                                <span className="text-xs text-gray-500 font-medium truncate w-full">{fileName}</span>
                                             </div>
                                         ) : (
                                             <img src={src} alt="Preview" className="w-full h-full object-cover" />
@@ -305,12 +317,12 @@ function AssignmentForm() {
                             <label className="border-2 border-dashed border-blue-200 rounded-xl h-28 flex flex-col items-center justify-center cursor-pointer hover:bg-blue-50 hover:border-blue-400 transition-all group">
                                 <Upload size={20} className="text-blue-400 group-hover:text-blue-600 mb-1 transition-colors" />
                                 <span className="text-xs font-semibold text-blue-500 group-hover:text-blue-700">Add File</span>
-                                <span className="text-[10px] text-gray-400 mt-0.5">IMG or PDF</span>
+                                <span className="text-[10px] text-gray-400 mt-0.5">IMG, PDF, DOCX</span>
                                 <input
                                     type="file"
                                     className="hidden"
                                     onChange={handleFileChange}
-                                    accept="image/*,application/pdf"
+                                    accept="image/*,application/pdf,.docx,.doc"
                                     multiple
                                 />
                             </label>

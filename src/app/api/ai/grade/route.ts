@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI, SchemaType, Schema } from "@google/generative-ai";
 import { NextResponse } from "next/server";
+import mammoth from "mammoth";
 import { checkPermission, PERMISSIONS } from "@/lib/permissions";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
@@ -75,7 +76,7 @@ export async function POST(req: Request) {
         }
 
         const model = genAI.getGenerativeModel({
-            model: "gemini-2.5-flash-preview-09-2025",
+            model: "gemini-3.1-flash-lite",
             generationConfig: {
                 responseMimeType: "application/json",
                 responseSchema: gradingSchema,
@@ -94,9 +95,13 @@ export async function POST(req: Request) {
             GRADING TASK (only if is_readable is true):
             1. Analyze the attached student homework images.
             2. Compare them against the Answer Key below.
-            3. For EACH question defined in the answer key:
-                - Determine if the answer is correct.
-                - Assign a specific score (decimal allowed, e.g. 8.5) based on correctness.
+            3. Ensure the TOTAL grade is calculated on a scale of exactly 100 points (total max score = 100).
+            4. CRITICAL GRADING RULE: EVERY sub-question must be counted as a separate, distinct question.
+               For example, if the Answer Key has "Ex1: 1) ... 2) ...", you must break this down into separate array entries:
+               - Q1: for "Ex1: 1)" with its own grade and max_grade
+               - Q2: for "Ex1: 2)" with its own grade and max_grade
+               Distribute the 100 total points evenly or proportionally among ALL sub-questions.
+            5. Provide a detailed breakdown in the 'questions' array.
                 - Identify the max points for that question.
                 - Give feedback for that answer.
             4. Calculate the total grade (0-100 scale).
@@ -115,14 +120,29 @@ export async function POST(req: Request) {
                     if (!response.ok) throw new Error(`Failed to fetch image: ${img.url}`);
 
                     const arrayBuffer = await response.arrayBuffer();
-                    const base64Data = Buffer.from(arrayBuffer).toString("base64");
+                    const buffer = Buffer.from(arrayBuffer);
 
-                    return {
-                        inlineData: {
-                            data: base64Data,
-                            mimeType: "image/jpeg", // Cloudinary auto-format is usually jpg or webp, both supported
-                        },
-                    };
+                    const urlLower = img.url.toLowerCase();
+                    if (urlLower.includes(".pdf") || urlLower.includes("/pdf")) {
+                        return {
+                            inlineData: {
+                                data: buffer.toString("base64"),
+                                mimeType: "application/pdf",
+                            },
+                        };
+                    } else if (urlLower.includes(".docx") || urlLower.includes("/raw")) {
+                        const mammothResult = await mammoth.extractRawText({ buffer });
+                        return {
+                            text: `\n\n[Content of Student Document ${img.url}]:\n${mammothResult.value}\n`
+                        };
+                    } else {
+                        return {
+                            inlineData: {
+                                data: buffer.toString("base64"),
+                                mimeType: "image/jpeg",
+                            },
+                        };
+                    }
                 } catch (fetchError) {
                     console.error(`Error fetching image ${img.url}:`, fetchError);
                     return null;

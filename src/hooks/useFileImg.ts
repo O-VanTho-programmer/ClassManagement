@@ -8,10 +8,18 @@ export function useFileImg(showAlert: (message: string, type?: AlertType) => voi
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFiles = Array.from(e.target.files ? e.target.files : []);
 
-        const valid = selectedFiles.every(file => file.type.startsWith("image/"));
+        const valid = selectedFiles.every(file => 
+            file.type.startsWith("image/") || 
+            file.type === "application/pdf" ||
+            file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+            file.type === "application/msword" ||
+            file.name.toLowerCase().endsWith(".pdf") ||
+            file.name.toLowerCase().endsWith(".docx") ||
+            file.name.toLowerCase().endsWith(".doc")
+        );
 
         if (!valid) {
-            showAlert("Only image files are allowed!", 'error');
+            showAlert("Only images, PDFs, and Word documents are allowed!", 'error');
             e.target.value = "";
             return;
         }

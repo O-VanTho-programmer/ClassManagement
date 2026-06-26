@@ -61,13 +61,10 @@ export default function EditRoleOfTeacher({
 
         if (updateRoleMutation.isPending) return;
 
-        console.log(teacher, { ...teacher, role_hub: newRole });
-
         updateRoleMutation.mutate({ teacher, newRole });
     };
 
     const handlePermissionChange = async (selectedPermissions: string[], teacherId: string, hubId: string) => {
-        console.log(selectedPermissions, teacherId, hubId);
         const res = await updateUserPermissionInHub(selectedPermissions, teacherId, hubId);
 
         return res;

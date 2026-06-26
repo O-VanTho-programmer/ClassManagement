@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI, SchemaType, Schema } from "@google/generative-ai";
 import { NextResponse } from "next/server";
+import mammoth from "mammoth";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
@@ -61,7 +62,7 @@ export async function POST(req: Request) {
 
         // Use the preview model which supports JSON schema well
         const model = genAI.getGenerativeModel({
-            model: "gemini-2.5-flash",
+            model: "gemini-3.1-flash-lite",
             generationConfig: {
                 responseMimeType: "application/json",
                 responseSchema: batchGradingSchema,
@@ -83,7 +84,13 @@ export async function POST(req: Request) {
             2. I will provide submissions for multiple students. Each submission is marked with a "Student Homework ID".
             3. For EACH student:
                - Assess image readability first (see CRITICAL RULE above).
-               - If readable: analyze their images against the Answer Key, calculate the total grade (0-100), provide a breakdown for each question.
+               - If readable: analyze their images against the Answer Key.
+               - Ensure the TOTAL grade is calculated on a scale of exactly 100 points (total max score = 100).
+               - CRITICAL GRADING RULE: EVERY sub-question must be counted as a separate, distinct question.
+                 For example, if the Answer Key has "Ex1: 1) ... 2) ...", you must break this down into separate array entries:
+                 - Q1: for "Ex1: 1)" with its own grade and max_grade
+                 - Q2: for "Ex1: 2)" with its own grade and max_grade
+                 Distribute the 100 points evenly or proportionally among ALL sub-questions.
                - IMPORTANT: Return the "student_homework_id" exactly as it appears in the prompt so I can match the grade to the correct student.
             
             --- ANSWER KEY START ---
@@ -109,14 +116,29 @@ export async function POST(req: Request) {
                         continue;
                     }
                     const arrayBuffer = await response.arrayBuffer();
-                    const base64Data = Buffer.from(arrayBuffer).toString("base64");
+                    const buffer = Buffer.from(arrayBuffer);
 
-                    parts.push({
-                        inlineData: {
-                            data: base64Data,
-                            mimeType: "image/jpeg",
-                        }
-                    });
+                    const urlLower = img.url.toLowerCase();
+                    if (urlLower.includes(".pdf") || urlLower.includes("/pdf")) {
+                        parts.push({
+                            inlineData: {
+                                data: buffer.toString("base64"),
+                                mimeType: "application/pdf",
+                            }
+                        });
+                    } else if (urlLower.includes(".docx") || urlLower.includes("/raw")) {
+                        const mammothResult = await mammoth.extractRawText({ buffer });
+                        parts.push({
+                            text: `\n[Content of Student Document]:\n${mammothResult.value}\n`
+                        });
+                    } else {
+                        parts.push({
+                            inlineData: {
+                                data: buffer.toString("base64"),
+                                mimeType: "image/jpeg",
+                            }
+                        });
+                    }
                 } catch (e) {
                     console.error(`Error processing image ${img.url}`, e);
                 }

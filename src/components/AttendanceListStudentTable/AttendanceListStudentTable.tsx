@@ -85,7 +85,6 @@ export default function AttendanceListStudentTable({
             const res = await newAttendanceRecordsApi(updatedStudent, class_id);
 
             if (res?.status === 200) {
-                console.log("Attendance saved:", updatedStudent);
 
                 queryClient.setQueryData<StudentAttendance[]>(["studentAttendance", class_id], (prevStudents = []) =>
                     prevStudents.map(s => s.id === updatedStudent.id ? updatedStudent : s)
