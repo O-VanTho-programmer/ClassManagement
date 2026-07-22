@@ -1,5 +1,6 @@
 import pool from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
+import { dispatchNotification } from "@/lib/notifications";
 
 export async function GET(req: NextRequest) {
     //Prevent Unauthorized
@@ -53,10 +54,66 @@ export async function GET(req: NextRequest) {
 
         await connection.commit();
 
+        // 2. Homework Deadline Alerts
+        const getHomeworkDeadlines = `
+            SELECT 
+                ch.ClassHomeworkId,
+                ch.ClassId,
+                ch.DueDate,
+                h.HubId,
+                h.Title AS HomeworkTitle,
+                c.Name AS ClassName
+            FROM class_homework ch
+            INNER JOIN homework h ON ch.HomeworkId = h.HomeworkId
+            INNER JOIN class c ON ch.ClassId = c.ClassId
+            WHERE DATE(ch.DueDate) = DATE(NOW() + INTERVAL 2 DAY) 
+               OR DATE(ch.DueDate) = DATE(NOW())
+        `;
+
+        const [deadlines]: any[] = await connection.query(getHomeworkDeadlines);
+
+        for (const item of deadlines) {
+            const isWarning = new Date(item.DueDate).toDateString() === new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toDateString();
+            const type = isWarning ? 'homework_deadline_warning' : 'homework_deadline_passed';
+            
+            // Check if notification already dispatched today to avoid duplicates
+            const [alreadyDispatched]: any[] = await connection.query(
+                "SELECT 1 FROM notification WHERE ClassId = ? AND Type = ? AND DATE(CreatedDate) = DATE(NOW()) LIMIT 1",
+                [item.ClassId, type]
+            );
+
+            if (alreadyDispatched.length === 0) {
+                const title = isWarning 
+                    ? `Upcoming Deadline Warning: ${item.HomeworkTitle}` 
+                    : `Homework Deadline Met: ${item.HomeworkTitle}`;
+                const snippet = isWarning 
+                    ? `The deadline for ${item.HomeworkTitle} is in 2 days.` 
+                    : `The deadline for ${item.HomeworkTitle} is today.`;
+                const content = isWarning
+                    ? `<p>Dear Teacher,</p>
+                       <p>This is a reminder that the homework assignment <b>${item.HomeworkTitle}</b> in class <b>${item.ClassName}</b> is due in <b>2 days</b>.</p>
+                       <p>Please encourage students to submit their work before the cutoff date.</p>`
+                    : `<p>Dear Teacher,</p>
+                       <p>The homework assignment <b>${item.HomeworkTitle}</b> in class <b>${item.ClassName}</b> has reached its due date today.</p>
+                       <p>You can now check the grade book to review student submissions and begin evaluations.</p>`;
+
+                await dispatchNotification({
+                    hubId: item.HubId,
+                    classId: item.ClassId,
+                    title,
+                    snippet,
+                    content,
+                    category: 'homework',
+                    type,
+                    deepLink: `/dashboard/hub/${item.HubId}/grade_book/${item.ClassId}`
+                });
+            }
+        }
+
         return NextResponse.json({"message": "Success"}, {status: 200});
     } catch (error) {
         if(connection){
-            connection.rollback();
+            await connection.rollback();
         }
 
         console.log(error);

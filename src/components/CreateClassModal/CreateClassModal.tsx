@@ -1,8 +1,35 @@
 import { useGetTeacherListByHubId } from "@/hooks/useGetTeacherListByHubId";
 import { ClassData } from "@/types/ClassData";
 import { Schedule } from "@/types/Schedule";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Selection, { Option } from "../Selection/Selection";
+
+const calculateEndDate = (
+    startDateStr: string,
+    tuitionType: string,
+    qCount: number,
+    mPerPeriod: number,
+    pCount: number
+): string => {
+    if (!startDateStr) return "";
+    const date = new Date(startDateStr);
+    if (isNaN(date.getTime())) return "";
+
+    if (tuitionType === "Quarter") {
+        const totalMonths = qCount * 3;
+        date.setMonth(date.getMonth() + totalMonths);
+    } else if (tuitionType === "Monthly") {
+        const totalMonths = mPerPeriod * pCount;
+        date.setMonth(date.getMonth() + totalMonths);
+    } else {
+        return "";
+    }
+
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const dd = String(date.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+};
 import SquareButton from "../SquareButton/SquareButton";
 import { X } from "lucide-react";
 import Button from "../Button/Button";
@@ -17,7 +44,7 @@ interface CreateClassModalProps {
 
 export default function CreateClassModal({ isOpen, onClose, onSubmit, hubId }: CreateClassModalProps) {
 
-    if(!isOpen){
+    if (!isOpen) {
         return null;
     }
 
@@ -37,6 +64,26 @@ export default function CreateClassModal({ isOpen, onClose, onSubmit, hubId }: C
         startDate: '',
         endDate: '',
     });
+
+    const [numberOfQuarters, setNumberOfQuarters] = useState<number>(1);
+    const [monthsPerPeriod, setMonthsPerPeriod] = useState<number>(1);
+    const [numberOfPeriods, setNumberOfPeriods] = useState<number>(1);
+
+    // Sync calculated endDate to formData
+    useEffect(() => {
+        if (formData.tuitionType === 'Quarter' || formData.tuitionType === 'Monthly') {
+            const calculated = calculateEndDate(
+                formData.startDate,
+                formData.tuitionType,
+                numberOfQuarters,
+                monthsPerPeriod,
+                numberOfPeriods
+            );
+            if (calculated) {
+                setFormData(prev => ({ ...prev, endDate: calculated }));
+            }
+        }
+    }, [formData.startDate, formData.tuitionType, numberOfQuarters, monthsPerPeriod, numberOfPeriods]);
 
     const teacherOptions: Option[] = useMemo(() => {
         return teacherList.map((teacher: Teacher) => ({
@@ -294,20 +341,6 @@ export default function CreateClassModal({ isOpen, onClose, onSubmit, hubId }: C
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                End Date *
-                            </label>
-                            <input
-                                type="date"
-                                value={formData.endDate}
-                                onChange={(e) => setFormData(prev => ({ ...prev, endDate: e.target.value }))}
-                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.endDate ? 'border-red-500' : 'border-gray-300'
-                                    }`}
-                            />
-                            {errors.endDate && <p className="text-red-500 text-sm mt-1">{errors.endDate}</p>}
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Tuition Type
                             </label>
                             <select
@@ -318,8 +351,68 @@ export default function CreateClassModal({ isOpen, onClose, onSubmit, hubId }: C
                                 <option value="Monthly">Monthly</option>
                                 <option value="Quarter">Quarter</option>
                                 <option value="Course">Course</option>
-                                <option value="Flexible">Flexible</option>
                             </select>
+                        </div>
+
+                        {formData.tuitionType === 'Quarter' && (
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Number of Quarters *
+                                </label>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    value={numberOfQuarters}
+                                    onChange={(e) => setNumberOfQuarters(Math.max(1, Number(e.target.value)))}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-medium"
+                                />
+                            </div>
+                        )}
+
+                        {formData.tuitionType === 'Monthly' && (
+                            <>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Months per Period *
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        value={monthsPerPeriod}
+                                        onChange={(e) => setMonthsPerPeriod(Math.max(1, Number(e.target.value)))}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-medium"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Number of Periods *
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        value={numberOfPeriods}
+                                        onChange={(e) => setNumberOfPeriods(Math.max(1, Number(e.target.value)))}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-medium"
+                                    />
+                                </div>
+                            </>
+                        )}
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                End Date * {(formData.tuitionType === 'Quarter' || formData.tuitionType === 'Monthly') && <span className="text-gray-400 font-normal">(Calculated)</span>}
+                            </label>
+                            <input
+                                type="date"
+                                value={formData.endDate}
+                                disabled={formData.tuitionType === 'Quarter' || formData.tuitionType === 'Monthly'}
+                                onChange={(e) => setFormData(prev => ({ ...prev, endDate: e.target.value }))}
+                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${formData.tuitionType === 'Quarter' || formData.tuitionType === 'Monthly'
+                                        ? 'bg-gray-100 text-gray-500 cursor-not-allowed border-gray-200'
+                                        : errors.endDate ? 'border-red-500' : 'border-gray-300'
+                                    }`}
+                            />
+                            {errors.endDate && <p className="text-red-500 text-sm mt-1">{errors.endDate}</p>}
                         </div>
 
                         <div>

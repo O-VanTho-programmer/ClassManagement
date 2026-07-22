@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import SideNavigation from "../SideNavigation/SideNavigation"
-import { MenuIcon, BellElectricIcon, CalendarClock, CalendarDays, GraduationCapIcon, HomeIcon, StarIcon, BookPlusIcon, BookUp2, HatGlasses, BookCopy, UserLockIcon, LucideUsers, BookMarkedIcon } from "lucide-react";
+import { MenuIcon, BellElectricIcon, CalendarClock, CalendarDays, GraduationCapIcon, BookPlusIcon, HatGlasses, BookCopy, LucideUsers, BookMarkedIcon, Bell } from "lucide-react";
 import HeaderDashboard from "../HeaderDashboard/HeaderDashboard";
 import { usePathname } from "next/navigation";
 
@@ -28,6 +28,11 @@ export default function LayoutDashboardHub({ children }: { children: React.React
             items: [
                 { name: 'Class Schedule', icon: CalendarClock, href: '/class_schedule' },
                 { name: 'Class Period', icon: BellElectricIcon, href: '/time_table' },
+            ]
+        }, {
+            title: 'Notifications',
+            items: [
+                { name: 'Notifications', icon: Bell, href: '/notifications' },
             ]
         },
         {
@@ -74,7 +79,7 @@ export default function LayoutDashboardHub({ children }: { children: React.React
                     isShrunk={isNavShrunk}
                     navigationSections={navigationSections}
                     toggleShrink={toggleShrink} />
-                <main className={`flex-1 overflow-y-auto overflow-x-hidden transition-all duration-300 md:pt-0 bg-gray-50`}>
+                <main className={`flex-1 overflow-y-auto overflow-x-hidden transition-all duration-300 md:pt-0 bg-gray-50 relative`}>
                     <HeaderDashboard />
                     <div className="container py-6">
                         {children}

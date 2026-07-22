@@ -7,7 +7,8 @@ import {
     AlertTriangle,
     TrendingUp,
     FileSpreadsheet,
-    Inbox
+    Inbox,
+    Settings
 } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useGetClassSimpleByHubId } from '@/hooks/useGetClassSimpleByHubId';
@@ -16,18 +17,36 @@ import HeaderAvatar from '@/components/HeaderAvatar/HeaderAvatar';
 import SearchBar from '@/components/SearchBar/SearchBar';
 import Button from '@/components/Button/Button';
 import { exportToExcel } from '@/utils/exportToExcel';
+import SetGradeWeightsModal from '@/components/SetGradeWeightsModal/SetGradeWeightsModal';
 
 export default function GradeBookStudents() {
     const { hub_id, class_id } = useParams();
     const parsedClassId = Array.isArray(class_id) ? class_id[0] : (class_id as string | undefined);
     const [selectedClassId, setSelectedClassId] = useState(parsedClassId ?? "none");
     const [searchTerm, setSearchTerm] = useState("");
+    const [isWeightsModalOpen, setIsWeightsModalOpen] = useState(false);
 
     const { data: classes = [] } = useGetClassSimpleByHubId(hub_id as string);
     const { data: gradeBookResponse, isLoading } = useGetStudentGradeBookByClassId(selectedClassId, hub_id as string);
 
     const columnsType = gradeBookResponse?.columns || {};
     const studentsData = gradeBookResponse?.data || [];
+
+    const sortedColumnsEntries = useMemo(() => {
+        return Object.entries(columnsType).sort(([typeA], [typeB]) => {
+            const isAttA = typeA.toLowerCase().includes('attendance');
+            const isAttB = typeB.toLowerCase().includes('attendance');
+            if (isAttA && !isAttB) return -1;
+            if (!isAttA && isAttB) return 1;
+
+            const isHwA = typeA.toLowerCase().includes('homework') || typeA.toLowerCase().includes('assignment');
+            const isHwB = typeB.toLowerCase().includes('homework') || typeB.toLowerCase().includes('assignment');
+            if (isHwA && !isHwB) return -1;
+            if (!isHwA && isHwB) return 1;
+
+            return typeA.localeCompare(typeB);
+        });
+    }, [columnsType]);
 
     const currentClass = useMemo(() => {
         return classes.find(c => c.id === selectedClassId)
@@ -73,7 +92,7 @@ export default function GradeBookStudents() {
                 "Full Name": student.name,
             };
 
-            Object.entries(columnsType).forEach(([type, assignments]) => {
+            sortedColumnsEntries.forEach(([type, assignments]) => {
                 assignments.forEach((assignment: any) => {
                     const gradeRecord = student.assignments[assignment.class_homework_id];
                     row[`${type}: ${assignment.title}`] = gradeRecord?.grade ?? '-';
@@ -121,13 +140,23 @@ export default function GradeBookStudents() {
                         </div>
                     </div>
 
-                    <Button
-                        icon={FileSpreadsheet}
-                        color='white'
-                        title='Export Report'
-                        style='color-emerald-600'
-                        onClick={handleExportExcel}
-                    />
+                    <div className="flex gap-2">
+                        {selectedClassId !== "none" && (
+                            <Button
+                                icon={Settings}
+                                color='white'
+                                title='Set Metric Grade'
+                                onClick={() => setIsWeightsModalOpen(true)}
+                            />
+                        )}
+                        <Button
+                            icon={FileSpreadsheet}
+                            color='white'
+                            title='Export Report'
+                            style='color-emerald-600'
+                            onClick={handleExportExcel}
+                        />
+                    </div>
                 </div>
 
                 {/* Stats Row */}
@@ -197,7 +226,7 @@ export default function GradeBookStudents() {
                                             Student Information
                                         </th>
 
-                                        {Object.entries(columnsType).map(([type, assignments]) => (
+                                        {sortedColumnsEntries.map(([type, assignments]) => (
                                             <th
                                                 key={type}
                                                 colSpan={assignments.length + 1}
@@ -215,7 +244,7 @@ export default function GradeBookStudents() {
 
                                     {/* Assignments */}
                                     <tr>
-                                        {Object.entries(columnsType).map(([type, assignments]) => (
+                                        {sortedColumnsEntries.map(([type, assignments]) => (
                                             <React.Fragment key={`${type}-sub`}>
                                                 {assignments.map((assignment) => (
                                                     <th key={assignment.class_homework_id} className="min-w-[120px] text-center px-4 py-3 text-xs font-semibold text-slate-500 border-b border-l border-slate-200">
@@ -248,7 +277,7 @@ export default function GradeBookStudents() {
                                             </td>
 
                                             {/* Assignment Grades */}
-                                            {Object.entries(columnsType).map(([type, assignments]) => (
+                                            {sortedColumnsEntries.map(([type, assignments]) => (
                                                 <React.Fragment key={`${student.id}-${type}`}>
 
                                                     {/* Individual Grades */}
@@ -305,6 +334,12 @@ export default function GradeBookStudents() {
                     )}
                 </div>
             </div>
+            <SetGradeWeightsModal
+                isOpen={isWeightsModalOpen}
+                onClose={() => setIsWeightsModalOpen(false)}
+                classId={selectedClassId}
+                hubId={hub_id as string}
+            />
         </div>
     );
 }

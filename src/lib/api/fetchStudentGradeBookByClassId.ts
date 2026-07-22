@@ -12,7 +12,7 @@ export async function fetchStudentGradeBookByClassId(class_id: string, hub_id: s
 }
 
 export interface AssignmentColumn {
-    class_homework_id: number;
+    class_homework_id: number | string;
     title: string;
 }
 
@@ -29,7 +29,7 @@ export interface AssignmentDetail {
 export interface StudentGradebookRow {
     id: number;
     name: string;
-    assignments: Record<number, AssignmentDetail>;
+    assignments: Record<number | string, AssignmentDetail>;
     averages: Record<string, number>; 
     total_grade: number;
     final_grade: number;

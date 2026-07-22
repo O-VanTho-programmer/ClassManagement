@@ -2,6 +2,7 @@ import pool from "@/lib/db";
 import { NextResponse } from "next/server";
 import type { PoolConnection } from "mysql2/promise";
 import { deleteCloudImage } from "@/lib/cloudinary/cloudinary";
+import { dispatchNotification } from "@/lib/notifications";
 
 export async function POST(req: Request) {
     let connection: PoolConnection | undefined;
@@ -72,7 +73,48 @@ export async function POST(req: Request) {
 
         await connection.query(querySaveStudentSubmission, [jsonUrlsList, timingStatus, resolvedSecurityStatus, studentHomeworkId]);
 
+        // Retrieve metadata for notifications
+        const [metaData]: any[] = await connection.query(`
+            SELECT 
+                ch.ClassId, 
+                h.HubId,
+                h.Title AS HomeworkTitle,
+                s.Name AS StudentName
+            FROM student_homework sh
+            JOIN class_homework ch ON sh.ClassHomeworkId = ch.ClassHomeworkId
+            JOIN homework h ON ch.HomeworkId = h.HomeworkId
+            JOIN student s ON sh.StudentId = s.StudentId
+            WHERE sh.StudentHomeworkId = ?
+        `, [studentHomeworkId]);
+
         await connection.commit();
+
+        if (metaData && metaData.length > 0) {
+            const { ClassId, HubId, HomeworkTitle, StudentName } = metaData[0];
+            try {
+                await dispatchNotification({
+                    hubId: HubId,
+                    classId: ClassId,
+                    title: `Homework Submitted: ${HomeworkTitle}`,
+                    snippet: `${StudentName} has submitted homework for ${HomeworkTitle}.`,
+                    content: `<p>Dear Teacher,</p>
+                              <p>We are notifying you that student <b>${StudentName}</b> has submitted their homework for <b>${HomeworkTitle}</b>.</p>
+                              <div class="my-4 p-4 bg-gray-50 border border-gray-200 rounded-xl space-y-1">
+                                <ul class="list-disc pl-5 text-xs text-gray-600">
+                                  <li><b>Submission Status:</b> Submitted (${timingStatus})</li>
+                                  <li><b>Biometric Status:</b> ${resolvedSecurityStatus}</li>
+                                  <li><b>Timestamp:</b> ${new Date().toLocaleString()}</li>
+                                </ul>
+                              </div>
+                              <p>Please review the gradebook and grade the sheet at your earliest convenience.</p>`,
+                    category: 'homework',
+                    type: 'submission_received',
+                    deepLink: `/dashboard/hub/${HubId}/grade_book/${ClassId}`
+                });
+            } catch (errNotif) {
+                console.error("Error dispatching public submission notification:", errNotif);
+            }
+        }
 
         return NextResponse.json({ message: "Success" }, { status: 200 });
 

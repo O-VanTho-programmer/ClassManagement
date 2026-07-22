@@ -39,6 +39,28 @@ TutorDesk is currently in active development, with core features (User Authentic
 - [x] AI-assisted grading using Gemini Flash APIs comparing image buffers against the homework answer key.
 - [x] Single-student and batch grading with full feedback per question.
 
+### 6. Gradebook Performance Weighting
+- [x] Custom grade weight database schema (`class_grade_weight`).
+- [x] CRUD API routes for fetching and saving grade weights (`get_class_grade_weights` and `save_class_grade_weights`).
+- [x] Custom React Query query/mutation hooks (`useGetClassGradeWeights` and `useSaveClassGradeWeightsMutation`).
+- [x] Settings button and interactive `SetGradeWeightsModal` component in the gradebook page to customize Attendance and Homework grade weights, validating that the allocation totals 100%.
+
+### 7. Class Creation & Billing Configuration
+- [x] Refactored `CreateClassModal` form to support tuition-based end date calculations (auto-calculating and disabling End Date for Quarter/Monthly tuitions).
+- [x] Documented the new `invoice` database schema and architectural versioning rules.
+- [x] Created `rule.md` to establish coding guidelines and styling standards for future development.
+
+### 8. Class-Scoped Notification System
+- [x] Designed database schemas (`notification`, `notification_recipient`) restricting visibility to class teachers and assistants.
+- [x] Created `src/lib/notifications.ts` helper with automatic teaching staff lookup.
+- [x] Added `GET`, `PATCH`, `DELETE` routes for fetching, marking status (read/star/trash), and cleaning trash.
+- [x] Wired triggers into homework submission endpoints (public and private).
+- [x] Wired triggers into student class enrollment endpoint.
+- [x] Hooked daily cron check (`cron/check_homework`) to issue upcoming deadline warnings (2 days out) and final alerts when deadlines are met.
+- [x] Updated UI in `page.jsx` to load and mutate notifications dynamically from the database.
+- [x] Extracted fetching and status mutation logic into custom React Query hooks (`useGetNotifications` and `useUpdateNotifications`).
+- [x] Resolved parsing/compiler issues in `page.jsx` by removing TypeScript type assertions from Javascript files.
+
 ---
 
 ## 🛠️ Current Work (In Progress)

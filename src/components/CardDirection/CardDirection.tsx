@@ -9,43 +9,47 @@ export interface CardDirectionProps {
 }
 
 export default function CardDirection({ icon, title, descr, bg_clr, onClick }: CardDirectionProps) {
-
     const Icon = icon;
 
-    const gradientClasses = {
-        'yellow': 'from-yellow-400 to-orange-500 group-hover:from-yellow-500 group-hover:to-orange-600',
-        'green': 'from-green-400 to-teal-500 group-hover:from-green-500 group-hover:to-teal-600',
-        'red': 'from-red-400 to-rose-500 group-hover:from-red-500 group-hover:to-rose-600',
-        'blue': 'from-blue-400 to-indigo-500 group-hover:from-blue-500 group-hover:to-indigo-600',
+    const borderClasses = {
+        'yellow': 'border-t-amber-500',
+        'green': 'border-t-emerald-500',
+        'red': 'border-t-rose-500',
+        'blue': 'border-t-indigo-500',
     };
 
-    const colorIcon = {
-        'yellow': 'text-yellow-400',
-        'green': 'text-green-400',
-        'red': 'text-red-400',
-        'blue': 'text-blue-400',
-    }
-
+    const iconBgClasses = {
+        'yellow': 'bg-amber-50 text-amber-600',
+        'green': 'bg-emerald-50 text-emerald-600',
+        'red': 'bg-rose-50 text-rose-600',
+        'blue': 'bg-indigo-50 text-indigo-600',
+    };
 
     return (
         <div className={`
-            group rounded-lg p-6 shadow-md transition-all duration-300 ease-in-out transform hover:scale-105
-      bg-gradient-to-r ${gradientClasses[bg_clr]}
-    `}>
-            <div className="flex items-center space-x-4 mb-2">
-                <div className={`flex items-center justify-center w-12 h-12 rounded-lg bg-white bg-opacity-10 transition-colors duration-300`}>
-                    <Icon className={`w-6 h-6 ${colorIcon[bg_clr]}`} />
+            group rounded-xl p-5 shadow-sm border border-slate-200/70 bg-white/90 backdrop-blur-sm
+            transition-all duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-md
+            border-t-4 ${borderClasses[bg_clr]} flex flex-col justify-between h-[180px]
+        `}>
+            <div className="flex items-start space-x-4">
+                <div className={`flex items-center justify-center w-10 h-10 rounded-lg shrink-0 ${iconBgClasses[bg_clr]}`}>
+                    <Icon className="w-5 h-5" />
                 </div>
-                <div>
-                    <h3 className={`text-xl font-bold text-white`}>{title}</h3>
-                    <p className="text-sm text-white">{descr}</p>
+                <div className="space-y-1">
+                    <h3 className="text-base font-bold text-slate-800 tracking-tight leading-tight group-hover:text-slate-900">
+                        {title}
+                    </h3>
+                    <p className="text-[10px] text-slate-500 font-normal leading-normal">
+                        {descr}
+                    </p>
                 </div>
             </div>
             <button
-            onClick={onClick}
-            className={`mt-4 w-full text-gray-400 cursor-pointer font-semibold py-2 px-4 rounded-lg transition-transform transform-gpu hover:scale-105 shadow-lg flex items-center justify-center border border-white border-opacity-30 bg-white`}>
+                onClick={onClick}
+                className="w-full bg-slate-950 text-white cursor-pointer font-semibold py-2 px-4 rounded-lg text-xs transition-colors duration-200 hover:bg-slate-800 shadow-sm flex items-center justify-center gap-1.5"
+            >
                 <span>View Details</span>
-                <ArrowRightIcon className="w-4 h-4 ml-2" />
+                <ArrowRightIcon className="w-3.5 h-3.5" />
             </button>
         </div>
     );

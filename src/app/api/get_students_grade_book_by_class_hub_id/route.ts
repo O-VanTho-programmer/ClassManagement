@@ -50,6 +50,41 @@ export async function GET(req: Request) {
         const [assignments]: any[] = await pool.query(queryAssignments, [classId]);
         const [studentGrades]: any[] = await pool.query(queryGetStudentsGradeBookByClassId, [classId]);
 
+        // Fetch attendance records for all students in this class
+        const queryAttendance = `
+            SELECT 
+                StudentId AS student_id,
+                Present AS present
+            FROM record_attendance
+            WHERE ClassId = ?
+        `;
+        const [attendanceRecords]: any[] = await pool.query(queryAttendance, [classId]);
+
+        // Map student_id to their attendance records
+        const attendanceMap = new Map<number, string[]>();
+        attendanceRecords.forEach((rec: any) => {
+            if (!attendanceMap.has(rec.student_id)) {
+                attendanceMap.set(rec.student_id, []);
+            }
+            if (rec.present) {
+                attendanceMap.get(rec.student_id)!.push(rec.present);
+            }
+        });
+
+        // Determine grading scale (10-point vs 100-point) based on homework grades
+        let maxGradeSeen = 0;
+        let hasGrades = false;
+        studentGrades.forEach((student: any) => {
+            if (student.grade !== null) {
+                hasGrades = true;
+                if (student.grade > maxGradeSeen) {
+                    maxGradeSeen = student.grade;
+                }
+            }
+        });
+        const isTenPointScale = hasGrades && maxGradeSeen <= 10;
+        const maxAttendanceGrade = isTenPointScale ? 10 : 100;
+
         const columnsType: Record<string, any[]> = {};
         assignments.forEach((assignment: any) => {
             const type = assignment.homework_type || 'Uncategorized';
@@ -61,6 +96,14 @@ export async function GET(req: Request) {
                 title: assignment.title
             });
         });
+
+        // Add Attendance category and rate column to columnsType
+        columnsType["Attendance"] = [
+            {
+                class_homework_id: "attendance",
+                title: "Attendance Rate"
+            }
+        ];
 
         let studentMap = new Map<number, any>();
 
@@ -86,6 +129,27 @@ export async function GET(req: Request) {
                     homework_type: student.homework_type
                 };
             }
+        });
+
+        // Inject attendance grades into each student's assignments
+        studentMap.forEach((value, key) => {
+            const studentAttendanceList = attendanceMap.get(key) || [];
+            const totalSessions = studentAttendanceList.length;
+            const presentCount = studentAttendanceList.filter(p => p === 'Present' || p === 'Late' || p === 'Excused').length;
+            
+            const attendanceScore = totalSessions > 0 
+                ? parseFloat(((presentCount / totalSessions) * maxAttendanceGrade).toFixed(2)) 
+                : maxAttendanceGrade;
+
+            value.assignments["attendance"] = {
+                grade: attendanceScore,
+                feedback: `${presentCount}/${totalSessions} sessions attended`,
+                submission_urls: null,
+                homework_status: 'Finished',
+                needs_review: false,
+                timing_status: 'OnTime',
+                homework_type: 'Attendance'
+            };
         });
 
         const rowsStudents = Array.from(studentMap.values()).map(stu => {
@@ -118,7 +182,9 @@ export async function GET(req: Request) {
             return stu;
         });
 
-        return NextResponse.json({ 
+        console.log(rowsStudents);
+
+        return NextResponse.json({
             message: "Success",
             columns: columnsType,
             data: rowsStudents
