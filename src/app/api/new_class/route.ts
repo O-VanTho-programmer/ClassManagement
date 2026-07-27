@@ -27,7 +27,8 @@ export async function POST(req: Request) {
       status,
       startDate,
       endDate,
-      hubId
+      hubId,
+      billingIntervalMonths
     } = body;
 
     if (!name || !teacher || !subject || !tuitionType || !startDate || !endDate) {
@@ -53,8 +54,8 @@ export async function POST(req: Request) {
 
     const [classResult]: any = await connection.query(
       `INSERT INTO class 
-        (Name, StartDate, EndDate, TeacherUserId, AssistantUserId, Subject, Tuition, TuitionType, Base, Status, HubId)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        (Name, StartDate, EndDate, TeacherUserId, AssistantUserId, Subject, Tuition, TuitionType, Base, Status, HubId, BillingIntervalMonths)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         name,
         startDate,
@@ -66,7 +67,8 @@ export async function POST(req: Request) {
         tuitionType,
         baseValue,
         status ?? "active",
-        hubId
+        hubId,
+        billingIntervalMonths ?? null
       ]
     );
 

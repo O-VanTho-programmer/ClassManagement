@@ -5,9 +5,9 @@ import type { PoolConnection } from "mysql2/promise";
 
 export async function GET(
   req: Request,
-  { params }: { params: { hub_id: string } }
+  { params }: { params: Promise<{ hub_id: string }> }
 ) {
-  const { hub_id } = params;
+  const { hub_id } = await params;
 
   // Verify basic permissions for dashboard access
   const permissionCheck = await checkPermission(req, PERMISSIONS.VIEW_HUB, hub_id);
@@ -71,9 +71,9 @@ export async function GET(
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { hub_id: string } }
+  { params }: { params: Promise<{ hub_id: string }> }
 ) {
-  const { hub_id } = params;
+  const { hub_id } = await params;
 
   const permissionCheck = await checkPermission(req, PERMISSIONS.VIEW_HUB, hub_id);
   if (permissionCheck instanceof NextResponse) {
@@ -160,9 +160,9 @@ export async function PATCH(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { hub_id: string } }
+  { params }: { params: Promise<{ hub_id: string }> }
 ) {
-  const { hub_id } = params;
+  const { hub_id } = await params;
 
   const permissionCheck = await checkPermission(req, PERMISSIONS.VIEW_HUB, hub_id);
   if (permissionCheck instanceof NextResponse) {

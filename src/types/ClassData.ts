@@ -11,6 +11,7 @@ export interface ClassData extends ClassDataSimple{
     base?: string;
     startDate: string;
     endDate: string;
+    billingIntervalMonths?: number;
 }
 
 export interface ClassDataSimple {

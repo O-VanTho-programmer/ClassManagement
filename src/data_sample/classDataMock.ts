@@ -20,6 +20,7 @@ export interface ClassData {
     status: 'Active' | 'Finished';
     startDate: string;
     endDate: string;
+    billingIntervalMonths?: number;
 }
 
 export const mockClassListData: ClassData[] = [

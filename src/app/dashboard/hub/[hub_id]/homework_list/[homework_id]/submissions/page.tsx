@@ -1,5 +1,6 @@
 'use client';
 
+import EditAssignmentHomeworkModal from '@/components/EditAssignmentHomeworkModal/EditAssignmentHomeworkModal';
 import ErrorState from '@/components/QueryState/ErrorState';
 import LoadingState from '@/components/QueryState/LoadingState';
 import ViewClassHomeworkList from '@/components/ViewClassHomeworkList/ViewClassHomeworkList';
@@ -55,7 +56,16 @@ function HomeworkSubmissionsPage() {
                 handleEdit={handleEdit}
                 handleViewSubmissions={handleViewSubmissions}
             />
-
+            {editOpen && selectedAssignment && (
+                <EditAssignmentHomeworkModal
+                    isOpen={editOpen}
+                    onClose={() => setEditOpen(false)}
+                    assignment={selectedAssignment}
+                    initialAssignedDate={selectedAssignment.assigned_date}
+                    initialDueDate={selectedAssignment.due_date}
+                    class_id={selectedAssignment.class_id}
+                />
+            )}
         </div>
     )
 }

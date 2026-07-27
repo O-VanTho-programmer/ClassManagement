@@ -15,6 +15,7 @@ export async function newClassAPI (newClassData: Omit<ClassData, 'id'>, hubId: s
             status: newClassData.status,
             startDate: newClassData.startDate,
             endDate: newClassData.endDate,
+            billingIntervalMonths: newClassData.billingIntervalMonths || null,
             hubId: hubId
         };
         

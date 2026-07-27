@@ -33,10 +33,21 @@ export default function EditAssignmentHomeworkModal({
     const [selectedAssignment, setSelectedAssignment] = useState<ClassHomework | null>(null);
     const [isDeleteOpen, setDeleteOpen] = useState(false);
 
+    useEffect(() => {
+        setAssignedDate(initialAssignedDate);
+    }, [initialAssignedDate]);
+
+    useEffect(() => {
+        setDueDate(initialDueDate);
+    }, [initialDueDate]);
+
     const mutationUpdateHomeworkAssignmentDate = useMutation({
         mutationFn: () => updateClassHomeworkDate(assignment!.class_homework_id, formatDateForCompare(assignedDate), formatDateForCompare(dueDate)),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['homework_by_class_id', class_id] });
+            if (assignment?.homework_id) {
+                queryClient.invalidateQueries({ queryKey: ['get_class_homework_by_homework_id', assignment.homework_id] });
+            }
             showAlert('Assignment dates updated!', 'success');
             onClose();
         },

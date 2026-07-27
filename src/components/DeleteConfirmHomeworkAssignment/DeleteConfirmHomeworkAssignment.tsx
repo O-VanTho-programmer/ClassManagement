@@ -28,6 +28,9 @@ function DeleteConfirmHomeworkAssignment({
         mutationFn: (class_homework_id: string) => deleteClassHomework(class_homework_id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['homework_by_class_id', class_id] });
+            if (assignment?.homework_id) {
+                queryClient.invalidateQueries({ queryKey: ['get_class_homework_by_homework_id', assignment.homework_id] });
+            }
             showAlert('Homework unassigned successfully.', 'success');
             onDeleteSuccess();
             onClose();

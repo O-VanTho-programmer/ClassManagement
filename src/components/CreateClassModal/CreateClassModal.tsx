@@ -107,24 +107,18 @@ export default function CreateClassModal({ isOpen, onClose, onSubmit, hubId }: C
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (validateForm()) {
-            onSubmit(formData);
-            // setFormData({
-            //     name: '',
-            //     schedule: [{ day: 'Monday', startTime: '', endTime: '' }],
-            //     studentCount: 0,
-            //     teacher: '',
-            //     assistant: '',
-            //     subject: '',
-            //     tuition: '',
-            //     tuitionType: 'Monthly',
-            //     base: '',
-            //     status: 'Active',
-            //     startDate: '',
-            //     endDate: '',
-            // });
+            let billingIntervalMonths: number | undefined = undefined;
+            if (formData.tuitionType === 'Quarter') {
+                billingIntervalMonths = 3;
+            } else if (formData.tuitionType === 'Monthly') {
+                billingIntervalMonths = monthsPerPeriod;
+            }
+            
+            onSubmit({
+                ...formData,
+                billingIntervalMonths
+            });
         }
-
-
     };
 
     const addScheduleSlot = () => {

@@ -1,3 +1,4 @@
+import api from "@/lib/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export interface UpdateNotificationsParams {
@@ -11,15 +12,8 @@ export function useUpdateNotifications() {
 
   return useMutation({
     mutationFn: async ({ hubId, ids, action }: UpdateNotificationsParams) => {
-      const res = await fetch(`/api/hub/${hubId}/notifications`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids, action }),
-      });
-      if (!res.ok) {
-        throw new Error(`Failed to update notifications with action: ${action}`);
-      }
-      return res.json();
+      const res = await api.patch(`/hub/${hubId}/notifications`, { ids, action });
+      return res.data;
     },
     onSuccess: (_data, variables) => {
       // Invalidate query to pull the latest state

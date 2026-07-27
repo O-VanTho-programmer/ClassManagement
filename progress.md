@@ -66,11 +66,11 @@ TutorDesk is currently in active development, with core features (User Authentic
 ## 🛠️ Current Work (In Progress)
 
 ### Homework Creation Upgrades
-- [ ] **DOCX File Import**:
+- [x] **DOCX File Import**:
   - Add API endpoint (`/api/homework/parse-doc`) to convert `.docx` documents to HTML via Mammoth.
   - Integrate an import button in the frontend `CreateHomework` component.
   - Automatically populate the homework instructions editor with the converted document HTML.
-- [ ] **Streamlined AI Answer Key Generation**:
+- [x] **Streamlined AI Answer Key Generation**:
   - Add API endpoint (`/api/ai/generate-answer-key-from-content`) to generate keys using Gemini directly from the current editor content.
   - Remove redundant step-by-step file uploads in the answer key section.
   - Set generated HTML directly to the draft answer key editor for teachers to refine.

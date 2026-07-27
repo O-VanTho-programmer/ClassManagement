@@ -35,6 +35,7 @@ CREATE TABLE `class` (
   `TuitionType` enum('Monthly','Quarter','Course','Flexible') NOT NULL,
   `Subject` varchar(255) NOT NULL,
   `HubId` int NOT NULL,
+  `BillingIntervalMonths` int DEFAULT NULL,
   PRIMARY KEY (`ClassId`),
   KEY `fk_class_teacher_idx` (`TeacherUserId`),
   KEY `fk_class_assistant_idx` (`AssistantUserId`),
@@ -42,7 +43,7 @@ CREATE TABLE `class` (
   CONSTRAINT `fk_class_assistant` FOREIGN KEY (`AssistantUserId`) REFERENCES `user` (`UserId`),
   CONSTRAINT `fk_class_hub` FOREIGN KEY (`HubId`) REFERENCES `hub` (`HubId`),
   CONSTRAINT `fk_class_teacher` FOREIGN KEY (`TeacherUserId`) REFERENCES `user` (`UserId`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -82,7 +83,7 @@ CREATE TABLE `class_homework` (
   KEY `fk_homeworkclass_class_idx` (`ClassId`),
   CONSTRAINT `fk_homeworkclass_class` FOREIGN KEY (`ClassId`) REFERENCES `class` (`ClassId`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_homeworkclass_homework` FOREIGN KEY (`HomeworkId`) REFERENCES `homework` (`HomeworkId`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -103,7 +104,7 @@ CREATE TABLE `class_student` (
   KEY `fk_class_student_idx` (`StudentId`),
   CONSTRAINT `fk_class` FOREIGN KEY (`ClassId`) REFERENCES `class` (`ClassId`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_class_student` FOREIGN KEY (`StudentId`) REFERENCES `student` (`StudentId`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=40 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -201,14 +202,68 @@ CREATE TABLE `invoice` (
   `Version` int NOT NULL,
   `Amount` decimal(15,0) NOT NULL,
   `DueDate` date NOT NULL,
-  `CreatedDate` datetime NOT NULL,
-  `UpdatedDate` datetime NOT NULL,
+  `CreatedDate` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `UpdatedDate` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`InvoiceId`),
   KEY `fk_invoice_class_idx` (`ClassId`),
   KEY `fk_invoice_student` (`StudentId`),
   CONSTRAINT `fk_invoice_class` FOREIGN KEY (`ClassId`) REFERENCES `class` (`ClassId`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_invoice_student` FOREIGN KEY (`StudentId`) REFERENCES `student` (`StudentId`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `notification`
+--
+
+DROP TABLE IF EXISTS `notification`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `notification` (
+  `NotificationId` int NOT NULL AUTO_INCREMENT,
+  `HubId` int NOT NULL,
+  `ClassId` int DEFAULT NULL,
+  `SenderUserId` int DEFAULT NULL,
+  `Title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `Snippet` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `Content` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `Category` enum('homework','class','system') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `Type` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `DeepLink` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `CreatedDate` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`NotificationId`),
+  KEY `HubId` (`HubId`),
+  KEY `ClassId` (`ClassId`),
+  KEY `SenderUserId` (`SenderUserId`),
+  CONSTRAINT `notification_ibfk_1` FOREIGN KEY (`HubId`) REFERENCES `hub` (`HubId`) ON DELETE CASCADE,
+  CONSTRAINT `notification_ibfk_2` FOREIGN KEY (`ClassId`) REFERENCES `class` (`ClassId`) ON DELETE CASCADE,
+  CONSTRAINT `notification_ibfk_3` FOREIGN KEY (`SenderUserId`) REFERENCES `user` (`UserId`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `notification_recipient`
+--
+
+DROP TABLE IF EXISTS `notification_recipient`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `notification_recipient` (
+  `NotificationRecipientId` int NOT NULL AUTO_INCREMENT,
+  `NotificationId` int NOT NULL,
+  `RecipientUserId` int NOT NULL,
+  `IsRead` tinyint DEFAULT '0',
+  `IsStarred` tinyint DEFAULT '0',
+  `IsDeleted` tinyint DEFAULT '0',
+  `ReadDate` datetime DEFAULT NULL,
+  `DeletedDate` datetime DEFAULT NULL,
+  `CreatedDate` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`NotificationRecipientId`),
+  UNIQUE KEY `idx_recipient_notification` (`RecipientUserId`,`NotificationId`),
+  KEY `NotificationId` (`NotificationId`),
+  CONSTRAINT `notification_recipient_ibfk_1` FOREIGN KEY (`NotificationId`) REFERENCES `notification` (`NotificationId`) ON DELETE CASCADE,
+  CONSTRAINT `notification_recipient_ibfk_2` FOREIGN KEY (`RecipientUserId`) REFERENCES `user` (`UserId`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -270,7 +325,7 @@ CREATE TABLE `schedule` (
   PRIMARY KEY (`ScheduleId`),
   KEY `fk_class_schedule_idx` (`ClassId`),
   CONSTRAINT `fk_class_schedule` FOREIGN KEY (`ClassId`) REFERENCES `class` (`ClassId`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -323,7 +378,7 @@ CREATE TABLE `student_homework` (
   KEY `fk_studenthomework_student_idx` (`StudentId`),
   CONSTRAINT `fk_studenthomework_classhomework` FOREIGN KEY (`ClassHomeworkId`) REFERENCES `class_homework` (`ClassHomeworkId`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_studenthomework_student` FOREIGN KEY (`StudentId`) REFERENCES `student` (`StudentId`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=92 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=99 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -377,4 +432,4 @@ CREATE TABLE `user` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-07-10 18:15:02
+-- Dump completed on 2026-07-27  8:35:03

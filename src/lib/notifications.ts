@@ -15,9 +15,7 @@ export interface CreateNotificationInput {
 }
 
 /**
- * Dispatches a notification to the system database.
- * If recipientUserIds is omitted and classId is provided, the function automatically
- * resolves the Class's Teacher and Assistant as the target recipients.
+ * If recipientUserIds is omitted and classId is provided, the function automatically resolves the Class's Teacher and Assistant as the target recipients.
  */
 export async function dispatchNotification(input: CreateNotificationInput) {
   let connection: PoolConnection | undefined;

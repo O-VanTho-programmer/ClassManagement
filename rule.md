@@ -90,3 +90,21 @@ For example:
 ### 3. File Extensions & Typing Constraints
 - **TypeScript Files (`.ts`, `.tsx`)**: Utilize standard static typing, annotations, and assertions.
 - **JavaScript Files (`.js`, `.jsx`)**: Never write TypeScript syntax (e.g., type assertions like `as string` or type annotations) inside `.js`/`.jsx` files. This causes ECMAScript parser failures during runtime and build compilation. Keep JavaScript files completely standard-compliant.
+
+---
+
+## 📢 Alert Progress & API-to-Component Lifecycle Patterns
+
+### 1. Alert Progress Animations (`requestAnimationFrame`)
+- **State Handling**: Toast notifications use a local `progress` state starting at `100` representing 100% width.
+- **Frame-by-Frame Updates**: Use `requestAnimationFrame` inside a `useEffect` loop instead of `setInterval` or CSS transitions for smooth, frame-synchronized bar countdown animations.
+- **Destruction Synchronization**: Keep the animation duration (e.g., `4800ms`) closely aligned with, but slightly shorter than, the parent alert removal timeout (e.g., `5000ms`) to prevent abrupt visual jumps on removal.
+
+### 2. Standard API Integration Blueprint
+To establish new communication channels between frontend and backend, follow this precise lifecycle chain:
+1. **Backend Route**: Define an endpoint in `src/app/api/[route_name]/route.ts`. Validate parameters, check user permissions via `checkPermission`, query database using `pool`, and return a standard `NextResponse.json` structure:
+   `{ message: string, data: T }`
+2. **Axios client utility**: Implement the actual HTTP call under `src/lib/api/[fetchName].ts` utilizing the preconfigured base `/api` Axios instance.
+3. **React Query wrapper**: Create a custom hook under `src/hooks/useGet[Name].ts` (for fetching) or `src/hooks/use[Name]Mutation.ts` (for mutation). Supply explicit `queryKey` dependency arrays to enable automatic invalidation and caching.
+4. **React Component consumption**: Invoke the custom hook inside dashboard pages or components, handling the loading (`isLoading`), error, and data states natively.
+

@@ -40,10 +40,10 @@ export async function GET(req: NextRequest) {
 
         if(missedStudentSubmissions.length > 0){
             const updateStudentSubmissions = `
-                UPDATE student_homework
+                UPDATE student_homework sh
                 JOIN class_homework ch ON sh.ClassHomeworkId = ch.ClassHomeworkId 
-                SET Status = 'Missed' 
-                WHERE Status = 'Pending' 
+                SET sh.Status = 'Missed' 
+                WHERE sh.Status = 'Pending' 
                 AND ch.DueDate < NOW();
             `;
 
@@ -54,7 +54,7 @@ export async function GET(req: NextRequest) {
 
         await connection.commit();
 
-        // 2. Homework Deadline Alerts
+        // 2. Homework Deadline Alerts (2 days left)
         const getHomeworkDeadlines = `
             SELECT 
                 ch.ClassHomeworkId,
