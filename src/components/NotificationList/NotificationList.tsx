@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import NotificationItem from "../NotificationItem/NotificationItem";
 import { BellOff, ListChecks } from "lucide-react";
 import Button from "../Button/Button";
+import { NotificationItemProps } from "@/types/Notification";
 
 interface NotificationListProps {
     title: string,
@@ -10,7 +11,7 @@ interface NotificationListProps {
     onClose: () => void
 }
 
-const NotificationList = ({ title = "Thông báo", notificationsData, isOpen, onClose }: NotificationListProps) => {
+const NotificationList = ({ title = "Notification", notificationsData, isOpen, onClose }: NotificationListProps) => {
     const ref = useRef<HTMLDivElement>(null);
 
     useEffect(() => {

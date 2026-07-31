@@ -61,11 +61,7 @@ TutorDesk is currently in active development, with core features (User Authentic
 - [x] Extracted fetching and status mutation logic into custom React Query hooks (`useGetNotifications` and `useUpdateNotifications`).
 - [x] Resolved parsing/compiler issues in `page.jsx` by removing TypeScript type assertions from Javascript files.
 
----
-
-## 🛠️ Current Work (In Progress)
-
-### Homework Creation Upgrades
+### 9. Homework Creation Upgrades
 - [x] **DOCX File Import**:
   - Add API endpoint (`/api/homework/parse-doc`) to convert `.docx` documents to HTML via Mammoth.
   - Integrate an import button in the frontend `CreateHomework` component.
@@ -74,6 +70,25 @@ TutorDesk is currently in active development, with core features (User Authentic
   - Add API endpoint (`/api/ai/generate-answer-key-from-content`) to generate keys using Gemini directly from the current editor content.
   - Remove redundant step-by-step file uploads in the answer key section.
   - Set generated HTML directly to the draft answer key editor for teachers to refine.
+
+### 10. Recurring Invoices & Dynamic Billing Period
+- [x] Added `BillingIntervalMonths` column to the `class` table.
+- [x] Implemented daily background check invoice generation cron job (`/api/cron/check_invoices`).
+- [x] Integrated consolidated notification alerts for newly generated tuition invoices.
+- [x] Integrated automated alerts for overdue invoices (preventing duplicate dispatches).
+- [x] Added `billingIntervalMonths` to class type definitions and updated UI component `CreateClassModal` to pass custom monthly/quarter billing interval widths.
+- [x] Refactored backend class creation route `/api/new_class` to store dynamic billing period intervals.
+
+### 11. Submissions & User Notification Type-Safety Fixes
+- [x] Fixed date inputs mapping and lifecycle bug in `EditAssignmentHomeworkModal` under submissions views.
+- [x] Refactored `useGetNotifications` to fetch type-safely via custom Axios client `api`.
+- [x] Formulated typed `NotificationSchema` and bound structured notifications inside `UserNotification` drawer.
+
+---
+
+## 🛠️ Current Work (In Progress)
+
+- [ ] (Next upcoming feature task)
 
 ---
 

@@ -1,3 +1,4 @@
+import { NotificationItemProps } from "@/types/Notification";
 import { CheckCircleIcon, InfoIcon } from "lucide-react";
 
 const NotificationItem = ({
