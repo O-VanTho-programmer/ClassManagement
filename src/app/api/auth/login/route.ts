@@ -15,7 +15,7 @@ export async function POST(req: Request) {
         `;
 
         const [users] = await pool.query(query, [email]) as any[];
-        
+
         if (users.length === 0) {
             return NextResponse.json({ message: "User not found" }, { status: 404 });
         }
@@ -31,11 +31,11 @@ export async function POST(req: Request) {
         console.log('Creating token with payload:', tokenPayload);
         const token = await signToken(tokenPayload);
         console.log('Generated token:', token);
-        const res = NextResponse.json({ 
-            message: "Login successfully!", 
+        const res = NextResponse.json({
+            message: "Login successfully!",
             user: { id: user.UserId, email: user.Email, username: user.Name, role: user.Role }
-        }, {status: 200});
-        
+        }, { status: 200 });
+
         res.cookies.set('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',

@@ -1,3 +1,5 @@
+import { NotificationType } from "@/types/Notification";
+
 export const notificationsData = [
     {
         type: 'inform' as NotificationType,

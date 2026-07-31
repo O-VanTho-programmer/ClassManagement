@@ -1,4 +1,4 @@
-type NotificationType = 'inform' | 'success';
+export type NotificationType = 'inform' | 'success';
 
 export interface NotificationItemProps {
   type: NotificationType;

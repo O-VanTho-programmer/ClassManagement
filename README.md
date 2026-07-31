@@ -137,6 +137,22 @@ A comprehensive, full-stack class management application built with Next.js 15, 
 - **TypeScript** - Static type checking
 - **Turbopack** - Fast bundler for development
 
+## 🚀 Deployment & Infrastructure
+
+ClassHub is deployed using a production-grade, cost-optimized architecture leveraging AWS services within the Free Tier limits.
+
+### Architecture Overview
+* **Edge & Security Layer (CDN/SSL):** [AWS CloudFront](https://aws.amazon.com/cloudfront/) sits at the front, terminating SSL/HTTPS connections and acting as a reverse proxy/CDN to forward traffic securely to the application server.
+* **Compute & Application Layer:** The full-stack application is containerized using **Docker & Docker Compose** and deployed on a single **AWS Amazon EC2** instance (Ubuntu), handling both frontend rendering and backend logic.
+* **Data Layer:** Hosted relational database managed via **AWS RDS MySQL** for persistent data storage.
+
+### DevOps & Automation Highlights
+* **Secure Configuration Management:** Sensitive credentials and environment variables are securely stored in **AWS SSM Parameter Store** and dynamically injected at runtime via an automated shell script (`start.sh`).
+* **End-to-End HTTPS:** Configured CloudFront custom origin to handle HTTP-to-HTTPS traffic redirection seamlessly, resolving typical production mixed-content and redirect loops.
+* **Containerized Workflow:** Ensured environment parity across development and production stages through Dockerizing the core application.
+
+**Live Demo:** [dnl24z5ha7q1d.cloudfront.net](http://dnl24z5ha7q1d.cloudfront.net)
+
 ## 📋 Prerequisites
 
 Before you begin, ensure you have the following installed:
