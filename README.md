@@ -142,6 +142,9 @@ A comprehensive, full-stack class management application built with Next.js 15, 
 ClassHub is deployed using a production-grade, cost-optimized architecture leveraging AWS services within the Free Tier limits.
 
 ### Architecture Overview
+
+![AWS Architecture Diagram](.github/assets/diagram-AWS.png)
+
 * **Edge & Security Layer (CDN/SSL):** [AWS CloudFront](https://aws.amazon.com/cloudfront/) sits at the front, terminating SSL/HTTPS connections and acting as a reverse proxy/CDN to forward traffic securely to the application server.
 * **Compute & Application Layer:** The full-stack application is containerized using **Docker & Docker Compose** and deployed on a single **AWS Amazon EC2** instance (Ubuntu), handling both frontend rendering and backend logic.
 * **Data Layer:** Hosted relational database managed via **AWS RDS MySQL** for persistent data storage.
